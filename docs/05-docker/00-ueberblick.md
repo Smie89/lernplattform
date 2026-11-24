@@ -7,7 +7,7 @@ sidebar_label: Überblick
 
 Geplante Module:
 
-1. Grundlagen: Image vs. Container, Registry
+1. [Grundlagen: Image vs. Container, Registry](./01-docker-grundlagen.mdx) ✅
 2. Dockerfile schreiben, Layer und Caching
 3. Volumes und Netzwerke
 4. Docker Compose

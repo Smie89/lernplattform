@@ -1,0 +1,242 @@
+---
+title: Docker – Grundlagen
+description: Was Docker ist, wie sich Images und Container unterscheiden und die wichtigsten Befehle für den Alltag.
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-docker-grundlagen.fragen.yaml';
+
+# Docker – Grundlagen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, was Docker ist und welches Problem es löst,
+- **Container** von **virtuellen Maschinen** abgrenzen,
+- den Unterschied zwischen **Image**, **Container** und **Registry** erklären,
+- Container starten, beobachten, betreten und wieder aufräumen,
+- einen **Selenium-Browser im Container** für deine Tests starten.
+:::
+
+## Was ist Docker? \{#was-ist-docker}
+
+Docker ist eine Plattform, mit der man Anwendungen **samt allem, was sie zum Laufen brauchen** – Laufzeitumgebung, Bibliotheken, Konfiguration – in ein standardisiertes Paket verpackt: einen **Container**.
+
+Das klassische Problem, das Docker löst:
+
+> „Bei mir läuft's aber!“
+
+Auf dem Entwickler-PC ist .NET 8 installiert, auf dem Testserver .NET 6; lokal läuft PostgreSQL 16, in der CI-Pipeline Version 13. Mit Docker läuft **überall dasselbe Paket** – auf dem Laptop, in der CI-Pipeline und in Produktion.
+
+Für Tester besonders wertvoll:
+- **Reproduzierbare Testumgebungen** – jeder Testlauf startet mit einem sauberen Zustand.
+- **Abhängigkeiten auf Knopfdruck** – Datenbank, Message-Broker oder Browser in Sekunden starten.
+- **Gleiche Umgebung lokal und in der CI** – weniger „flaky“ Tests durch Umgebungsunterschiede.
+
+## Container vs. virtuelle Maschine \{#container-vs-vm}
+
+| | Virtuelle Maschine | Container |
+|---|---|---|
+| Enthält | Komplettes Betriebssystem inkl. eigenem **Kernel** | Nur Anwendung + Bibliotheken; **teilt sich den Kernel des Hosts** |
+| Größe | Gigabytes | Megabytes bis wenige hundert MB |
+| Startzeit | Minuten | Sekunden oder weniger |
+| Isolation | Sehr stark (Hypervisor) | Gut (Linux-Namespaces und cgroups), aber schwächer als eine VM |
+| Typischer Einsatz | Andere Betriebssysteme, harte Abschottung | Anwendungen und Dienste paketieren, Testumgebungen |
+
+Container nutzen zwei Linux-Kernel-Funktionen:
+- **Namespaces** – jeder Container sieht nur seine eigenen Prozesse, sein eigenes Netzwerk und Dateisystem.
+- **cgroups** (Control Groups) – begrenzen CPU, Arbeitsspeicher und I/O pro Container.
+
+:::note[Docker unter Windows]
+Weil Linux-Container einen Linux-Kernel brauchen, nutzt **Docker Desktop** unter Windows im Hintergrund **WSL 2** – eine schlanke Linux-VM. Die Container darin teilen sich dann deren Kernel.
+:::
+
+## Image, Container, Registry \{#image-container-registry}
+
+Die drei wichtigsten Begriffe – mit einer Analogie aus der Programmierung:
+
+| Begriff | Was ist das? | Analogie |
+|---|---|---|
+| **Image** | Unveränderliche Vorlage: Dateisystem + Metadaten (z. B. Startbefehl) | **Klasse** |
+| **Container** | Laufende (oder gestoppte) Instanz eines Images mit eigener beschreibbarer Schicht | **Objekt** |
+| **Registry** | Ablage, aus der Images geladen werden (z. B. **Docker Hub**, GitHub Container Registry) | **NuGet / Maven Central** |
+
+Aus **einem** Image kann man **beliebig viele** Container starten. Änderungen in einem Container (z. B. neu angelegte Dateien) landen in dessen **beschreibbarer Schicht** und verändern das Image **nicht**. Wird der Container gelöscht, sind diese Änderungen weg.
+
+### Image-Namen lesen \{#image-namen}
+
+```
+mcr.microsoft.com/dotnet/sdk:8.0
+└──── Registry ───┘└── Repository ──┘└Tag┘
+```
+
+- Fehlt die Registry, wird **Docker Hub** verwendet: `nginx` = `docker.io/library/nginx`.
+- Fehlt der Tag, wird **`latest`** verwendet. `latest` heißt aber nur „Standard-Tag“ – **nicht** zwingend „neueste Version“.
+
+:::tip[Praxis]
+Verwende in Testumgebungen und CI **feste Tags** wie `postgres:16.4` statt `postgres:latest`. Sonst ändert sich deine Testumgebung unbemerkt, sobald ein neues Image veröffentlicht wird.
+:::
+
+## Der erste Container \{#erster-container}
+
+```bash
+docker run hello-world
+```
+
+Was dabei passiert:
+1. Docker sucht das Image `hello-world:latest` lokal.
+2. Ist es nicht da, wird es aus Docker Hub **gepullt**.
+3. Docker erstellt daraus einen **Container** und startet ihn.
+4. Das Programm gibt einen Text aus und beendet sich – damit **stoppt** auch der Container.
+
+Ein Container lebt nur so lange wie sein **Hauptprozess**.
+
+### Ein Webserver im Container \{#webserver}
+
+```bash
+docker run -d --name web -p 8080:80 nginx:1.27
+```
+
+| Option | Bedeutung |
+|---|---|
+| `-d` | **detached** – im Hintergrund laufen lassen |
+| `--name web` | Eigener Name statt eines zufälligen |
+| `-p 8080:80` | Port **8080 des Hosts** auf Port **80 im Container** weiterleiten (`HOST:CONTAINER`) |
+| `nginx:1.27` | Image und Tag |
+
+Jetzt liefert http://localhost:8080 die nginx-Startseite aus.
+
+## Wichtige Befehle \{#befehle}
+
+```bash
+# Images
+docker pull postgres:16.4          # Image herunterladen
+docker images                      # lokale Images anzeigen
+
+# Container starten
+docker run -d --name db \
+  -e POSTGRES_PASSWORD=geheim \
+  -p 5432:5432 postgres:16.4       # -e setzt eine Umgebungsvariable
+
+# Container beobachten
+docker ps                          # laufende Container
+docker ps -a                       # ALLE Container, auch gestoppte
+docker logs -f db                  # Logausgabe live verfolgen
+
+# In einen laufenden Container hinein
+docker exec -it db bash            # interaktive Shell im Container
+docker exec db psql -U postgres -c "select version();"
+
+# Stoppen, starten, löschen
+docker stop db
+docker start db
+docker rm db                       # gestoppten Container löschen
+docker rm -f db                    # laufenden Container stoppen UND löschen
+docker rmi postgres:16.4           # Image löschen
+
+# Aufräumen
+docker system prune                # gestoppte Container, ungenutzte Netzwerke, Dangling Images
+```
+
+:::tip[`run` vs. `exec`]
+- `docker run` erzeugt **einen neuen Container** aus einem Image.
+- `docker exec` führt einen Befehl in einem **bereits laufenden** Container aus.
+:::
+
+## Lebenszyklus eines Containers \{#lebenszyklus}
+
+```
+   Image
+     │  docker create
+     ▼
+  Created
+     │  docker start
+     ▼
+  Running ◄─────────┐
+     │              │
+     │ docker stop  │ docker start
+     │ oder Prozess │
+     │ endet        │
+     ▼              │
+  Exited ───────────┘
+     │  docker rm
+     ▼
+  gelöscht
+```
+
+`docker run` = `docker create` + `docker start` in einem Schritt. Mit `--rm` wird der Container nach dem Beenden **automatisch gelöscht** – ideal für einmalige Testläufe:
+
+```bash
+docker run --rm alpine:3.20 echo "Hallo aus dem Container"
+```
+
+## Praxisbeispiel: Browser für Tests im Container \{#praxis-selenium}
+
+Statt Chrome und ChromeDriver auf jedem Rechner passend zu installieren, startest du einen fertigen **Selenium-Container**:
+
+```bash
+docker run -d --name chrome \
+  -p 4444:4444 -p 7900:7900 \
+  --shm-size=2g \
+  selenium/standalone-chrome:latest
+```
+
+- **4444** – Selenium-Schnittstelle (WebDriver) für deine Tests
+- **7900** – Browser im Container live ansehen: http://localhost:7900 (Passwort: `secret`)
+- `--shm-size=2g` – Chrome braucht mehr gemeinsamen Speicher als der Standard (64 MB), sonst stürzen Tabs ab
+
+Im Test (C#) verbindest du dich per `RemoteWebDriver`:
+
+```csharp title="RemoteBrowserTests.cs"
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Remote;
+
+[TestFixture]
+public class RemoteBrowserTests
+{
+    private IWebDriver _driver = null!;
+
+    [SetUp]
+    public void Start()
+    {
+        _driver = new RemoteWebDriver(
+            new Uri("http://localhost:4444"),
+            new ChromeOptions());
+    }
+
+    [Test]
+    public void Titel_enthaelt_Docker()
+    {
+        _driver.Navigate().GoToUrl("https://www.docker.com");
+        Assert.That(_driver.Title, Does.Contain("Docker"));
+    }
+
+    [TearDown]
+    public void Stop() => _driver.Quit();
+}
+```
+
+In Java funktioniert das genauso mit `new RemoteWebDriver(new URL("http://localhost:4444"), new ChromeOptions())`.
+
+:::tip[Für die Praxis feste Versionen]
+Wie oben beschrieben: In der CI lieber einen festen Tag wie `selenium/standalone-chrome:<version>` statt `latest` verwenden, damit Browser-Updates nicht plötzlich Tests brechen.
+:::
+
+## Typische Fehler \{#typische-fehler}
+
+- **Port-Reihenfolge vertauscht:** `-p 80:8080` statt `-p 8080:80` – richtig ist immer `HOST:CONTAINER`.
+- **Port schon belegt:** `Bind for 0.0.0.0:8080 failed: port is already allocated` → anderen Host-Port wählen oder den anderen Container stoppen.
+- **Container „verschwindet“ sofort:** Der Hauptprozess hat sich beendet. Mit `docker ps -a` und `docker logs <name>` nachsehen, warum.
+- **Daten weg nach `docker rm`:** Daten in der beschreibbaren Schicht leben nur so lange wie der Container. Für dauerhafte Daten braucht man **Volumes** (eigene Lektion).
+- **`latest` in der CI:** Die Umgebung ändert sich unbemerkt – feste Tags verwenden.
+- **`localhost` im Container:** Innerhalb eines Containers zeigt `localhost` auf den **Container selbst**, nicht auf deinen PC. Unter Docker Desktop erreichst du den Host über `host.docker.internal`.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Docker verpackt Anwendungen mit allen Abhängigkeiten in **Container**, die sich den **Kernel des Hosts** teilen – leichter und schneller als VMs.
+- **Image** = Vorlage (Klasse), **Container** = Instanz (Objekt), **Registry** = Ablage (wie NuGet/Maven).
+- Wichtigste Befehle: `run`, `ps -a`, `logs`, `exec`, `stop`, `rm`.
+- `-p HOST:CONTAINER` leitet Ports weiter, `-e` setzt Umgebungsvariablen, `--rm` räumt automatisch auf.
+- Für Tester: Browser, Datenbanken und andere Abhängigkeiten in Sekunden reproduzierbar starten.
+
+<Quiz fragen={fragen} titel="Quiz: Docker – Grundlagen" />

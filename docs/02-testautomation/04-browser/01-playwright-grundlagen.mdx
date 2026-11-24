@@ -9,7 +9,7 @@ import fragen from './01-playwright-grundlagen.fragen.yaml';
 
 # Playwright – Grundlagen
 
-:::info Lernziele
+:::info[Lernziele]
 Nach dieser Lektion kannst du …
 - erklären, was Playwright ist und wofür es eingesetzt wird,
 - einen ersten Browser-Test in **C# mit NUnit** schreiben,
@@ -82,7 +82,7 @@ Ein **Locator** beschreibt, *wie* ein Element gefunden wird – er wird erst bei
 | `GetByTestId` | `GetByTestId("warenkorb-anzahl")` | Wenn nichts anderes stabil ist (`data-testid`) |
 | CSS / XPath | `Locator("#main > div:nth-child(3)")` | **Möglichst vermeiden** – bricht bei Layout-Änderungen |
 
-:::tip Praxis
+:::tip[Praxis]
 Bitte die Entwickler früh um `data-testid`-Attribute für schwer greifbare Elemente. Das ist günstiger als jeder fragile XPath.
 :::
 

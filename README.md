@@ -31,7 +31,7 @@ import fragen from './NN-thema.fragen.yaml';
 
 ### Artikel-Gliederung
 
-1. Lernziele (`:::info`)
+1. Lernziele (`:::info[Lernziele]` – Titel von Hinweiskästen immer in eckigen Klammern)
 2. Theorie (Überschriften mit Anker)
 3. Praxisbeispiel (lauffähiger Code)
 4. Typische Fehler

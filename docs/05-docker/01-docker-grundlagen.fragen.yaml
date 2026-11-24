@@ -1,0 +1,165 @@
+# Fragen zur Lektion "Docker – Grundlagen"
+# richtig: Index der richtigen Option(en), beginnend bei 0
+
+- id: dk-gl-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welches Problem löst Docker in erster Linie?"
+  optionen:
+    - "Es macht Anwendungen automatisch schneller"
+    - "Es verpackt Anwendungen mit allen Abhängigkeiten, sodass sie überall gleich laufen"
+    - "Es ersetzt die Versionsverwaltung mit Git"
+    - "Es übersetzt C#-Code in Java-Code"
+  richtig: [1]
+  erklaerung: "Docker löst das „Bei mir läuft's aber!“-Problem: Das gleiche Paket läuft auf dem Laptop, in der CI und in Produktion."
+  artikel: "#was-ist-docker"
+  tags: [docker, grundlagen]
+
+- id: dk-gl-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist der wesentliche technische Unterschied zwischen einem Container und einer virtuellen Maschine?"
+  optionen:
+    - "Container laufen nur unter Windows"
+    - "Container bringen einen eigenen Kernel mit, VMs nicht"
+    - "Container teilen sich den Kernel des Hosts, VMs haben einen eigenen"
+    - "Es gibt keinen Unterschied, nur andere Namen"
+  richtig: [2]
+  erklaerung: "VMs virtualisieren ein komplettes Betriebssystem mit eigenem Kernel. Container nutzen den Kernel des Hosts und sind deshalb viel leichter und schneller."
+  artikel: "#container-vs-vm"
+  tags: [docker, vm]
+
+- id: dk-gl-003
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Linux-Kernel-Funktionen nutzen Container zur Isolation und Ressourcenbegrenzung?"
+  optionen:
+    - "Namespaces"
+    - "cgroups"
+    - "Hyper-V"
+    - "systemd-Timer"
+  richtig: [0, 1]
+  erklaerung: "Namespaces sorgen für eine eigene Sicht auf Prozesse, Netzwerk und Dateisystem; cgroups begrenzen CPU, Speicher und I/O. Hyper-V ist ein Hypervisor für VMs."
+  artikel: "#container-vs-vm"
+  tags: [docker, linux]
+
+- id: dk-gl-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Analogie beschreibt das Verhältnis von Image und Container am besten?"
+  optionen:
+    - "Image = Objekt, Container = Klasse"
+    - "Image = Klasse, Container = Objekt (Instanz)"
+    - "Image = Datenbank, Container = Tabelle"
+    - "Image = Branch, Container = Commit"
+  richtig: [1]
+  erklaerung: "Ein Image ist die unveränderliche Vorlage, aus der beliebig viele Container-Instanzen erzeugt werden können – wie Objekte aus einer Klasse."
+  artikel: "#image-container-registry"
+  tags: [docker, image, container]
+
+- id: dk-gl-005
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Legt man in einem laufenden Container eine Datei an, wird sie dauerhaft im zugrunde liegenden Image gespeichert."
+  richtig: [1]
+  erklaerung: "Falsch. Änderungen landen in der beschreibbaren Schicht des Containers. Das Image bleibt unverändert, und mit docker rm sind die Änderungen weg."
+  artikel: "#image-container-registry"
+  tags: [docker, image, container]
+
+- id: dk-gl-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches Image wird mit 'docker pull nginx' geladen?"
+  optionen:
+    - "docker.io/library/nginx:latest"
+    - "Die garantiert neueste stabile nginx-Version"
+    - "Das zuletzt lokal verwendete nginx-Image"
+    - "mcr.microsoft.com/nginx:stable"
+  richtig: [0]
+  erklaerung: "Ohne Registry wird Docker Hub (docker.io/library) verwendet, ohne Tag der Tag „latest“. „latest“ ist nur der Standard-Tag, nicht zwingend die neueste Version."
+  artikel: "#image-namen"
+  tags: [docker, image, registry]
+
+- id: dk-gl-007
+  typ: single
+  schwierigkeit: 1
+  frage: "Du startest 'docker run -d -p 8080:80 nginx'. Unter welcher Adresse erreichst du nginx auf deinem PC?"
+  optionen:
+    - "http://localhost:80"
+    - "http://localhost:8080"
+    - "http://nginx:8080"
+    - "Gar nicht, -d verhindert den Zugriff"
+  richtig: [1]
+  erklaerung: "-p HOST:CONTAINER: Port 8080 des Hosts wird auf Port 80 im Container weitergeleitet. -d lässt den Container nur im Hintergrund laufen."
+  artikel: "#webserver"
+  tags: [docker, ports]
+
+- id: dk-gl-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Unterschied zwischen 'docker run' und 'docker exec'?"
+  optionen:
+    - "Es gibt keinen, exec ist nur ein Alias"
+    - "run startet einen neuen Container aus einem Image, exec führt einen Befehl in einem laufenden Container aus"
+    - "run ist für Linux, exec für Windows"
+    - "exec erzeugt einen neuen Container, run startet einen gestoppten"
+  richtig: [1]
+  erklaerung: "docker run erzeugt und startet immer einen neuen Container. docker exec läuft in einem bereits laufenden Container – z. B. docker exec -it db bash."
+  artikel: "#befehle"
+  tags: [docker, befehle]
+
+- id: dk-gl-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Dein Container taucht in 'docker ps' nicht auf, obwohl 'docker run' ohne Fehler lief. Was ist der beste erste Schritt?"
+  optionen:
+    - "Docker neu installieren"
+    - "Mit 'docker ps -a' und 'docker logs <name>' prüfen, ob und warum sich der Hauptprozess beendet hat"
+    - "Den Rechner neu starten"
+    - "Das Image mit 'docker rmi' löschen"
+  richtig: [1]
+  erklaerung: "Ein Container lebt nur so lange wie sein Hauptprozess. docker ps zeigt nur laufende Container – docker ps -a auch gestoppte, und die Logs verraten den Grund."
+  artikel: "#typische-fehler"
+  tags: [docker, fehlersuche]
+
+- id: dk-gl-010
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu 'docker run --rm alpine echo Hallo' sind richtig?"
+  optionen:
+    - "Der Container wird nach dem Beenden automatisch gelöscht"
+    - "Das Image alpine wird nach dem Beenden automatisch gelöscht"
+    - "Der Container stoppt, sobald echo fertig ist"
+    - "Der Container läuft im Hintergrund weiter"
+  richtig: [0, 2]
+  erklaerung: "--rm löscht nur den Container, nicht das Image. Da echo sofort fertig ist, endet der Hauptprozess und damit der Container."
+  artikel: "#lebenszyklus"
+  tags: [docker, lebenszyklus]
+
+- id: dk-gl-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum sollte man in der CI 'selenium/standalone-chrome:<feste-version>' statt ':latest' verwenden?"
+  optionen:
+    - "latest-Images sind kostenpflichtig"
+    - "Mit latest ändert sich die Testumgebung unbemerkt, wenn ein neues Image erscheint"
+    - "latest funktioniert nur mit Java"
+    - "Feste Versionen starten schneller"
+  richtig: [1]
+  erklaerung: "Feste Tags machen die Testumgebung reproduzierbar. Mit latest kann ein Browser-Update über Nacht Tests brechen, ohne dass sich am Code etwas geändert hat."
+  artikel: "#praxis-selenium"
+  tags: [docker, selenium, ci]
+
+- id: dk-gl-012
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Test im Container soll eine API erreichen, die direkt auf deinem Windows-PC (Docker Desktop) läuft. Welche Adresse funktioniert?"
+  optionen:
+    - "http://localhost:5000"
+    - "http://127.0.0.1:5000"
+    - "http://host.docker.internal:5000"
+    - "http://docker:5000"
+  richtig: [2]
+  erklaerung: "Innerhalb eines Containers zeigt localhost auf den Container selbst. Unter Docker Desktop erreicht man den Host über host.docker.internal."
+  artikel: "#typische-fehler"
+  tags: [docker, netzwerk]
