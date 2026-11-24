@@ -1,0 +1,145 @@
+# Fragen zur Lektion "Dockerfile, Layer und Caching"
+
+- id: dk-df-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Anweisung muss (abgesehen von ARG und Kommentaren) am Anfang jedes Dockerfiles stehen?"
+  optionen:
+    - "RUN"
+    - "FROM"
+    - "WORKDIR"
+    - "CMD"
+  richtig: [1]
+  erklaerung: "FROM legt das Basis-Image fest, auf dem alle weiteren Anweisungen aufbauen."
+  artikel: "#anweisungen"
+  tags: [dockerfile]
+
+- id: dk-df-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist der Unterschied zwischen RUN und CMD?"
+  optionen:
+    - "RUN läuft beim Bauen des Images, CMD beim Start des Containers"
+    - "RUN läuft beim Start, CMD beim Bauen"
+    - "Beide laufen bei jedem Containerstart"
+    - "RUN ist für Linux, CMD für Windows"
+  richtig: [0]
+  erklaerung: "RUN wird einmal während docker build ausgeführt und das Ergebnis Teil des Images. CMD ist der Prozess, der bei jedem Containerstart läuft."
+  artikel: "#run-vs-cmd"
+  tags: [dockerfile]
+
+- id: dk-df-003
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "'EXPOSE 8080' im Dockerfile macht den Port automatisch auf dem Host erreichbar."
+  richtig: [1]
+  erklaerung: "Falsch. EXPOSE ist nur Dokumentation. Erreichbar wird der Port erst mit docker run -p HOST:CONTAINER."
+  artikel: "#anweisungen"
+  tags: [dockerfile, ports]
+
+- id: dk-df-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Image hat 'ENTRYPOINT [\"dotnet\", \"test\"]' und 'CMD [\"--filter\", \"Category=Smoke\"]'. Was wird bei 'docker run tests --filter Category=Regression' ausgeführt?"
+  optionen:
+    - "dotnet test --filter Category=Smoke"
+    - "dotnet test --filter Category=Regression"
+    - "dotnet test --filter Category=Smoke --filter Category=Regression"
+    - "--filter Category=Regression"
+  richtig: [1]
+  erklaerung: "Argumente von docker run ersetzen das CMD komplett und werden an den festen ENTRYPOINT angehängt."
+  artikel: "#cmd-vs-entrypoint"
+  tags: [dockerfile, entrypoint]
+
+- id: dk-df-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu Layern sind richtig?"
+  optionen:
+    - "Anweisungen wie RUN und COPY erzeugen jeweils einen neuen Layer"
+    - "Layer werden zwischen Images mit gleicher Basis geteilt"
+    - "Eine in einem späteren Layer gelöschte Datei macht das Image kleiner"
+    - "Wird ein Layer neu gebaut, werden alle folgenden Layer ebenfalls neu gebaut"
+  richtig: [0, 1, 3]
+  erklaerung: "Gelöschte Dateien stecken weiterhin im früheren Layer – aufräumen muss man im selben RUN. Alles andere stimmt."
+  artikel: "#layer"
+  tags: [dockerfile, layer]
+
+- id: dk-df-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum kopiert man in einem .NET-Dockerfile zuerst nur die .csproj-Datei und führt 'dotnet restore' aus, bevor man den restlichen Code kopiert?"
+  optionen:
+    - "Weil dotnet restore sonst fehlschlägt"
+    - "Damit der Restore-Layer aus dem Cache kommt, solange sich nur Quellcode ändert"
+    - "Weil COPY . . verboten ist"
+    - "Damit das Image kleiner wird"
+  richtig: [1]
+  erklaerung: "Ändert sich nur der Quellcode, bleibt der Layer mit den Abhängigkeiten im Cache. Der langsame Restore wird nur bei Änderungen an der Projektdatei wiederholt."
+  artikel: "#cache"
+  tags: [dockerfile, cache]
+
+- id: dk-df-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Wofür sorgt eine .dockerignore-Datei?"
+  optionen:
+    - "Schnellere Builds, weil weniger Daten übertragen werden"
+    - "Geheimnisse wie .env gelangen nicht versehentlich ins Image"
+    - "Container starten schneller"
+    - "Weniger unnötige Cache-Invalidierungen durch COPY . ."
+  richtig: [0, 1, 3]
+  erklaerung: ".dockerignore verkleinert den Build-Kontext. Auf die Startzeit des Containers hat sie keinen direkten Einfluss."
+  artikel: "#dockerignore"
+  tags: [dockerfile, dockerignore]
+
+- id: dk-df-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Hauptvorteil eines Multi-Stage-Builds?"
+  optionen:
+    - "Das Image wird mehrfach parallel gebaut"
+    - "Build-Werkzeuge wie das SDK landen nicht im finalen Image, es bleibt klein"
+    - "Man braucht kein Basis-Image mehr"
+    - "Der Container startet mehrere Prozesse"
+  richtig: [1]
+  erklaerung: "In der ersten Stage wird mit dem SDK gebaut, ins finale Image wird per COPY --from nur das Ergebnis kopiert."
+  artikel: "#multi-stage"
+  tags: [dockerfile, multi-stage]
+
+- id: dk-df-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt 'COPY --from=build /app/publish .'?"
+  optionen:
+    - "Kopiert Dateien vom Host-Ordner 'build'"
+    - "Kopiert Dateien aus der vorherigen Build-Stage mit dem Namen 'build'"
+    - "Lädt ein Image namens 'build' aus Docker Hub"
+    - "Kopiert Dateien aus einem laufenden Container"
+  richtig: [1]
+  erklaerung: "--from verweist auf eine Stage, die mit 'FROM ... AS build' benannt wurde."
+  artikel: "#multi-stage-dotnet"
+  tags: [dockerfile, multi-stage]
+
+- id: dk-df-010
+  typ: single
+  schwierigkeit: 3
+  frage: "Deine ASP.NET-App läuft im Container, ist aber trotz '-p 8080:8080' nicht erreichbar. Die Logs zeigen 'Now listening on: http://localhost:8080'. Was ist die Ursache?"
+  optionen:
+    - "Port 8080 ist im Container verboten"
+    - "Die App lauscht nur auf localhost im Container statt auf allen Schnittstellen (0.0.0.0)"
+    - "EXPOSE fehlt im Dockerfile"
+    - "Der Container läuft nicht als root"
+  richtig: [1]
+  erklaerung: "localhost im Container ist nur der Container selbst. Die App muss auf 0.0.0.0 lauschen, z. B. mit ASPNETCORE_URLS=http://+:8080."
+  artikel: "#typische-fehler"
+  tags: [dockerfile, netzwerk, fehlersuche]
+
+- id: dk-df-011
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Ein per 'ARG PASSWORT=geheim' übergebenes Passwort ist nach dem Build sicher und nicht mehr im Image nachvollziehbar."
+  richtig: [1]
+  erklaerung: "Falsch. Build-Argumente und ENV-Werte lassen sich z. B. über docker history nachvollziehen. Geheimnisse gehören nicht ins Image."
+  artikel: "#best-practices"
+  tags: [dockerfile, sicherheit]

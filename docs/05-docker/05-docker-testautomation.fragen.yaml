@@ -1,0 +1,178 @@
+# Fragen zur Lektion "Docker in der Testautomation"
+
+- id: dk-ta-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Aufgabe hat der Hub in einem Selenium Grid?"
+  optionen:
+    - "Er führt die Browser selbst aus"
+    - "Er nimmt die Testsitzungen entgegen und leitet sie an einen passenden, freien Node weiter"
+    - "Er speichert die Testergebnisse"
+    - "Er baut die Docker-Images der Nodes"
+  richtig: [1]
+  erklaerung: "Die Tests sprechen nur mit dem Hub. Die Browser laufen auf den Nodes, die sich beim Hub anmelden."
+  artikel: "#selenium-grid"
+  tags: [selenium, grid]
+
+- id: dk-ta-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie viele Chrome-Sitzungen können parallel laufen nach 'docker compose up -d --scale chrome=3', wenn SE_NODE_MAX_SESSIONS=2 gesetzt ist?"
+  optionen:
+    - "2"
+    - "3"
+    - "5"
+    - "6"
+  richtig: [3]
+  erklaerung: "Drei Chrome-Nodes mit je zwei Sitzungen ergeben sechs parallele Chrome-Sitzungen."
+  artikel: "#selenium-grid"
+  tags: [selenium, grid, compose]
+
+- id: dk-ta-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wodurch bestimmt ein Test, ob er im Grid einen Chrome- oder Firefox-Browser bekommt?"
+  optionen:
+    - "Über die URL des Hubs"
+    - "Über die übergebene Options-Klasse (ChromeOptions/FirefoxOptions)"
+    - "Zufällig"
+    - "Über den Namen der Testmethode"
+  richtig: [1]
+  erklaerung: "Die Options bzw. Capabilities beschreiben den gewünschten Browser; der Hub sucht einen passenden Node."
+  artikel: "#grid-tests"
+  tags: [selenium, grid]
+
+- id: dk-ta-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Neue Grid-Tests bleiben in der Warteschlange hängen, obwohl alle Nodes laufen. Was ist eine typische Ursache?"
+  optionen:
+    - "Die Tests rufen driver.quit() nicht auf, sodass Sitzungen die Slots belegen"
+    - "Der Hub hat zu viel Arbeitsspeicher"
+    - "Die Nodes sind zu neu"
+    - "Firefox und Chrome dürfen nicht gemeinsam laufen"
+  richtig: [0]
+  erklaerung: "Nicht beendete Sitzungen blockieren Slots, bis sie per Timeout aufgeräumt werden. quit() gehört in finally bzw. TearDown."
+  artikel: "#typische-fehler"
+  tags: [selenium, grid, fehlersuche]
+
+- id: dk-ta-005
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Beim offiziellen Playwright-Image ist es egal, welche Image-Version man zu welcher Microsoft.Playwright-Paketversion verwendet."
+  richtig: [1]
+  erklaerung: "Falsch. Image- und Paketversion müssen zusammenpassen, sonst fehlen die passenden Browser-Builds."
+  artikel: "#playwright-container"
+  tags: [playwright, docker]
+
+- id: dk-ta-006
+  typ: single
+  schwierigkeit: 1
+  frage: "Was macht die Bibliothek Testcontainers?"
+  optionen:
+    - "Sie ersetzt Docker durch virtuelle Maschinen"
+    - "Sie startet aus dem Testcode heraus echte Docker-Container (z. B. eine Datenbank) und räumt sie danach auf"
+    - "Sie generiert automatisch Testfälle"
+    - "Sie ist ein Mocking-Framework für Datenbanken"
+  richtig: [1]
+  erklaerung: "Testcontainers steuert Docker aus dem Test, damit Integrationstests gegen echte Abhängigkeiten laufen."
+  artikel: "#testcontainers"
+  tags: [testcontainers]
+
+- id: dk-ta-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Vorteile hat Testcontainers gegenüber einer In-Memory-Datenbank für Integrationstests?"
+  optionen:
+    - "Gleicher SQL-Dialekt und gleiches Verhalten wie in Produktion"
+    - "Constraints und Transaktionen verhalten sich realistisch"
+    - "Es braucht kein Docker"
+    - "Es ist immer schneller als In-Memory"
+  richtig: [0, 1]
+  erklaerung: "Testcontainers braucht Docker und ist meist langsamer, testet aber gegen die echte Datenbank."
+  artikel: "#testcontainers"
+  tags: [testcontainers, integrationstest]
+
+- id: dk-ta-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum sollte man in Testcontainers-Tests nicht fest 'localhost:5432' als Datenbankadresse verwenden?"
+  optionen:
+    - "Weil Postgres im Container nicht auf 5432 lauscht"
+    - "Weil Testcontainers den Container-Port auf einen zufälligen freien Host-Port mappt"
+    - "Weil localhost im Test verboten ist"
+    - "Weil Testcontainers nur IPv6 unterstützt"
+  richtig: [1]
+  erklaerung: "Die echte Adresse liefert GetConnectionString() bzw. getJdbcUrl(). Zufällige Ports vermeiden Konflikte und erlauben Parallelität."
+  artikel: "#testcontainers"
+  tags: [testcontainers, ports]
+
+- id: dk-ta-009
+  typ: single
+  schwierigkeit: 3
+  frage: "Welche Aufgabe hat der Ryuk-Container bei Testcontainers?"
+  optionen:
+    - "Er überwacht die CPU-Last"
+    - "Er entfernt übrig gebliebene Container, auch wenn der Testprozess abstürzt"
+    - "Er stellt den Selenium-Hub bereit"
+    - "Er baut die Images neu"
+  richtig: [1]
+  erklaerung: "Ryuk sorgt dafür, dass keine verwaisten Container zurückbleiben."
+  artikel: "#testcontainers"
+  tags: [testcontainers]
+
+- id: dk-ta-010
+  typ: single
+  schwierigkeit: 2
+  frage: "In JUnit 5 ist ein @Container-Feld NICHT static. Was bedeutet das?"
+  optionen:
+    - "Der Container wird nie gestartet"
+    - "Für jede Testmethode wird ein neuer Container gestartet"
+    - "Ein Container wird für alle Testklassen geteilt"
+    - "Der Container läuft nach den Tests weiter"
+  richtig: [1]
+  erklaerung: "static = ein Container pro Klasse; ohne static = ein Container pro Testmethode (sauberer, aber langsamer)."
+  artikel: "#testcontainers-java"
+  tags: [testcontainers, java, junit]
+
+- id: dk-ta-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches NUnit-Attribut eignet sich, um einen Testcontainer einmal pro Testklasse zu starten?"
+  optionen:
+    - "[SetUp]"
+    - "[OneTimeSetUp]"
+    - "[TestCase]"
+    - "[Category]"
+  richtig: [1]
+  erklaerung: "[OneTimeSetUp] läuft einmal vor allen Tests der Klasse, [SetUp] vor jedem einzelnen Test."
+  artikel: "#testcontainers-dotnet"
+  tags: [testcontainers, csharp, nunit]
+
+- id: dk-ta-012
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Wege gibt es, Docker-basierte Abhängigkeiten in GitHub Actions bereitzustellen?"
+  optionen:
+    - "Testcontainers direkt aus dem Test"
+    - "Service-Container im Workflow (services:)"
+    - "docker compose up im Workflow"
+    - "Docker ist auf GitHub-Runnern grundsätzlich nicht verfügbar"
+  richtig: [0, 1, 2]
+  erklaerung: "Auf den Linux-Runnern ist Docker vorinstalliert, alle drei Varianten funktionieren."
+  artikel: "#ci"
+  tags: [ci, github-actions]
+
+- id: dk-ta-013
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum stehen 'docker compose logs' und 'docker compose down -v' im CI-Beispiel mit 'if: always()'?"
+  optionen:
+    - "Damit sie nur bei Erfolg laufen"
+    - "Damit sie auch laufen, wenn die Tests fehlschlagen – Logs sichern und aufräumen"
+    - "Weil sie sonst doppelt laufen"
+    - "Das ist nur Dekoration"
+  richtig: [1]
+  erklaerung: "Ohne always() würden die Schritte nach einem fehlgeschlagenen Test übersprungen – genau dann braucht man die Logs aber am meisten."
+  artikel: "#ci"
+  tags: [ci, compose]

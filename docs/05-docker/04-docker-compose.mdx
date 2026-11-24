@@ -1,0 +1,238 @@
+---
+title: Docker Compose
+description: Mehrere Container gemeinsam beschreiben und starten – Services, Netzwerke, Volumes, Healthchecks und Umgebungsvariablen.
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './04-docker-compose.fragen.yaml';
+
+# Docker Compose
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- eine `compose.yaml` mit mehreren **Services** schreiben,
+- Umgebungen mit `docker compose up` / `down` starten und aufräumen,
+- Abhängigkeiten mit `depends_on` und **Healthchecks** sauber abbilden,
+- Variablen über eine `.env`-Datei steuern,
+- eine komplette **Testumgebung** (App + Datenbank + Browser) per Befehl starten.
+:::
+
+## Warum Compose? \{#warum-compose}
+
+In der letzten Lektion brauchte eine API mit Datenbank schon drei lange Befehle: Netzwerk anlegen, Datenbank starten, API starten. Bei fünf Diensten wird das unübersichtlich und fehleranfällig.
+
+**Docker Compose** beschreibt alle Container einer Anwendung **deklarativ in einer YAML-Datei**. Gestartet wird alles mit **einem** Befehl:
+
+```bash
+docker compose up -d
+```
+
+Die Datei wird mit ins Git-Repository eingecheckt – jeder im Team (und die CI) bekommt **exakt dieselbe Umgebung**.
+
+:::note[docker compose vs. docker-compose]
+Früher war Compose ein separates Programm `docker-compose` (mit Bindestrich). Heute ist es ein Plugin des Docker-CLI: `docker compose` (mit Leerzeichen). Die Datei heißt bevorzugt `compose.yaml`; `docker-compose.yml` wird weiterhin erkannt. Die früher übliche Zeile `version: "3.8"` ist **veraltet** und wird ignoriert.
+:::
+
+## Aufbau einer compose.yaml \{#aufbau}
+
+```yaml title="compose.yaml"
+services:
+  db:
+    image: postgres:16.4
+    environment:
+      POSTGRES_PASSWORD: geheim
+      POSTGRES_DB: shop
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: ./MeineApi            # Image aus Dockerfile in ./MeineApi bauen
+    environment:
+      ConnectionStrings__Default: "Host=db;Database=shop;Username=postgres;Password=geheim"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+```
+
+| Schlüssel | Bedeutung | Entspricht bei `docker run` |
+|---|---|---|
+| `services` | Die Container der Anwendung; der Schlüssel (`db`, `api`) ist der **Service-Name** | – |
+| `image` | Fertiges Image verwenden | `docker run IMAGE` |
+| `build` | Image aus einem Dockerfile bauen | `docker build` |
+| `environment` | Umgebungsvariablen | `-e` |
+| `ports` | Port-Weiterleitung `HOST:CONTAINER` | `-p` |
+| `volumes` | Volumes oder Bind Mounts | `-v` |
+| `depends_on` | Startreihenfolge | – |
+
+## Automatisches Netzwerk \{#netzwerk}
+
+Compose legt für jedes Projekt **automatisch ein eigenes Netzwerk** an und hängt alle Services hinein. Jeder Service ist darin **unter seinem Service-Namen** erreichbar – deshalb funktioniert `Host=db` im Beispiel oben ohne weitere Konfiguration.
+
+Der **Projektname** ist standardmäßig der Ordnername. Container heißen dann z. B. `shop-db-1`, das Netzwerk `shop_default`.
+
+:::tip[Ports nur dort, wo nötig]
+`db` hat im Beispiel **keine** `ports` – die API erreicht sie über das interne Netzwerk. Nur wenn du z. B. mit einem SQL-Client vom PC aus hinein willst, brauchst du `ports: ["5432:5432"]`.
+:::
+
+## Die wichtigsten Befehle \{#befehle}
+
+```bash
+docker compose up -d              # alles bauen (falls nötig) und im Hintergrund starten
+docker compose up -d --build      # Images vorher neu bauen
+docker compose ps                 # Status aller Services
+docker compose logs -f api        # Logs eines Service verfolgen
+docker compose exec db psql -U postgres   # Befehl in laufendem Service
+docker compose run --rm api dotnet --info # Einmal-Container eines Service
+docker compose stop               # anhalten (Container bleiben bestehen)
+docker compose down               # Container und Netzwerk entfernen
+docker compose down -v            # … und zusätzlich die Volumes löschen
+```
+
+:::warning[down vs. down -v]
+`docker compose down` lässt **Named Volumes** bestehen – die Datenbank behält ihre Daten. Erst `down -v` löscht sie. Für einen **komplett frischen Testlauf** ist `down -v` genau richtig, im Entwicklungsalltag oft nicht.
+:::
+
+## depends_on und Healthchecks \{#healthchecks}
+
+`depends_on: [db]` sorgt nur dafür, dass der **Container** `db` **vor** `api` gestartet wird. Ob Postgres darin schon **bereit** ist, Verbindungen anzunehmen, weiß Compose nicht – die API kann also trotzdem mit „Connection refused“ abstürzen.
+
+Lösung: ein **Healthcheck** plus Bedingung:
+
+```yaml title="compose.yaml"
+services:
+  db:
+    image: postgres:16.4
+    environment:
+      POSTGRES_PASSWORD: geheim
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./MeineApi
+    depends_on:
+      db:
+        condition: service_healthy   # wartet, bis der Healthcheck grün ist
+```
+
+| Bedingung | Wartet bis … |
+|---|---|
+| `service_started` (Standard) | der Container gestartet ist |
+| `service_healthy` | der Healthcheck erfolgreich ist |
+| `service_completed_successfully` | der Container mit Exit-Code 0 beendet ist (z. B. Migrationen) |
+
+`docker compose up -d --wait` wartet zusätzlich, bis **alle** Services laufen bzw. healthy sind – ideal in CI-Skripten vor dem Teststart.
+
+## Variablen und .env-Datei \{#env}
+
+Compose liest automatisch eine Datei `.env` im selben Ordner und ersetzt `${VARIABLE}` in der `compose.yaml`:
+
+```text title=".env"
+POSTGRES_VERSION=16.4
+DB_PASSWORT=geheim
+API_PORT=8080
+```
+
+```yaml title="compose.yaml"
+services:
+  db:
+    image: postgres:${POSTGRES_VERSION}
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORT}
+  api:
+    build: ./MeineApi
+    ports:
+      - "${API_PORT:-8080}:8080"     # Standardwert 8080, falls nicht gesetzt
+```
+
+- `.env` gehört in die `.gitignore`, wenn sie echte Passwörter enthält. Eine `.env.example` mit Platzhaltern wird eingecheckt.
+- Alternativ lädt `env_file: [api.env]` eine Datei **direkt als Umgebungsvariablen in den Container**.
+- Mit `docker compose config` siehst du die fertig aufgelöste Konfiguration – gut zur Fehlersuche.
+
+## Praxisbeispiel: Testumgebung per Befehl \{#praxis-testumgebung}
+
+Eine Web-App mit Datenbank und einem Chrome-Browser für Selenium-Tests:
+
+```yaml title="compose.yaml"
+services:
+  db:
+    image: postgres:16.4
+    environment:
+      POSTGRES_PASSWORD: geheim
+    volumes:
+      - ./testdaten:/docker-entrypoint-initdb.d:ro   # SQL-Testdaten beim Start
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 10
+
+  web:
+    build: .
+    environment:
+      ConnectionStrings__Default: "Host=db;Username=postgres;Password=geheim"
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  chrome:
+    image: selenium/standalone-chrome:latest
+    shm_size: 2gb
+    ports:
+      - "4444:4444"   # WebDriver
+      - "7900:7900"   # Browser live ansehen (noVNC)
+```
+
+Ablauf eines Testlaufs:
+
+```bash
+docker compose up -d --build --wait     # Umgebung hochfahren
+dotnet test                             # Tests verbinden sich mit localhost:4444
+docker compose down -v                  # alles inkl. Testdaten wegwerfen
+```
+
+:::tip[Wichtig: Welche URL ruft der Browser auf?]
+Der Browser läuft **im Container `chrome`**. Für ihn ist `localhost` der Chrome-Container selbst. Der Test muss ihn daher auf **`http://web:8080`** schicken (Service-Name im Compose-Netzwerk) – nicht auf `http://localhost:8080`.
+:::
+
+## Profile \{#profile}
+
+Mit **Profilen** startest du Services nur bei Bedarf:
+
+```yaml
+services:
+  chrome:
+    image: selenium/standalone-chrome:latest
+    profiles: ["test"]
+```
+
+```bash
+docker compose up -d                    # ohne chrome
+docker compose --profile test up -d     # mit chrome
+```
+
+## Typische Fehler \{#typische-fehler}
+
+- **„Connection refused“ beim Start der App** – `depends_on` ohne `condition: service_healthy`; die Datenbank war noch nicht bereit.
+- **Änderungen am Code kommen nicht an** – `docker compose up` baut nicht automatisch neu; `--build` verwenden.
+- **Alte Testdaten tauchen wieder auf** – `down` statt `down -v`; das Volume hat überlebt.
+- **YAML-Einrückung falsch** – YAML ist einrückungssensitiv, Tabs sind verboten. `docker compose config` zeigt Syntaxfehler.
+- **Browser im Container findet die App nicht** – `localhost` statt Service-Name verwendet.
+- **`version:`-Warnung** – die Zeile kann einfach gelöscht werden.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Compose beschreibt **mehrere Container deklarativ** in einer `compose.yaml`; `docker compose up -d` startet alles.
+- Alle Services hängen automatisch in **einem gemeinsamen Netzwerk** und erreichen sich **über ihren Service-Namen**.
+- `depends_on` regelt nur die Startreihenfolge – für „wirklich bereit“ braucht es **Healthchecks** und `condition: service_healthy`.
+- `down` entfernt Container und Netzwerk, `down -v` zusätzlich die Volumes.
+- Variablen kommen aus `.env`; `docker compose config` zeigt das Ergebnis.
+
+<Quiz fragen={fragen} titel="Quiz: Docker Compose" />

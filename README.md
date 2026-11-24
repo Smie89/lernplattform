@@ -52,6 +52,15 @@ import fragen from './NN-thema.fragen.yaml';
   tags: [playwright]
 ```
 
+### Fragen prüfen
+
+```bash
+npm run build
+npm run pruefen
+```
+
+Prüft alle `*.fragen.yaml`: Pflichtfelder, eindeutige IDs, gültige `richtig`-Indizes und ob jeder `artikel`-Anker im Artikel existiert. Läuft auch automatisch in der GitHub Action.
+
 ## Veröffentlichen
 
 Jeder Push auf `main` baut die Seite per GitHub Action (`.github/workflows/deploy.yml`) und veröffentlicht sie auf GitHub Pages.

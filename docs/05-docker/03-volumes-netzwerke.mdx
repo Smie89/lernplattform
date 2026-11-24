@@ -1,0 +1,176 @@
+---
+title: Volumes und Netzwerke
+description: Daten dauerhaft speichern mit Volumes und Bind Mounts, Container über Docker-Netzwerke verbinden.
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './03-volumes-netzwerke.fragen.yaml';
+
+# Volumes und Netzwerke
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, warum Daten im Container ohne Volume verloren gehen,
+- **Named Volumes**, **Bind Mounts** und **tmpfs** unterscheiden und gezielt einsetzen,
+- Container über ein **eigenes Netzwerk** per Namen miteinander sprechen lassen,
+- die Netzwerk-Treiber **bridge**, **host** und **none** einordnen.
+:::
+
+## Warum Volumes? \{#warum-volumes}
+
+Wie in den [Grundlagen](./01-docker-grundlagen.mdx#image-container-registry) gezeigt, schreibt ein Container in seine **beschreibbare Schicht**. Die verschwindet mit `docker rm`. Für eine Datenbank wäre das fatal:
+
+```bash
+docker run -d --name db -e POSTGRES_PASSWORD=geheim postgres:16.4
+# ... Tabellen anlegen, Daten einfügen ...
+docker rm -f db          # 💥 alle Daten weg
+```
+
+Außerdem ist die beschreibbare Schicht langsamer als ein direktes Dateisystem. Lösung: Daten **außerhalb** des Containers ablegen und in den Container **einhängen (mounten)**.
+
+## Die drei Mount-Arten \{#mount-arten}
+
+| Art | Wo liegen die Daten? | Verwaltet von | Typischer Einsatz |
+|---|---|---|---|
+| **Named Volume** | Im Docker-Speicherbereich (`/var/lib/docker/volumes/...`) | Docker | Datenbanken, dauerhafte App-Daten |
+| **Bind Mount** | In einem **beliebigen Ordner des Hosts** | Du | Quellcode in Entwicklung, Konfigurationsdateien, Testberichte herausholen |
+| **tmpfs** | Nur im **Arbeitsspeicher** | Docker | Temporäre, schnelle Daten, die nicht auf die Platte sollen |
+
+```
+Host                               Container
+┌────────────────────────┐        ┌───────────────────┐
+│ Docker-Volume "pgdata" │──────► │ /var/lib/postgres │  Named Volume
+│ C:\projekt\config      │──────► │ /app/config       │  Bind Mount
+│ RAM                    │──────► │ /tmp/cache        │  tmpfs
+└────────────────────────┘        └───────────────────┘
+```
+
+## Named Volumes \{#named-volumes}
+
+```bash
+docker volume create pgdata
+
+docker run -d --name db \
+  -e POSTGRES_PASSWORD=geheim \
+  -v pgdata:/var/lib/postgresql/data \
+  postgres:16.4
+
+docker rm -f db                          # Container weg …
+docker run -d --name db2 \
+  -e POSTGRES_PASSWORD=geheim \
+  -v pgdata:/var/lib/postgresql/data \
+  postgres:16.4                          # … Daten noch da ✅
+```
+
+- `-v NAME:PFAD_IM_CONTAINER` – beginnt der linke Teil **nicht** mit `/` oder `.` bzw. einem Laufwerksbuchstaben, ist es ein **Named Volume**.
+- Existiert das Volume noch nicht, legt Docker es automatisch an.
+- Ein Volume lebt **unabhängig** vom Container – auch `docker rm` löscht es nicht.
+
+```bash
+docker volume ls                 # alle Volumes
+docker volume inspect pgdata     # Details, z. B. Speicherort
+docker volume rm pgdata          # Volume löschen (Daten weg!)
+docker volume prune              # alle unbenutzten Volumes löschen
+```
+
+## Bind Mounts \{#bind-mounts}
+
+Ein Bind Mount hängt einen **konkreten Ordner des Hosts** in den Container. Änderungen sind **sofort auf beiden Seiten sichtbar**.
+
+```bash
+# Linux / macOS / Git Bash
+docker run --rm -v "$(pwd)/berichte:/app/TestResults" meine-tests:1.0
+
+# Windows PowerShell
+docker run --rm -v "${PWD}\berichte:/app/TestResults" meine-tests:1.0
+```
+
+Typisch für Tester: **Testergebnisse und Screenshots aus dem Container herausholen**, ohne den Container hinterher zu kopieren.
+
+### Nur lesend einhängen \{#read-only}
+
+```bash
+docker run -d -v "$(pwd)/nginx.conf:/etc/nginx/nginx.conf:ro" nginx:1.27
+```
+
+Das Suffix `:ro` (read-only) verhindert, dass der Container die Datei verändert.
+
+### Die ausführliche Syntax: --mount \{#mount-syntax}
+
+`--mount` ist länger, aber eindeutiger und meldet einen Fehler, wenn der Host-Pfad nicht existiert (`-v` legt stattdessen still einen leeren Ordner an):
+
+```bash
+docker run -d \
+  --mount type=volume,source=pgdata,target=/var/lib/postgresql/data \
+  --mount type=bind,source="$(pwd)"/init,target=/docker-entrypoint-initdb.d,readonly \
+  -e POSTGRES_PASSWORD=geheim postgres:16.4
+```
+
+:::tip[Testdaten beim Start einspielen]
+Das offizielle Postgres-Image führt beim **ersten Start** alle `.sql`-Skripte aus `/docker-entrypoint-initdb.d` aus. Per Bind Mount bekommst du so eine Test-Datenbank mit definierten Testdaten.
+:::
+
+## Netzwerke \{#netzwerke}
+
+Jeder Container bekommt eine eigene Netzwerkschnittstelle und IP-Adresse. Wie Container miteinander und mit der Außenwelt sprechen, bestimmt der **Netzwerk-Treiber**:
+
+| Treiber | Verhalten | Einsatz |
+|---|---|---|
+| **bridge** (Standard) | Privates, virtuelles Netz auf dem Host; nach außen nur über `-p` | Normalfall |
+| **host** | Container nutzt **direkt den Netzwerk-Stack des Hosts**, kein `-p` nötig | Sonderfälle, nur unter Linux vollwertig |
+| **none** | Kein Netzwerk | Vollständig isolierte Jobs |
+
+### Standard-Bridge vs. eigenes Netzwerk \{#eigenes-netzwerk}
+
+Container im **Standard-Netzwerk** `bridge` können sich nur über IP-Adressen erreichen – und die ändern sich bei jedem Start. In einem **selbst angelegten Netzwerk** gibt es dagegen einen eingebauten **DNS**: Container erreichen sich **über ihren Namen**.
+
+```bash
+docker network create testnetz
+
+docker run -d --name db --network testnetz \
+  -e POSTGRES_PASSWORD=geheim postgres:16.4
+
+docker run -d --name api --network testnetz \
+  -e ConnectionStrings__Default="Host=db;Username=postgres;Password=geheim" \
+  -p 8080:8080 meine-api:1.0
+```
+
+Die API verbindet sich mit `Host=db` – der **Containername** wird automatisch aufgelöst. Die Datenbank braucht **kein `-p`**, weil nur die API sie erreichen muss. So ist sie vom Host aus gar nicht erreichbar – sicherer und ohne Portkonflikte.
+
+```bash
+docker network ls                       # Netzwerke anzeigen
+docker network inspect testnetz         # wer hängt drin, welche IPs?
+docker network connect testnetz web     # laufenden Container hinzufügen
+docker network rm testnetz
+```
+
+### Ports: Container-zu-Container vs. Host-zu-Container \{#ports-intern}
+
+| Wer spricht mit wem? | Adresse | `-p` nötig? |
+|---|---|---|
+| Container → Container im selben Netzwerk | `db:5432` (Containername + **Container-Port**) | Nein |
+| Host → Container | `localhost:HOST_PORT` | Ja |
+| Container → Host (Docker Desktop) | `host.docker.internal:PORT` | – |
+
+:::warning[Häufiger Denkfehler]
+Mit `-p 15432:5432` erreichst du die Datenbank vom **Host** über Port 15432. Ein **anderer Container** im selben Netzwerk spricht aber weiterhin `db:5432` an – das Port-Mapping gilt nur für den Weg von außen.
+:::
+
+## Typische Fehler \{#typische-fehler}
+
+- **Daten nach Neustart weg** – kein Volume für das Datenverzeichnis gemountet, oder falscher Zielpfad (bei Postgres: `/var/lib/postgresql/data`).
+- **Volume-Name vertippt** – Docker legt still ein neues, leeres Volume an.
+- **Bind-Mount-Ordner ist leer** – mit `-v` wird ein nicht existierender Host-Pfad als leerer Ordner angelegt; `--mount` würde einen Fehler melden.
+- **Bind Mount überdeckt Inhalte** – wird ein Host-Ordner auf `/app` gemountet, sind die im Image vorhandenen Dateien unter `/app` nicht mehr sichtbar.
+- **Containername wird nicht aufgelöst** – die Container hängen im Standard-`bridge`-Netzwerk statt in einem eigenen Netzwerk, oder in unterschiedlichen Netzwerken.
+- **Init-Skripte laufen nicht** – `/docker-entrypoint-initdb.d` wird nur ausgeführt, wenn das Datenverzeichnis **leer** ist, also nicht bei einem bereits befüllten Volume.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Die Container-Schicht ist **flüchtig** – dauerhafte Daten gehören in ein **Volume**.
+- **Named Volume** für Daten (Docker verwaltet), **Bind Mount** für Host-Ordner (Code, Konfiguration, Berichte), **tmpfs** für flüchtige Daten im RAM.
+- `:ro` hängt schreibgeschützt ein; `--mount` ist ausführlicher und strenger als `-v`.
+- In einem **eigenen Netzwerk** erreichen sich Container **über ihren Namen**.
+- `-p` braucht nur, wer **vom Host** aus erreichbar sein soll.
+
+<Quiz fragen={fragen} titel="Quiz: Volumes und Netzwerke" />

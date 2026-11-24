@@ -1,0 +1,299 @@
+---
+title: Docker in der Testautomation
+description: Selenium Grid mit Compose, Playwright im Container, Testcontainers für .NET und Java sowie Docker in der CI-Pipeline.
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './05-docker-testautomation.fragen.yaml';
+
+# Docker in der Testautomation
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- ein **Selenium Grid** mit mehreren Browsern per Compose aufbauen und skalieren,
+- **Playwright-Tests** in einem Container ausführen,
+- mit **Testcontainers** in C# und Java echte Datenbanken direkt aus dem Test starten,
+- Docker-basierte Tests in einer **CI-Pipeline** (GitHub Actions) laufen lassen.
+:::
+
+## Überblick: Wo hilft Docker beim Testen? \{#ueberblick}
+
+| Einsatz | Werkzeug | Nutzen |
+|---|---|---|
+| Browser bereitstellen | Selenium Standalone / **Selenium Grid** | Keine lokale Browser-/Treiber-Installation, parallele Tests, mehrere Browser |
+| Testlauf kapseln | **Playwright-Image**, eigenes Test-Image | Gleiche Umgebung lokal und in der CI |
+| Abhängigkeiten für Integrationstests | **Testcontainers** | Echte Datenbank, Message-Broker usw. – vom Test selbst gestartet und aufgeräumt |
+| Komplette Testumgebung | **Docker Compose** | App + Datenbank + Browser mit einem Befehl (siehe [Compose-Lektion](./04-docker-compose.mdx#praxis-testumgebung)) |
+| CI-Pipeline | GitHub Actions **Services**, Compose, Testcontainers | Reproduzierbare Läufe, keine „Testserver-Pflege“ |
+
+## Selenium Grid mit Compose \{#selenium-grid}
+
+Ein **Selenium Grid** verteilt Testsitzungen auf mehrere Browser-**Nodes**. Die Tests sprechen nur mit dem **Hub**; der leitet jede Sitzung an einen passenden, freien Node weiter.
+
+```
+ Tests ──► Hub :4444 ──┬──► Node Chrome  (2 Sitzungen)
+                       ├──► Node Chrome  (2 Sitzungen)
+                       └──► Node Firefox (2 Sitzungen)
+```
+
+```yaml title="compose.yaml"
+services:
+  selenium-hub:
+    image: selenium/hub:${SELENIUM_TAG:-latest}
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "4444:4444"     # WebDriver-Endpunkt + Grid-Oberfläche
+
+  chrome:
+    image: selenium/node-chrome:${SELENIUM_TAG:-latest}
+    shm_size: 2gb
+    depends_on: [selenium-hub]
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: "4442"
+      SE_EVENT_BUS_SUBSCRIBE_PORT: "4443"
+      SE_NODE_MAX_SESSIONS: "2"
+
+  firefox:
+    image: selenium/node-firefox:${SELENIUM_TAG:-latest}
+    shm_size: 2gb
+    depends_on: [selenium-hub]
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: "4442"
+      SE_EVENT_BUS_SUBSCRIBE_PORT: "4443"
+      SE_NODE_MAX_SESSIONS: "2"
+```
+
+```bash
+docker compose up -d --scale chrome=3    # drei Chrome-Nodes = 6 parallele Chrome-Sitzungen
+```
+
+- Die Nodes melden sich über den **Event-Bus** (Ports 4442/4443) beim Hub an.
+- Die Grid-Oberfläche zeigt unter http://localhost:4444/ui alle Nodes und laufenden Sitzungen.
+- `SELENIUM_TAG` legst du in der `.env` auf eine **feste Version** fest (siehe [Compose: Variablen](./04-docker-compose.mdx#env)).
+
+### Tests gegen das Grid \{#grid-tests}
+
+Der Test entscheidet über die **Options-Klasse**, welchen Browser er bekommt:
+
+```java title="GridTest.java"
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import java.net.URL;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class GridTest {
+
+    @ParameterizedTest
+    @ValueSource(strings = {"chrome", "firefox"})
+    void startseiteLaedt(String browser) throws Exception {
+        Capabilities options = browser.equals("chrome") ? new ChromeOptions() : new FirefoxOptions();
+        RemoteWebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444"), options);
+        try {
+            driver.get("https://www.selenium.dev");
+            assertTrue(driver.getTitle().contains("Selenium"));
+        } finally {
+            driver.quit();   // Sitzung freigeben – sonst bleibt der Node-Slot belegt!
+        }
+    }
+}
+```
+
+In C# funktioniert es identisch mit `new RemoteWebDriver(new Uri("http://localhost:4444"), new FirefoxOptions())`.
+
+## Playwright im Container \{#playwright-container}
+
+Microsoft stellt offizielle Images bereit, in denen **alle Browser und Systembibliotheken** bereits installiert sind. Du kannst deine Tests damit direkt im Container ausführen:
+
+```bash
+docker run --rm --ipc=host \
+  -v "$(pwd):/src" -w /src \
+  mcr.microsoft.com/playwright/dotnet:v1.49.0-noble \
+  dotnet test
+```
+
+- `-v "$(pwd):/src" -w /src` – dein Projektordner als **Bind Mount**, und als Arbeitsverzeichnis gesetzt.
+- `--ipc=host` – empfohlen für Chromium, sonst kann der Browser bei wenig gemeinsamem Speicher abstürzen.
+- **Die Image-Version muss zur Version des NuGet-Pakets `Microsoft.Playwright` passen**, sonst fehlen die passenden Browser-Builds.
+
+Für Java gibt es entsprechend `mcr.microsoft.com/playwright/java`.
+
+## Testcontainers \{#testcontainers}
+
+**Testcontainers** ist eine Bibliothek (für .NET, Java, Python, Go, Node u. a.), mit der der **Test selbst** Docker-Container startet – z. B. eine echte PostgreSQL-Datenbank für einen Integrationstest – und sie danach **automatisch wieder entfernt**.
+
+Warum nicht einfach eine In-Memory-Datenbank?
+- In-Memory-Datenbanken (z. B. SQLite, H2, EF Core InMemory) verhalten sich **anders** als die echte Datenbank – SQL-Dialekt, Constraints, Transaktionen.
+- Mit Testcontainers testest du gegen **dieselbe Datenbank wie in Produktion**.
+
+Wichtige Eigenschaften:
+- **Zufällige Host-Ports:** Der Container-Port (z. B. 5432) wird auf einen **freien, zufälligen Port** des Hosts gemappt. Dadurch gibt es keine Portkonflikte, und Tests können parallel laufen. Die tatsächliche Adresse liefert die Bibliothek (`GetConnectionString()` bzw. `getJdbcUrl()`).
+- **Automatisches Aufräumen:** Ein Hilfscontainer namens **Ryuk** entfernt übrig gebliebene Container auch dann, wenn der Testprozess abstürzt.
+- **Wartestrategien:** Die Module warten automatisch, bis der Dienst bereit ist (wie ein Healthcheck).
+
+### Testcontainers für .NET (NUnit) \{#testcontainers-dotnet}
+
+```bash
+dotnet add package Testcontainers.PostgreSql
+dotnet add package Npgsql
+```
+
+```csharp title="KundenRepositoryTests.cs"
+using Npgsql;
+using Testcontainers.PostgreSql;
+
+[TestFixture]
+public class KundenRepositoryTests
+{
+    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
+        .WithImage("postgres:16.4")
+        .Build();
+
+    [OneTimeSetUp]
+    public Task Starten() => _postgres.StartAsync();       // einmal pro Testklasse
+
+    [OneTimeTearDown]
+    public async Task Stoppen() => await _postgres.DisposeAsync();
+
+    [Test]
+    public async Task Datenbank_ist_erreichbar()
+    {
+        await using var verbindung = new NpgsqlConnection(_postgres.GetConnectionString());
+        await verbindung.OpenAsync();
+
+        await using var befehl = new NpgsqlCommand("SELECT 1", verbindung);
+        var ergebnis = await befehl.ExecuteScalarAsync();
+
+        Assert.That(ergebnis, Is.EqualTo(1));
+    }
+}
+```
+
+Bei **xUnit** übernimmt das Interface `IAsyncLifetime` (`InitializeAsync` / `DisposeAsync`) die Rolle von `OneTimeSetUp` / `OneTimeTearDown`; für mehrere Testklassen teilt man den Container über eine `IClassFixture` bzw. `ICollectionFixture`.
+
+### Testcontainers für Java (JUnit 5) \{#testcontainers-java}
+
+```xml title="pom.xml (Ausschnitt)"
+<dependency>
+  <groupId>org.testcontainers</groupId>
+  <artifactId>postgresql</artifactId>
+  <scope>test</scope>
+</dependency>
+<dependency>
+  <groupId>org.testcontainers</groupId>
+  <artifactId>junit-jupiter</artifactId>
+  <scope>test</scope>
+</dependency>
+```
+
+```java title="KundenRepositoryTest.java"
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import java.sql.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@Testcontainers
+class KundenRepositoryTest {
+
+    @Container   // static = ein Container für alle Tests der Klasse
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16.4");
+
+    @Test
+    void datenbankIstErreichbar() throws SQLException {
+        try (Connection c = DriverManager.getConnection(
+                 postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+             ResultSet rs = c.createStatement().executeQuery("SELECT 1")) {
+            rs.next();
+            assertEquals(1, rs.getInt(1));
+        }
+    }
+}
+```
+
+- `@Testcontainers` aktiviert die JUnit-5-Erweiterung, `@Container` markiert die zu verwaltenden Container.
+- **`static`** → ein Container für die ganze Klasse; **ohne `static`** → ein neuer Container **pro Testmethode** (sauberer, aber langsamer).
+- Die Versionen verwaltet man am einfachsten über die `testcontainers-bom`.
+
+:::note[Versionen beachten]
+Artefakt- und Paketnamen von Testcontainers haben sich zwischen Hauptversionen teilweise geändert. Prüfe bei Kompilierfehlern die offizielle Dokumentation zu deiner Version.
+:::
+
+## Docker in der CI-Pipeline \{#ci}
+
+Auf den Linux-Runnern von **GitHub Actions** ist Docker vorinstalliert. Drei typische Varianten:
+
+**1. Testcontainers** – funktioniert ohne zusätzliche Konfiguration: `dotnet test` bzw. `mvn test` startet die Container selbst.
+
+**2. Service-Container** – GitHub startet Container **neben** dem Job:
+
+```yaml title=".github/workflows/tests.yml"
+jobs:
+  integrationstests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.4
+        env:
+          POSTGRES_PASSWORD: geheim
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet test
+        env:
+          ConnectionStrings__Default: "Host=localhost;Username=postgres;Password=geheim"
+```
+
+**3. Docker Compose** – die gleiche Umgebung wie lokal:
+
+```yaml
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose up -d --build --wait
+      - run: dotnet test
+      - if: always()
+        run: docker compose logs        # Logs auch bei Fehlschlag sichern
+      - if: always()
+        run: docker compose down -v
+```
+
+## Best Practices \{#best-practices}
+
+- **Feste Image-Versionen** für Browser und Datenbanken – sonst ändern sich Tests „über Nacht“.
+- **`driver.quit()` immer im `finally`/`TearDown`** – nicht beendete Sitzungen blockieren Grid-Slots.
+- **Container wiederverwenden, wo es passt:** ein Datenbank-Container pro Testklasse statt pro Test, Daten zwischen Tests per Transaktion/Rollback oder Bereinigungsskript zurücksetzen.
+- **Logs und Artefakte sichern:** Container-Logs, Screenshots und Berichte per Bind Mount oder `docker compose logs` in der CI ablegen.
+- **Testpyramide beachten:** Testcontainers für **Integrationstests**; schnelle Unit-Tests brauchen keinen Docker.
+
+## Typische Fehler \{#typische-fehler}
+
+- **`Could not find a valid Docker environment`** (Testcontainers) – Docker Desktop läuft nicht bzw. ist nicht gestartet.
+- **Fester Port im Test** (`localhost:5432`) statt `GetConnectionString()` / `getJdbcUrl()` – Testcontainers nutzt **zufällige** Host-Ports.
+- **Grid-Tests hängen in der Warteschlange** – alle Slots belegt, weil `quit()` fehlte, oder kein Node für den angefragten Browser vorhanden.
+- **Chrome stürzt im Container ab** („session deleted because of page crash“) – `shm_size`/`--shm-size` bzw. `--ipc=host` vergessen.
+- **Playwright meldet fehlende Browser** im Container – Image-Version passt nicht zur Paketversion.
+- **Browser im Container erreicht die App nicht** – `localhost` statt Service-Name oder `host.docker.internal`.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Selenium Grid** per Compose: Hub + beliebig skalierbare Browser-Nodes; Tests sprechen nur mit `:4444`.
+- **Playwright-Images** enthalten alle Browser; Image-Version = Paketversion.
+- **Testcontainers** startet echte Abhängigkeiten aus dem Test heraus, mit zufälligen Ports und automatischem Aufräumen (Ryuk).
+- In der **CI** laufen Testcontainers ohne Zusatzaufwand; alternativ Service-Container oder Compose.
+
+<Quiz fragen={fragen} titel="Quiz: Docker in der Testautomation" />

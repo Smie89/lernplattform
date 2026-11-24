@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Docker Compose"
+
+- id: dk-dc-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Wofür wird Docker Compose hauptsächlich eingesetzt?"
+  optionen:
+    - "Um Images zu komprimieren"
+    - "Um mehrere zusammengehörige Container deklarativ in einer Datei zu beschreiben und gemeinsam zu starten"
+    - "Um Docker unter Windows zu installieren"
+    - "Um Container in virtuelle Maschinen umzuwandeln"
+  richtig: [1]
+  erklaerung: "Compose beschreibt Services, Netzwerke und Volumes in einer compose.yaml und startet alles mit docker compose up."
+  artikel: "#warum-compose"
+  tags: [compose]
+
+- id: dk-dc-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Unter welchem Namen erreicht der Service 'api' den Service 'db' in derselben compose.yaml?"
+  optionen:
+    - "localhost"
+    - "db"
+    - "Nur über die IP-Adresse"
+    - "host.docker.internal"
+  richtig: [1]
+  erklaerung: "Compose legt automatisch ein Netzwerk an, in dem jeder Service unter seinem Service-Namen erreichbar ist."
+  artikel: "#netzwerk"
+  tags: [compose, netzwerk]
+
+- id: dk-dc-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Unterschied zwischen 'docker compose down' und 'docker compose down -v'?"
+  optionen:
+    - "Kein Unterschied, -v steht nur für verbose"
+    - "down -v löscht zusätzlich die Named Volumes – die Daten sind danach weg"
+    - "down -v stoppt nur, löscht aber nichts"
+    - "down -v löscht zusätzlich die Images"
+  richtig: [1]
+  erklaerung: "down entfernt Container und Netzwerk, Volumes bleiben. -v entfernt auch die Volumes – ideal für einen komplett frischen Testlauf."
+  artikel: "#befehle"
+  tags: [compose, volumes]
+
+- id: dk-dc-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Die API hat 'depends_on: [db]', stürzt beim Start aber mit 'Connection refused' ab. Warum?"
+  optionen:
+    - "depends_on funktioniert nur mit Java"
+    - "depends_on wartet nur, bis der db-Container gestartet ist – nicht, bis Postgres bereit ist"
+    - "Die Services müssen alphabetisch sortiert sein"
+    - "db muss Ports veröffentlichen"
+  richtig: [1]
+  erklaerung: "Ohne Healthcheck und condition: service_healthy weiß Compose nicht, wann die Datenbank wirklich Verbindungen annimmt."
+  artikel: "#healthchecks"
+  tags: [compose, healthcheck]
+
+- id: dk-dc-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was brauchst du, damit 'api' erst startet, wenn Postgres wirklich bereit ist?"
+  optionen:
+    - "Einen healthcheck beim Service db"
+    - "depends_on mit condition: service_healthy beim Service api"
+    - "ports beim Service db"
+    - "restart: always beim Service db"
+  richtig: [0, 1]
+  erklaerung: "Der Healthcheck (z. B. pg_isready) meldet die Bereitschaft, die Bedingung service_healthy wartet darauf."
+  artikel: "#healthchecks"
+  tags: [compose, healthcheck]
+
+- id: dk-dc-006
+  typ: single
+  schwierigkeit: 1
+  frage: "Du hast den Code deiner App geändert. Mit welchem Befehl stellst du sicher, dass Compose das Image neu baut?"
+  optionen:
+    - "docker compose up -d"
+    - "docker compose up -d --build"
+    - "docker compose restart"
+    - "docker compose ps"
+  richtig: [1]
+  erklaerung: "up baut nur, wenn noch kein Image existiert. --build erzwingt einen Neubau."
+  artikel: "#befehle"
+  tags: [compose, build]
+
+- id: dk-dc-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bedeutet '${API_PORT:-8080}' in einer compose.yaml?"
+  optionen:
+    - "API_PORT minus 8080"
+    - "Wert von API_PORT, oder 8080, falls die Variable nicht gesetzt ist"
+    - "Port 8080 ist für API_PORT gesperrt"
+    - "Ein Kommentar"
+  richtig: [1]
+  erklaerung: "Die Syntax :- liefert einen Standardwert. Variablen kommen z. B. aus der .env-Datei."
+  artikel: "#env"
+  tags: [compose, variablen]
+
+- id: dk-dc-008
+  typ: single
+  schwierigkeit: 3
+  frage: "Selenium-Chrome läuft als Service 'chrome', die App als Service 'web' auf Port 8080. Welche URL muss der Test dem Browser übergeben?"
+  optionen:
+    - "http://localhost:8080"
+    - "http://web:8080"
+    - "http://chrome:8080"
+    - "http://localhost:4444"
+  richtig: [1]
+  erklaerung: "Der Browser läuft im chrome-Container. Für ihn ist localhost der Container selbst; die App erreicht er über den Service-Namen web."
+  artikel: "#praxis-testumgebung"
+  tags: [compose, selenium, netzwerk]
+
+- id: dk-dc-009
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Die Zeile 'version: \"3.8\"' ist in aktuellen compose.yaml-Dateien Pflicht."
+  richtig: [1]
+  erklaerung: "Falsch. Das version-Feld ist veraltet und wird von aktuellen Compose-Versionen ignoriert."
+  artikel: "#warum-compose"
+  tags: [compose]
+
+- id: dk-dc-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Mit welchem Befehl siehst du die fertig aufgelöste Compose-Konfiguration inklusive eingesetzter Variablen?"
+  optionen:
+    - "docker compose ps"
+    - "docker compose config"
+    - "docker compose logs"
+    - "docker compose inspect"
+  richtig: [1]
+  erklaerung: "docker compose config prüft die Syntax und zeigt die Konfiguration mit allen ersetzten Variablen."
+  artikel: "#env"
+  tags: [compose, fehlersuche]
+
+- id: dk-dc-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Service hat 'profiles: [\"test\"]'. Wann wird er gestartet?"
+  optionen:
+    - "Immer"
+    - "Nur mit 'docker compose --profile test up'"
+    - "Nur in der CI"
+    - "Nie, profiles deaktiviert den Service dauerhaft"
+  richtig: [1]
+  erklaerung: "Services mit Profil starten nur, wenn das Profil beim Aufruf aktiviert wird."
+  artikel: "#profile"
+  tags: [compose]
+
+- id: dk-dc-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt 'docker compose up -d --wait' in einem CI-Skript?"
+  optionen:
+    - "Wartet 60 Sekunden"
+    - "Kehrt erst zurück, wenn alle Services laufen bzw. healthy sind"
+    - "Wartet auf eine Benutzereingabe"
+    - "Startet die Services nacheinander mit Pausen"
+  richtig: [1]
+  erklaerung: "--wait blockiert, bis die Umgebung bereit ist – danach können die Tests sicher starten."
+  artikel: "#healthchecks"
+  tags: [compose, ci]

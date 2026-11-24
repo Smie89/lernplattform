@@ -1,0 +1,234 @@
+---
+title: Dockerfile, Layer und Caching
+description: Eigene Images bauen – Dockerfile-Anweisungen, Layer-Cache, .dockerignore und Multi-Stage-Builds für .NET und Java.
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-dockerfile.fragen.yaml';
+
+# Dockerfile, Layer und Caching
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- ein **Dockerfile** lesen und schreiben,
+- erklären, wie **Layer** und der **Build-Cache** funktionieren,
+- die Reihenfolge der Anweisungen so wählen, dass Builds schnell bleiben,
+- **Multi-Stage-Builds** für .NET- und Java-Anwendungen erstellen,
+- `CMD` und `ENTRYPOINT` unterscheiden.
+:::
+
+## Was ist ein Dockerfile? \{#was-ist-ein-dockerfile}
+
+Ein **Dockerfile** ist eine Textdatei mit Anweisungen, aus denen Docker ein **Image** baut – quasi das „Rezept“. Jede Zeile beginnt mit einer Anweisung in Großbuchstaben:
+
+```dockerfile title="Dockerfile"
+FROM alpine:3.20
+WORKDIR /app
+COPY hallo.sh .
+RUN chmod +x hallo.sh
+CMD ["./hallo.sh"]
+```
+
+Gebaut und gestartet wird so:
+
+```bash
+docker build -t hallo:1.0 .     # "." = Build-Kontext (aktueller Ordner)
+docker run --rm hallo:1.0
+```
+
+- `-t name:tag` gibt dem Image einen Namen.
+- Der **Build-Kontext** (hier `.`) ist der Ordner, dessen Inhalt an Docker übergeben wird. Nur Dateien daraus können mit `COPY` ins Image.
+
+## Die wichtigsten Anweisungen \{#anweisungen}
+
+| Anweisung | Zweck | Beispiel |
+|---|---|---|
+| `FROM` | Basis-Image – **immer die erste Anweisung** | `FROM mcr.microsoft.com/dotnet/aspnet:8.0` |
+| `WORKDIR` | Arbeitsverzeichnis setzen (wird bei Bedarf angelegt) | `WORKDIR /app` |
+| `COPY` | Dateien aus dem Build-Kontext ins Image kopieren | `COPY . .` |
+| `RUN` | Befehl **beim Bauen** ausführen | `RUN apt-get update && apt-get install -y curl` |
+| `ENV` | Umgebungsvariable setzen (auch zur Laufzeit gültig) | `ENV ASPNETCORE_URLS=http://+:8080` |
+| `ARG` | Variable **nur beim Bauen** | `ARG VERSION=1.0` |
+| `EXPOSE` | **Dokumentiert**, auf welchem Port die App lauscht | `EXPOSE 8080` |
+| `USER` | Benutzer für folgende Anweisungen und den Container | `USER app` |
+| `CMD` | Standard-Startbefehl des Containers | `CMD ["dotnet", "App.dll"]` |
+| `ENTRYPOINT` | Fester Startbefehl, an den Argumente angehängt werden | `ENTRYPOINT ["dotnet", "test"]` |
+
+:::warning[EXPOSE veröffentlicht keinen Port]
+`EXPOSE` ist nur Dokumentation. Erreichbar vom Host wird der Port erst durch `docker run -p 8080:8080`.
+:::
+
+### RUN vs. CMD \{#run-vs-cmd}
+
+- `RUN` läuft **einmal beim Bauen** und das Ergebnis wird Teil des Images (z. B. Pakete installieren).
+- `CMD` läuft **bei jedem Containerstart** – es ist der Prozess, der im Container läuft.
+
+### CMD vs. ENTRYPOINT \{#cmd-vs-entrypoint}
+
+```dockerfile
+ENTRYPOINT ["dotnet", "test"]
+CMD ["--filter", "Category=Smoke"]
+```
+
+| Aufruf | Ausgeführter Befehl |
+|---|---|
+| `docker run tests` | `dotnet test --filter Category=Smoke` |
+| `docker run tests --filter Category=Regression` | `dotnet test --filter Category=Regression` |
+
+- **`CMD`** liefert Standardwerte, die beim `docker run` **komplett ersetzt** werden können.
+- **`ENTRYPOINT`** bleibt fest; Argumente von `docker run` werden **angehängt**.
+
+Verwende die **Exec-Form** mit eckigen Klammern (`["dotnet", "App.dll"]`). Bei der Shell-Form (`CMD dotnet App.dll`) läuft der Prozess unter `/bin/sh -c` und bekommt Signale wie `docker stop` nicht sauber mit.
+
+## Layer \{#layer}
+
+Ein Image besteht aus übereinanderliegenden, **schreibgeschützten Schichten (Layern)**. Jede Anweisung, die das Dateisystem verändert – vor allem `RUN`, `COPY` und `ADD` – erzeugt einen neuen Layer.
+
+```
+┌──────────────────────────────┐
+│ Container-Schicht (schreibbar)│  ← nur im laufenden Container
+├──────────────────────────────┤
+│ COPY . .                      │  Layer 4
+│ RUN dotnet restore            │  Layer 3
+│ COPY *.csproj .               │  Layer 2
+│ FROM dotnet/sdk:8.0           │  Layer 1 (Basis-Image)
+└──────────────────────────────┘
+```
+
+Vorteile:
+- Layer werden zwischen Images **geteilt** – zehn Images auf Basis von `dotnet/aspnet:8.0` speichern dessen Layer nur einmal.
+- Beim Pull/Push werden nur **fehlende Layer** übertragen.
+
+Mit `docker history <image>` siehst du alle Layer und ihre Größe.
+
+:::tip[Gelöschte Dateien machen das Image nicht kleiner]
+Wird eine Datei in Layer 2 angelegt und in Layer 3 gelöscht, steckt sie trotzdem in Layer 2. Deshalb Aufräumen **im selben `RUN`**:
+`RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*`
+:::
+
+## Build-Cache und Reihenfolge \{#cache}
+
+Docker merkt sich jeden Layer. Beim nächsten Build wird ein Layer aus dem **Cache** genommen, solange sich weder die Anweisung noch (bei `COPY`) die kopierten Dateien geändert haben. **Sobald ein Layer neu gebaut wird, werden alle folgenden Layer ebenfalls neu gebaut.**
+
+Daraus folgt die wichtigste Regel: **Selten Geändertes nach oben, häufig Geändertes nach unten.**
+
+```dockerfile
+# ❌ Ungünstig: jede Code-Änderung löst ein komplettes "restore" aus
+COPY . .
+RUN dotnet restore
+RUN dotnet publish -c Release -o /out
+```
+
+```dockerfile
+# ✅ Besser: Abhängigkeiten nur neu laden, wenn sich die Projektdatei ändert
+COPY *.csproj .
+RUN dotnet restore
+COPY . .
+RUN dotnet publish -c Release -o /out
+```
+
+In Java gilt dasselbe Prinzip: zuerst `pom.xml` kopieren und `mvn dependency:go-offline` ausführen, dann den Quellcode.
+
+## .dockerignore \{#dockerignore}
+
+Die Datei `.dockerignore` im Build-Kontext legt fest, was **nicht** an Docker übergeben wird – analog zu `.gitignore`:
+
+```text title=".dockerignore"
+bin/
+obj/
+target/
+.git/
+.vs/
+.idea/
+node_modules/
+*.log
+.env
+```
+
+Vorteile: schnellerer Build (weniger Daten), keine versehentlich kopierten Geheimnisse (`.env`) und weniger unnötige Cache-Invalidierung durch `COPY . .`.
+
+## Multi-Stage-Builds \{#multi-stage}
+
+Zum **Bauen** brauchst du das große SDK (Compiler, Build-Tools), zum **Ausführen** nur die kleine Runtime. Ein **Multi-Stage-Build** nutzt mehrere `FROM`-Anweisungen; ins finale Image wird nur das Nötigste kopiert.
+
+### Beispiel .NET \{#multi-stage-dotnet}
+
+```dockerfile title="Dockerfile"
+# ---------- Stage 1: bauen ----------
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY MeineApi/MeineApi.csproj MeineApi/
+RUN dotnet restore MeineApi/MeineApi.csproj
+COPY . .
+RUN dotnet publish MeineApi/MeineApi.csproj -c Release -o /app/publish
+
+# ---------- Stage 2: ausführen ----------
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+EXPOSE 8080
+USER app
+ENTRYPOINT ["dotnet", "MeineApi.dll"]
+```
+
+- `AS build` gibt der Stage einen Namen.
+- `COPY --from=build` kopiert Dateien **aus einer vorherigen Stage**.
+- Das SDK-Image (ca. 800 MB) landet **nicht** im Ergebnis – nur die ASP.NET-Runtime (ca. 220 MB) plus deine App.
+- `USER app` – die offiziellen .NET-8-Images bringen einen Benutzer ohne Root-Rechte mit.
+
+### Beispiel Java (Maven) \{#multi-stage-java}
+
+```dockerfile title="Dockerfile"
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /src
+COPY pom.xml .
+RUN mvn -q dependency:go-offline
+COPY src ./src
+RUN mvn -q package -DskipTests
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /src/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+### Tests im Build ausführen \{#tests-im-build}
+
+Man kann auch eine eigene Stage für Tests anlegen und gezielt nur bis dorthin bauen:
+
+```dockerfile
+FROM build AS test
+RUN dotnet test --no-restore
+```
+
+```bash
+docker build --target test .    # baut nur bis zur Stage "test"
+```
+
+## Best Practices \{#best-practices}
+
+- **Feste Basis-Image-Tags** (`aspnet:8.0`, `eclipse-temurin:21-jre`) statt `latest`.
+- **Kleine Basis-Images** für die Laufzeit (`-jre` statt `-jdk`, `aspnet` statt `sdk`, ggf. `-alpine`).
+- **Nicht als root** laufen: `USER` setzen.
+- **Cache-freundliche Reihenfolge**: Abhängigkeiten vor Quellcode.
+- **Keine Geheimnisse** (Passwörter, Tokens) per `COPY`, `ENV` oder `ARG` ins Image – sie sind mit `docker history` oder im Image-Dateisystem sichtbar.
+- Eine `.dockerignore` anlegen.
+
+## Typische Fehler \{#typische-fehler}
+
+- **`COPY failed: file not found`** – die Datei liegt nicht im Build-Kontext oder ist per `.dockerignore` ausgeschlossen. Pfade in `COPY` sind immer **relativ zum Build-Kontext**, nicht zum Dockerfile.
+- **Build dauert bei jeder Änderung ewig** – `COPY . .` steht vor `restore`/`dependency:go-offline`.
+- **Image ist riesig** – kein Multi-Stage-Build, SDK im Laufzeit-Image, Aufräumen in separatem `RUN`.
+- **Port nicht erreichbar trotz `EXPOSE`** – `-p` beim `docker run` vergessen.
+- **App lauscht nur auf `localhost`** im Container – dann ist sie von außen nicht erreichbar. Sie muss auf `0.0.0.0` (alle Schnittstellen) lauschen; bei ASP.NET Core z. B. `ASPNETCORE_URLS=http://+:8080`.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Ein **Dockerfile** beschreibt, wie ein Image gebaut wird; `docker build -t name:tag .` baut es.
+- `RUN` läuft beim Bauen, `CMD`/`ENTRYPOINT` beim Start. `CMD` ist überschreibbar, an `ENTRYPOINT` werden Argumente angehängt.
+- Jede `RUN`/`COPY`-Anweisung erzeugt einen **Layer**; geänderte Layer invalidieren alle nachfolgenden.
+- **Abhängigkeiten vor Quellcode kopieren**, `.dockerignore` nutzen.
+- **Multi-Stage-Builds** trennen Build- und Laufzeitumgebung und halten Images klein.
+
+<Quiz fragen={fragen} titel="Quiz: Dockerfile, Layer und Caching" />

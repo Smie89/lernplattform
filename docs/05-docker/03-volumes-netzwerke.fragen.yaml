@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Volumes und Netzwerke"
+
+- id: dk-vn-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Du startest Postgres ohne Volume, legst Daten an und führst 'docker rm -f db' aus. Was passiert mit den Daten?"
+  optionen:
+    - "Sie bleiben im Image erhalten"
+    - "Sie sind verloren, weil sie in der beschreibbaren Container-Schicht lagen"
+    - "Docker legt automatisch ein Backup an"
+    - "Sie werden in ein Named Volume verschoben"
+  richtig: [1]
+  erklaerung: "Ohne Volume landen die Daten in der Container-Schicht. Wird der Container gelöscht, sind sie weg."
+  artikel: "#warum-volumes"
+  tags: [docker, volumes]
+
+- id: dk-vn-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Mount-Art eignet sich am besten für die Daten einer Datenbank im Container?"
+  optionen:
+    - "tmpfs"
+    - "Named Volume"
+    - "Gar keine, die Container-Schicht reicht"
+    - "Ein Bind Mount auf C:\\Windows"
+  richtig: [1]
+  erklaerung: "Named Volumes werden von Docker verwaltet, überleben docker rm und sind die empfohlene Lösung für dauerhafte Daten."
+  artikel: "#mount-arten"
+  tags: [docker, volumes]
+
+- id: dk-vn-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Woran erkennt Docker bei '-v X:/data', ob X ein Named Volume oder ein Bind Mount ist?"
+  optionen:
+    - "Gar nicht, man muss --type angeben"
+    - "Ist X ein Pfad (z. B. beginnt mit / oder ./ bzw. einem Laufwerk), ist es ein Bind Mount – sonst ein Named Volume"
+    - "Named Volumes müssen auf .vol enden"
+    - "Bind Mounts sind nur mit --mount möglich"
+  richtig: [1]
+  erklaerung: "Ein reiner Name wie 'pgdata' ist ein Named Volume, ein Pfad wie './berichte' oder 'C:\\daten' ein Bind Mount."
+  artikel: "#named-volumes"
+  tags: [docker, volumes]
+
+- id: dk-vn-004
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "'docker rm <container>' löscht automatisch auch die Named Volumes, die der Container genutzt hat."
+  richtig: [1]
+  erklaerung: "Falsch. Volumes leben unabhängig von Containern und müssen mit docker volume rm bzw. prune explizit gelöscht werden."
+  artikel: "#named-volumes"
+  tags: [docker, volumes]
+
+- id: dk-vn-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Du möchtest nach einem Testlauf im Container die Testberichte direkt in einem Ordner deines Projekts haben. Was nutzt du?"
+  optionen:
+    - "tmpfs"
+    - "Einen Bind Mount auf den Ergebnisordner"
+    - "EXPOSE"
+    - "Ein eigenes Netzwerk"
+  richtig: [1]
+  erklaerung: "Ein Bind Mount macht einen Host-Ordner im Container sichtbar. Was die Tests dort ablegen, liegt sofort auf dem Host."
+  artikel: "#bind-mounts"
+  tags: [docker, bind-mount, testautomation]
+
+- id: dk-vn-006
+  typ: single
+  schwierigkeit: 1
+  frage: "Was bewirkt das Suffix ':ro' in '-v ./nginx.conf:/etc/nginx/nginx.conf:ro'?"
+  optionen:
+    - "Die Datei wird nur beim Start kopiert"
+    - "Die Datei ist im Container schreibgeschützt"
+    - "Die Datei wird nur einmalig gelesen und dann entfernt"
+    - "Das Volume wird nach dem Stoppen gelöscht"
+  richtig: [1]
+  erklaerung: "ro = read-only. Der Container kann die eingehängte Datei lesen, aber nicht verändern."
+  artikel: "#read-only"
+  tags: [docker, bind-mount]
+
+- id: dk-vn-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Zwei Container sollen sich über ihren Namen (z. B. 'db') erreichen. Was ist nötig?"
+  optionen:
+    - "Beide im Standard-Netzwerk 'bridge' starten"
+    - "Beide in einem selbst angelegten Netzwerk starten"
+    - "Beide mit '--network none' starten"
+    - "Bei beiden denselben Port mit -p veröffentlichen"
+  richtig: [1]
+  erklaerung: "Nur benutzerdefinierte Netzwerke haben einen eingebauten DNS, der Containernamen auflöst."
+  artikel: "#eigenes-netzwerk"
+  tags: [docker, netzwerk]
+
+- id: dk-vn-008
+  typ: single
+  schwierigkeit: 3
+  frage: "Die Datenbank läuft mit '--name db -p 15432:5432' im Netzwerk 'testnetz'. Mit welcher Adresse verbindet sich die API, die im selben Netzwerk läuft?"
+  optionen:
+    - "localhost:15432"
+    - "db:15432"
+    - "db:5432"
+    - "host.docker.internal:5432"
+  richtig: [2]
+  erklaerung: "Zwischen Containern zählt der Container-Port. Das Mapping 15432 gilt nur für Zugriffe vom Host."
+  artikel: "#ports-intern"
+  tags: [docker, netzwerk, ports]
+
+- id: dk-vn-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Vorteile hat es, eine Datenbank in einem eigenen Netzwerk OHNE '-p' zu betreiben, wenn nur die API sie nutzt?"
+  optionen:
+    - "Die Datenbank ist vom Host aus nicht direkt erreichbar"
+    - "Es gibt keine Portkonflikte mit anderen Datenbanken auf dem Host"
+    - "Die Datenbank wird automatisch gesichert"
+    - "Die API erreicht sie trotzdem über den Containernamen"
+  richtig: [0, 1, 3]
+  erklaerung: "Ohne -p ist der Port nur im Docker-Netzwerk sichtbar. Ein Backup entsteht dadurch nicht."
+  artikel: "#eigenes-netzwerk"
+  tags: [docker, netzwerk, sicherheit]
+
+- id: dk-vn-010
+  typ: single
+  schwierigkeit: 3
+  frage: "Deine SQL-Skripte in /docker-entrypoint-initdb.d werden beim Start von Postgres nicht ausgeführt. Was ist die wahrscheinlichste Ursache?"
+  optionen:
+    - "Postgres unterstützt keine Init-Skripte"
+    - "Das Datenverzeichnis-Volume enthält bereits eine Datenbank, Init-Skripte laufen nur beim ersten Start"
+    - "Die Skripte müssen .txt heißen"
+    - "Man muss -p setzen"
+  richtig: [1]
+  erklaerung: "Init-Skripte laufen nur bei leerem Datenverzeichnis. Für einen frischen Stand das Volume löschen (docker volume rm)."
+  artikel: "#typische-fehler"
+  tags: [docker, volumes, testdaten]
+
+- id: dk-vn-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Was unterscheidet '--mount type=bind,...' von '-v' bei einem nicht existierenden Host-Pfad?"
+  optionen:
+    - "Nichts"
+    - "--mount meldet einen Fehler, -v legt still einen leeren Ordner an"
+    - "-v meldet einen Fehler, --mount legt den Ordner an"
+    - "Beide kopieren den Ordner aus dem Image auf den Host"
+  richtig: [1]
+  erklaerung: "--mount ist strenger und verhindert so Fehler durch vertippte Pfade."
+  artikel: "#mount-syntax"
+  tags: [docker, bind-mount]
