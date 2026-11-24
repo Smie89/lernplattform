@@ -1,0 +1,9 @@
+{
+    "label":  "🐳 Docker",
+    "position":  5,
+    "link":  {
+                 "type":  "generated-index",
+                 "slug":  "/docker",
+                 "description":  "Images, Container, Dockerfile, Volumes, Netzwerke, Compose und Testcontainers."
+             }
+}

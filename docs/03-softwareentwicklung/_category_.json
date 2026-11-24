@@ -1,0 +1,9 @@
+{
+    "label":  "💻 Softwareentwicklung",
+    "position":  3,
+    "link":  {
+                 "type":  "generated-index",
+                 "slug":  "/softwareentwicklung",
+                 "description":  "OOP, Clean Code, SOLID, Design Patterns und Git."
+             }
+}

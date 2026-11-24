@@ -1,0 +1,15 @@
+{
+  "name": "Lernplattform",
+  "short_name": "Lernen",
+  "description": "Testautomation, Softwaretest, Entwicklung, Linux, Docker und KI lernen",
+  "lang": "de",
+  "start_url": "/lernplattform/",
+  "scope": "/lernplattform/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2e7d5b",
+  "icons": [
+    {"src": "img/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

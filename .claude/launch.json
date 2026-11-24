@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lernplattform",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\npm.cmd",
+      "runtimeArgs": ["run", "serve", "--", "--port", "3000", "--no-open"],
+      "port": 3000
+    }
+  ]
+}

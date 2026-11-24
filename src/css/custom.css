@@ -1,0 +1,29 @@
+/* Globale Styles – Farben der Lernplattform */
+
+:root {
+  --ifm-color-primary: #2e7d5b;
+  --ifm-color-primary-dark: #297152;
+  --ifm-color-primary-darker: #276b4d;
+  --ifm-color-primary-darkest: #20583f;
+  --ifm-color-primary-light: #338964;
+  --ifm-color-primary-lighter: #358f69;
+  --ifm-color-primary-lightest: #3ca277;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #4fc492;
+  --ifm-color-primary-dark: #3dbb86;
+  --ifm-color-primary-darker: #39b17e;
+  --ifm-color-primary-darkest: #2f9268;
+  --ifm-color-primary-light: #66cba0;
+  --ifm-color-primary-lighter: #71cfa7;
+  --ifm-color-primary-lightest: #93dbbc;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Lange Codezeilen auf dem Handy scrollen statt umbrechen */
+pre code {
+  white-space: pre;
+}

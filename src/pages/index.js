@@ -1,0 +1,39 @@
+import React from 'react';
+import Link from '@docusaurus/Link';
+import Layout from '@theme/Layout';
+import styles from './index.module.css';
+
+const bereiche = [
+  {icon: '🧪', titel: 'Softwaretest', text: 'Teststufen, Testarten, Testentwurfsverfahren', pfad: '/lernen/softwaretest'},
+  {icon: '🤖', titel: 'Testautomation', text: 'C#, Java und Browser – NUnit, JUnit, Playwright, Selenium', pfad: '/lernen/testautomation'},
+  {icon: '💻', titel: 'Softwareentwicklung', text: 'OOP, Clean Code, Design Patterns, Git', pfad: '/lernen/softwareentwicklung'},
+  {icon: '🐧', titel: 'Linux', text: 'Shell, Rechte, Prozesse, Bash-Skripte', pfad: '/lernen/linux'},
+  {icon: '🐳', titel: 'Docker', text: 'Images, Container, Compose, Testcontainers', pfad: '/lernen/docker'},
+  {icon: '🧠', titel: 'Künstliche Intelligenz', text: 'ML-Grundlagen, LLMs, KI im Testen', pfad: '/lernen/ki'},
+];
+
+export default function Home() {
+  return (
+    <Layout title="Start" description="Persönliche Lernplattform">
+      <header className={styles.hero}>
+        <div className="container">
+          <h1 className={styles.heroTitel}>Lernplattform</h1>
+          <p className={styles.heroText}>
+            Artikel mit Praxisbeispielen und Multiple-Choice-Fragen – jede Frage führt zum passenden Abschnitt.
+          </p>
+        </div>
+      </header>
+      <main className="container margin-vert--lg">
+        <div className={styles.raster}>
+          {bereiche.map((b) => (
+            <Link key={b.pfad} to={b.pfad} className={styles.karte}>
+              <span className={styles.icon}>{b.icon}</span>
+              <h2 className={styles.kartenTitel}>{b.titel}</h2>
+              <p className={styles.kartenText}>{b.text}</p>
+            </Link>
+          ))}
+        </div>
+      </main>
+    </Layout>
+  );
+}

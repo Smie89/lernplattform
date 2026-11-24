@@ -1,0 +1,176 @@
+.quiz {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin: 2rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.titel {
+  margin: 0;
+}
+
+.zaehler {
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.balken {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ifm-color-emphasis-200);
+  margin: 0.75rem 0 1.25rem;
+  overflow: hidden;
+}
+
+.balkenFuellung {
+  height: 100%;
+  background: var(--ifm-color-primary);
+  transition: width 0.3s ease;
+}
+
+.frage {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.hinweis {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.optionen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Große Touch-Flächen fürs Smartphone (mind. 48px hoch) */
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-height: 48px;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  text-align: left;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--ifm-font-color-base);
+  background: var(--ifm-background-color);
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--ifm-color-primary-light);
+}
+
+.option:disabled {
+  cursor: default;
+}
+
+.marker {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.gewaehlt {
+  border-color: var(--ifm-color-primary);
+  background: var(--ifm-color-primary-contrast-background);
+}
+
+.richtig {
+  border-color: var(--ifm-color-success);
+  background: var(--ifm-color-success-contrast-background);
+}
+
+.falsch {
+  border-color: var(--ifm-color-danger);
+  background: var(--ifm-color-danger-contrast-background);
+}
+
+.rueckmeldung {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  border-left: 5px solid;
+}
+
+.rueckmeldung p {
+  margin: 0.5rem 0;
+}
+
+.rueckRichtig {
+  border-color: var(--ifm-color-success);
+  background: var(--ifm-color-success-contrast-background);
+}
+
+.rueckFalsch {
+  border-color: var(--ifm-color-danger);
+  background: var(--ifm-color-danger-contrast-background);
+}
+
+.artikelLink {
+  font-weight: 600;
+}
+
+.aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.knopf {
+  min-height: 48px;
+  padding: 0.7rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 2px solid var(--ifm-color-primary);
+  background: transparent;
+  color: var(--ifm-color-primary);
+  cursor: pointer;
+}
+
+.knopf:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.primaer {
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.ergebnisZahl {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0.75rem 0;
+}
+
+/* Auf dem Smartphone: Knöpfe über volle Breite */
+@media (max-width: 600px) {
+  .quiz {
+    padding: 1rem;
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+  }
+
+  .knopf {
+    flex: 1 1 100%;
+  }
+}

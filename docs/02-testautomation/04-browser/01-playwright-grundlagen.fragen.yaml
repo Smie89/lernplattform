@@ -1,0 +1,111 @@
+# Fragen zur Lektion "Playwright – Grundlagen"
+# richtig: Index der richtigen Option(en), beginnend bei 0
+# artikel: Sprungziel im Artikel (#anker aus den Überschriften)
+
+- id: ta-pw-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Browser-Engines unterstützt Playwright?"
+  optionen:
+    - "Nur Chromium"
+    - "Chromium, Firefox und WebKit"
+    - "Chromium und Internet Explorer"
+    - "Jeden Browser, für den ein WebDriver installiert ist"
+  richtig: [1]
+  erklaerung: "Playwright steuert Chromium, Firefox und WebKit (Safari-Engine) über eine gemeinsame API."
+  artikel: "#was-ist-playwright"
+  tags: [playwright, grundlagen]
+
+- id: ta-pw-002
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Playwright benötigt – wie Selenium – einen separat installierten WebDriver."
+  richtig: [1]
+  erklaerung: "Falsch. Playwright kommuniziert direkt mit dem Browser und lädt passende Browser-Versionen selbst herunter."
+  artikel: "#was-ist-playwright"
+  tags: [playwright, selenium]
+
+- id: ta-pw-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum braucht man in Playwright meist kein explizites Wait?"
+  optionen:
+    - "Playwright führt alle Aktionen synchron aus"
+    - "Locator-Aktionen warten automatisch, bis das Element actionable ist"
+    - "Der Browser lädt Seiten immer vollständig vor dem Test"
+    - "Playwright deaktiviert JavaScript auf der Seite"
+  richtig: [1]
+  erklaerung: "Auto-Waiting prüft vor jeder Aktion u. a. Sichtbarkeit, Stabilität, Aktivierbarkeit und ob das Element Events empfängt."
+  artikel: "#auto-waiting"
+  tags: [playwright, waits, flaky-tests]
+
+- id: ta-pw-004
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Prüfungen führt Playwright beim Auto-Waiting vor einem Klick durch?"
+  optionen:
+    - "Element ist sichtbar"
+    - "Element ist stabil (keine Animation)"
+    - "Element ist nicht disabled"
+    - "Element hat eine data-testid"
+    - "Seite hat keine JavaScript-Fehler"
+  richtig: [0, 1, 2]
+  erklaerung: "Geprüft werden u. a. Sichtbarkeit, Stabilität, Event-Empfang und Aktivierung. Eine data-testid oder JS-Fehler spielen keine Rolle."
+  artikel: "#auto-waiting"
+  tags: [playwright, waits]
+
+- id: ta-pw-005
+  typ: single
+  schwierigkeit: 1
+  frage: "Welcher Locator ist laut Playwright-Empfehlung die erste Wahl?"
+  optionen:
+    - "XPath"
+    - "CSS-Selektor über die ID"
+    - "GetByRole"
+    - "GetByTestId"
+  richtig: [2]
+  erklaerung: "GetByRole findet Elemente so, wie Nutzer und Hilfstechnologien sie wahrnehmen – das ist am robustesten gegenüber Layout-Änderungen."
+  artikel: "#locators"
+  tags: [playwright, locators]
+
+- id: ta-pw-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Vorteil von 'await Expect(locator).ToHaveTextAsync(...)' gegenüber 'Assert.That(await locator.TextContentAsync(), ...)'?"
+  optionen:
+    - "Es ist schneller, weil es den Text nur einmal liest"
+    - "Es wiederholt die Prüfung automatisch bis zum Timeout"
+    - "Es funktioniert auch ohne await"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Web-First Assertions prüfen wiederholt, bis die Bedingung erfüllt ist. Eine klassische Assertion liest den Wert genau einmal – ändert er sich asynchron, wird der Test flaky."
+  artikel: "#assertions"
+  tags: [playwright, assertions, flaky-tests]
+
+- id: ta-pw-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Praktiken führen typischerweise zu instabilen (flaky) Browser-Tests?"
+  optionen:
+    - "Thread.Sleep statt Auto-Waiting"
+    - "Lange XPath-Ketten als Selektoren"
+    - "GetByRole-Locators"
+    - "Klassische Assertions auf asynchron geänderte Werte"
+  richtig: [0, 1, 3]
+  erklaerung: "Feste Wartezeiten, fragile Selektoren und einmalige Assertions sind klassische Ursachen. GetByRole ist dagegen besonders robust."
+  artikel: "#typische-fehler"
+  tags: [flaky-tests]
+
+- id: ta-pw-008
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Basisklasse aus Microsoft.Playwright.NUnit stellt im Test direkt ein 'Page'-Objekt bereit?"
+  optionen:
+    - "BrowserTest"
+    - "PageTest"
+    - "PlaywrightTest"
+    - "ContextTest"
+  richtig: [1]
+  erklaerung: "PageTest erbt von ContextTest und stellt pro Test eine frische Page bereit."
+  artikel: "#erster-test"
+  tags: [playwright, csharp, nunit]

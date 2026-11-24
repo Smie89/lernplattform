@@ -1,0 +1,63 @@
+.hero {
+  padding: 3rem 0 2rem;
+  text-align: center;
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.heroTitel {
+  font-size: 2.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.heroText {
+  font-size: 1.1rem;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.karte {
+  display: block;
+  padding: 1.25rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  color: var(--ifm-font-color-base);
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.karte:hover {
+  border-color: var(--ifm-color-primary);
+  text-decoration: none;
+  color: var(--ifm-font-color-base);
+  transform: translateY(-2px);
+}
+
+.icon {
+  font-size: 2rem;
+}
+
+.kartenTitel {
+  font-size: 1.25rem;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.kartenText {
+  margin: 0;
+  color: var(--ifm-color-emphasis-700);
+}
+
+@media (max-width: 600px) {
+  .hero {
+    padding: 2rem 0 1.5rem;
+  }
+
+  .heroTitel {
+    font-size: 1.9rem;
+  }
+}

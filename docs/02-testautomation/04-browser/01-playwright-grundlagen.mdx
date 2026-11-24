@@ -1,0 +1,135 @@
+---
+title: Playwright – Grundlagen
+description: Browser-Tests mit Playwright für .NET – Locators, Auto-Waiting und Assertions.
+tags: [playwright, browser, csharp]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-playwright-grundlagen.fragen.yaml';
+
+# Playwright – Grundlagen
+
+:::info Lernziele
+Nach dieser Lektion kannst du …
+- erklären, was Playwright ist und wofür es eingesetzt wird,
+- einen ersten Browser-Test in **C# mit NUnit** schreiben,
+- robuste **Locators** wählen,
+- verstehen, warum Playwright **Auto-Waiting** nutzt und warum `Thread.Sleep` tabu ist.
+:::
+
+## Was ist Playwright? \{#was-ist-playwright}
+
+Playwright ist ein Open-Source-Framework von Microsoft zur Automatisierung von Browsern. Es steuert **Chromium, Firefox und WebKit** (die Engine von Safari) über eine gemeinsame API und ist für **TypeScript/JavaScript, Python, Java und .NET** verfügbar.
+
+Typische Einsatzgebiete:
+- End-to-End-Tests von Web-Anwendungen
+- Tests über mehrere Browser hinweg
+- API-Tests (Playwright bringt einen eigenen HTTP-Client mit)
+- Screenshots und Videos von Testläufen
+
+Im Unterschied zu Selenium spricht Playwright direkt mit dem Browser (über das DevTools- bzw. ein eigenes Protokoll) und benötigt **keinen separaten WebDriver**.
+
+## Installation in .NET \{#installation}
+
+```bash
+dotnet new nunit -n MeineWebTests
+cd MeineWebTests
+dotnet add package Microsoft.Playwright.NUnit
+dotnet build
+# Browser herunterladen (einmalig):
+pwsh bin/Debug/net8.0/playwright.ps1 install
+```
+
+## Der erste Test \{#erster-test}
+
+```csharp title="StartseiteTests.cs"
+using Microsoft.Playwright.NUnit;
+using static Microsoft.Playwright.Assertions;
+
+namespace MeineWebTests;
+
+[Parallelizable(ParallelScope.Self)]
+[TestFixture]
+public class StartseiteTests : PageTest   // PageTest stellt "Page" bereit
+{
+    [Test]
+    public async Task Suche_findet_Ergebnis()
+    {
+        await Page.GotoAsync("https://playwright.dev/dotnet/");
+
+        // Arrange / Act: Element über seine Rolle finden und klicken
+        await Page.GetByRole(AriaRole.Link, new() { Name = "Get started" }).ClickAsync();
+
+        // Assert: wartet automatisch, bis die Bedingung erfüllt ist
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Installation" }))
+            .ToBeVisibleAsync();
+    }
+}
+```
+
+Ausführen mit `dotnet test`. Standardmäßig läuft der Browser **headless** (ohne sichtbares Fenster). Zum Zuschauen: `HEADED=1 dotnet test`.
+
+## Locators \{#locators}
+
+Ein **Locator** beschreibt, *wie* ein Element gefunden wird – er wird erst bei der Aktion ausgewertet. Playwright empfiehlt nutzerorientierte Locators in dieser Reihenfolge:
+
+| Locator | Beispiel | Wann? |
+|---|---|---|
+| `GetByRole` | `GetByRole(AriaRole.Button, new() { Name = "Speichern" })` | **Erste Wahl** – so, wie Nutzer und Screenreader die Seite sehen |
+| `GetByLabel` | `GetByLabel("E-Mail")` | Formularfelder |
+| `GetByPlaceholder` | `GetByPlaceholder("Suchen …")` | Felder ohne Label |
+| `GetByText` | `GetByText("Willkommen")` | Nicht-interaktive Texte |
+| `GetByTestId` | `GetByTestId("warenkorb-anzahl")` | Wenn nichts anderes stabil ist (`data-testid`) |
+| CSS / XPath | `Locator("#main > div:nth-child(3)")` | **Möglichst vermeiden** – bricht bei Layout-Änderungen |
+
+:::tip Praxis
+Bitte die Entwickler früh um `data-testid`-Attribute für schwer greifbare Elemente. Das ist günstiger als jeder fragile XPath.
+:::
+
+## Auto-Waiting \{#auto-waiting}
+
+Bevor Playwright eine Aktion wie `ClickAsync()` ausführt, prüft es automatisch, ob das Element **actionable** ist:
+
+- im DOM vorhanden,
+- **sichtbar**,
+- **stabil** (keine laufende Animation),
+- **empfängt Events** (nicht von einem anderen Element verdeckt),
+- **aktiviert** (nicht `disabled`).
+
+Erst wenn alles erfüllt ist – oder das Timeout (Standard: 30 s) abläuft – wird die Aktion ausgeführt. Deshalb braucht man in Playwright **keine expliziten Waits** und erst recht kein `Thread.Sleep`.
+
+```csharp
+// ❌ Schlecht: feste Wartezeit – langsam UND trotzdem unzuverlässig
+Thread.Sleep(3000);
+await Page.Locator("#ok").ClickAsync();
+
+// ✅ Gut: Playwright wartet genau so lange wie nötig
+await Page.GetByRole(AriaRole.Button, new() { Name = "OK" }).ClickAsync();
+```
+
+## Web-First Assertions \{#assertions}
+
+`Expect(...)`-Assertions **wiederholen die Prüfung automatisch**, bis sie erfüllt ist oder das Timeout (Standard: 5 s) abläuft:
+
+```csharp
+await Expect(Page.GetByTestId("status")).ToHaveTextAsync("Gespeichert");
+await Expect(Page).ToHaveTitleAsync(new Regex("Bestellung"));
+await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Senden" })).ToBeEnabledAsync();
+```
+
+Würde man stattdessen `Assert.That(await locator.TextContentAsync(), Is.EqualTo("Gespeichert"))` schreiben, wird der Text **genau einmal** gelesen – kommt er eine halbe Sekunde später, schlägt der Test fehl. Das ist eine klassische Ursache für **Flaky Tests**.
+
+## Typische Fehler \{#typische-fehler}
+
+- **`Thread.Sleep` / `Task.Delay`** statt Auto-Waiting → langsame, instabile Tests
+- **Fragile Selektoren** wie lange XPath-Ketten → brechen bei jeder Layout-Änderung
+- **Klassische Assertions** auf Werte, die sich asynchron ändern → Flaky Tests
+- **`await` vergessen** → der Test läuft weiter, bevor die Aktion fertig ist
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Playwright steuert Chromium, Firefox und WebKit ohne separaten WebDriver.
+- Nutze **nutzerorientierte Locators**, allen voran `GetByRole`.
+- **Auto-Waiting** und **Web-First Assertions** machen explizite Waits überflüssig.
+
+<Quiz fragen={fragen} titel="Quiz: Playwright – Grundlagen" />

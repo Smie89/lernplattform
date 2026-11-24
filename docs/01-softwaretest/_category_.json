@@ -1,0 +1,9 @@
+{
+    "label":  "🧪 Softwaretest",
+    "position":  1,
+    "link":  {
+                 "type":  "generated-index",
+                 "slug":  "/softwaretest",
+                 "description":  "Grundlagen des Softwaretests: Teststufen, Testarten, Testentwurfsverfahren und Testmanagement."
+             }
+}
