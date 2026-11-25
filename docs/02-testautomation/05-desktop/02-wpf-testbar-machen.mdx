@@ -1,0 +1,239 @@
+---
+title: WPF testbar machen
+description: Teststrategie für WPF mit MVVM, AutomationIds in XAML, Listen und DataGrids, Screen Objects mit FlaUI, Testdaten und Desktop-Tests in der CI.
+tags: [wpf, flaui, mvvm, desktop, csharp, ci]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-wpf-testbar-machen.fragen.yaml';
+
+# WPF testbar machen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- eine **Teststrategie** für WPF-Anwendungen mit MVVM aufstellen,
+- in XAML **AutomationIds** setzen – auch in Listen, Vorlagen und DataGrids,
+- UI-Tests mit **Screen Objects** wartbar strukturieren,
+- Testdaten und Anwendungszustand **kontrollieren**,
+- Desktop-Tests in einer **CI-Pipeline** zuverlässig ausführen.
+:::
+
+## Teststrategie: MVVM nutzen \{#teststrategie}
+
+Moderne WPF-Anwendungen folgen meist dem **MVVM-Muster** (Model – View – ViewModel):
+
+```text
+ View (XAML)          ← nur Darstellung und Bindings
+     │ Binding
+ ViewModel (C#)       ← Logik: Befehle, Validierung, Zustände
+     │
+ Model / Services     ← Daten, Datenbank, Web-APIs
+```
+
+Das ist ein Geschenk für die Testautomation: Die meiste Logik steckt im **ViewModel**, und das ist eine ganz normale C#-Klasse – testbar mit [NUnit](../02-csharp/01-nunit-grundlagen.mdx) und [NSubstitute](../02-csharp/02-testdoubles-nsubstitute.mdx), **ohne** dass ein Fenster geöffnet wird.
+
+```csharp
+[Test]
+public void Speichern_ist_deaktiviert_solange_Name_leer_ist()
+{
+    var service = Substitute.For<IKundenService>();
+    var vm = new KundeBearbeitenViewModel(service);
+
+    vm.Name = "";
+
+    Assert.That(vm.SpeichernCommand.CanExecute(null), Is.False);
+}
+```
+
+Die [Testpyramide](../01-grundlagen/01-grundlagen-testautomation.mdx#testpyramide) für WPF sieht deshalb so aus:
+
+| Ebene | Was | Werkzeug |
+|---|---|---|
+| **Viele** Unit-Tests | ViewModels, Validierung, Berechnungen, Commands | NUnit + NSubstitute |
+| **Einige** Integrationstests | Services mit echter Datenbank | NUnit + Testcontainers |
+| **Wenige** UI-Tests | wichtige Abläufe durch die echte Oberfläche: Login, Auftrag anlegen, Drucken | NUnit + **FlaUI** |
+
+:::tip[Was nur UI-Tests finden]
+UI-Tests decken Fehler auf, die ViewModel-Tests nicht sehen: **falsche Bindings** (Tippfehler im Property-Namen fallen erst zur Laufzeit auf), fehlende Verknüpfungen von Buttons und Commands, Probleme mit Fokus und Tab-Reihenfolge, Dialoge und Fensterwechsel.
+:::
+
+## AutomationIds in XAML \{#automationid}
+
+Damit Tests Elemente stabil finden, braucht jedes wichtige Element eine **AutomationId**:
+
+```xml
+<StackPanel>
+    <TextBox AutomationProperties.AutomationId="txtName"
+             Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+
+    <Button AutomationProperties.AutomationId="btnSpeichern"
+            Content="Speichern"
+            Command="{Binding SpeichernCommand}" />
+
+    <!-- Icon-Button ohne Text: Name für Screenreader UND Tests -->
+    <Button AutomationProperties.AutomationId="btnLoeschen"
+            AutomationProperties.Name="Löschen"
+            Command="{Binding LoeschenCommand}">
+        <Image Source="/Bilder/muelleimer.png" />
+    </Button>
+
+    <TextBlock AutomationProperties.AutomationId="lblStatus"
+               Text="{Binding Status}" />
+</StackPanel>
+```
+
+- Ist keine AutomationId gesetzt, verwendet WPF den Wert von **`x:Name`**, falls vorhanden. Eine explizite AutomationId ist aber klarer und unabhängig von Umbenennungen im Code-Behind.
+- **`AutomationProperties.Name`** gibt Elementen ohne sichtbaren Text eine Beschriftung – das hilft Screenreadern und damit gleichzeitig der Barrierefreiheit.
+
+:::note[Namenskonvention]
+Ein Präfix für den Elementtyp (`txt`, `btn`, `cmb`, `chk`, `lbl`, `grd`) macht Tests und Inspect-Ausgaben gut lesbar. Wichtiger als die genaue Konvention ist, dass das Team **eine** Konvention nutzt.
+:::
+
+## Listen, Vorlagen und DataGrids \{#listen}
+
+In einer `ListBox` oder einem `ItemsControl` werden Elemente aus einem **DataTemplate** erzeugt – jede Zeile hätte dieselbe AutomationId. Lösung: die ID **per Binding** eindeutig machen.
+
+```xml
+<ListBox AutomationProperties.AutomationId="lstKunden" ItemsSource="{Binding Kunden}">
+    <ListBox.ItemContainerStyle>
+        <Style TargetType="ListBoxItem">
+            <Setter Property="AutomationProperties.AutomationId"
+                    Value="{Binding Id, StringFormat=kunde-{0}}" />
+        </Style>
+    </ListBox.ItemContainerStyle>
+    <ListBox.ItemTemplate>
+        <DataTemplate>
+            <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>
+```
+
+```csharp
+var kunde42 = _fenster.FindFirstDescendant(cf => cf.ByAutomationId("kunde-42")).AsListBoxItem();
+kunde42.Select();
+```
+
+Ein **DataGrid** kann FlaUI als Tabelle lesen:
+
+```csharp
+var grid = _fenster.FindFirstDescendant(cf => cf.ByAutomationId("grdAuftraege")).AsGrid();
+
+Assert.That(grid.RowCount, Is.EqualTo(3));
+Assert.That(grid.Rows[0].Cells[1].Value, Is.EqualTo("Max Mustermann"));
+```
+
+:::warning[Virtualisierung]
+WPF-Listen und DataGrids sind standardmäßig **virtualisiert**: Nur die sichtbaren Zeilen existieren als UI-Elemente. Eine Zeile weit unten wird erst gefunden, nachdem man dorthin gescrollt hat. Für Tests hilft es, mit **wenigen Testdaten** zu arbeiten oder gezielt zu scrollen.
+:::
+
+**Eigene Steuerelemente** (Custom Controls), die direkt von `FrameworkElement` erben und selbst zeichnen, tauchen oft gar nicht im UIA-Baum auf. Dann muss die Entwicklung über `OnCreateAutomationPeer` einen **AutomationPeer** bereitstellen – das verbessert gleichzeitig die Barrierefreiheit.
+
+## Screen Objects \{#screen-objects}
+
+Was im Browser das [Page Object](../04-browser/03-page-object-model.mdx) ist, heißt bei Desktop-Anwendungen oft **Screen Object**: eine Klasse pro Fenster oder Dialog, die Elemente und fachliche Aktionen kapselt.
+
+```csharp
+using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Tools;
+
+public class KundeBearbeitenScreen(Window fenster)
+{
+    private TextBox Name => Finde("txtName").AsTextBox();
+    private Button Speichern => Finde("btnSpeichern").AsButton();
+    public Label Status => Finde("lblStatus").AsLabel();
+
+    public bool KannSpeichern => Speichern.IsEnabled;
+
+    public KundeBearbeitenScreen NameEingeben(string name)
+    {
+        Name.Enter(name);
+        return this;
+    }
+
+    public void SpeichernKlicken() => Speichern.Invoke();
+
+    // Gemeinsame Hilfsmethode: wartet auf das Element und meldet klar, welches fehlt
+    private AutomationElement Finde(string automationId) =>
+        Retry.WhileNull(() => fenster.FindFirstDescendant(cf => cf.ByAutomationId(automationId)),
+                        TimeSpan.FromSeconds(5), throwOnTimeout: true,
+                        timeoutMessage: $"Element '{automationId}' nicht gefunden").Result;
+}
+```
+
+```csharp
+[Test]
+public void Kunde_mit_Namen_kann_gespeichert_werden()
+{
+    var screen = new KundeBearbeitenScreen(_fenster);
+
+    screen.NameEingeben("Anna Beispiel").SpeichernKlicken();
+
+    Retry.WhileFalse(() => screen.Status.Text == "Gespeichert", TimeSpan.FromSeconds(5));
+    Assert.That(screen.Status.Text, Is.EqualTo("Gespeichert"));
+}
+```
+
+Die Regeln sind dieselben wie bei Page Objects: **keine Asserts** im Screen Object, **fachliche Methoden**, Locators an **einer** Stelle, ein neuer Dialog liefert ein **neues Screen Object** zurück.
+
+:::tip[Klare Fehlermeldung]
+Die Hilfsmethode `Finde` lohnt sich doppelt: Sie wartet auf das Element **und** ersetzt die nichtssagende `NullReferenceException` durch „Element 'txtName' nicht gefunden“.
+:::
+
+## Testdaten und Zustand \{#testdaten}
+
+Desktop-Anwendungen speichern oft Zustand: zuletzt geöffnete Dateien, Fensterpositionen, eine lokale Datenbank, Benutzereinstellungen. Damit Tests [unabhängig](../01-grundlagen/01-grundlagen-testautomation.mdx#first) bleiben:
+
+- **Anwendung pro Test neu starten** (`[SetUp]`) – am sichersten, aber langsamer. Alternative: einmal pro Testklasse starten (`[OneTimeSetUp]`) und zwischen den Tests auf einen definierten Startbildschirm zurückkehren.
+- **Testmodus per Startargument**, den die Entwicklung einbaut, z. B. eigene Datenbank oder Mock-Services:
+
+```csharp
+var start = new ProcessStartInfo(exePfad)
+{
+    Arguments = "--testmodus",
+    Environment = { ["KUNDEN_DB"] = verbindungTestDb }
+};
+_app = Application.Launch(start);
+```
+
+- **Einstellungen zurücksetzen** – z. B. das Einstellungsverzeichnis unter `%LOCALAPPDATA%` vor dem Start löschen oder per Argument umleiten.
+- **Testdaten per API oder Datenbank** anlegen statt mühsam über die Oberfläche.
+
+## Desktop-Tests in der CI \{#ci}
+
+Browser-Tests laufen **headless**, Desktop-Tests nicht: Sie brauchen eine **echte, entsperrte Windows-Sitzung** mit Desktop, weil Fenster gezeichnet und Maus- und Tastatureingaben zugestellt werden müssen.
+
+| Problem | Ursache | Lösung |
+|---|---|---|
+| Fenster werden nicht gefunden, Klicks wirkungslos | Build-Agent läuft als **Windows-Dienst** ohne Desktop | Agent im **interaktiven Modus** betreiben (z. B. Azure DevOps: Agent als interaktiver Prozess mit Autologon) |
+| Tests scheitern nachts | **Bildschirmsperre** oder Bildschirmschoner | Sperre auf dem Testrechner deaktivieren |
+| Tests scheitern, wenn niemand zuschaut | **RDP-Fenster minimiert** – Windows zeichnet die Sitzung nicht mehr | Sitzung nicht minimieren bzw. Konsole/VM-Sitzung nutzen |
+| Elemente „außerhalb“ des Fensters | andere **Bildschirmauflösung** oder Skalierung | Auflösung und Skalierung auf den Testrechnern festlegen |
+
+:::note[Gehostete CI-Runner]
+Auf gehosteten Windows-Runnern (z. B. `windows-latest` bei GitHub Actions) lassen sich einfache UI-Tests oft ausführen. Für größere Desktop-Suiten nutzen viele Teams aber **eigene Testrechner oder VMs**, bei denen sie Sitzung, Auflösung und installierte Software selbst kontrollieren.
+:::
+
+Weitere Tipps für die CI:
+- Bei Fehlschlag immer **Screenshot** speichern und als Artefakt hochladen (siehe [FlaUI – Grundlagen](./01-flaui-grundlagen.mdx#screenshots)).
+- Verwaiste Prozesse der Anwendung **vor** dem Testlauf beenden.
+- UI-Tests als **eigene Stufe** nach den schnellen Unit-Tests ausführen.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Logik nur über die Oberfläche testen**, obwohl ViewModels direkt testbar wären – die Suite wird langsam und fragil.
+- **Keine AutomationIds** in XAML – Tests hängen an sichtbaren Texten oder an der Baumstruktur.
+- **Gleiche AutomationId in jeder Listenzeile** – Tests finden immer nur die erste Zeile.
+- **Elemente weit unten in virtualisierten Listen** suchen, ohne zu scrollen.
+- **Zustand von vorherigen Läufen** (Einstellungen, lokale Datenbank) beeinflusst den Test.
+- **CI-Agent als Dienst** ohne Desktop-Sitzung – Tests scheitern nur dort, lokal ist alles grün.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Bei MVVM die Logik in **ViewModel-Unit-Tests** prüfen, FlaUI nur für **wenige wichtige Abläufe**.
+- In XAML **`AutomationProperties.AutomationId`** setzen, für Icon-Buttons zusätzlich `AutomationProperties.Name`.
+- In Listen die AutomationId **per Binding eindeutig** machen; Virtualisierung beachten.
+- **Screen Objects** kapseln Fenster und Dialoge – mit Warte-Hilfsmethode und klaren Fehlermeldungen.
+- Zustand und Testdaten **kontrollieren**, in der CI eine **entsperrte, interaktive Sitzung** sicherstellen.
+
+<Quiz fragen={fragen} titel="Quiz: WPF testbar machen" />

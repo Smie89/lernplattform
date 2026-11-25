@@ -4,6 +4,6 @@
     "link":  {
                  "type":  "generated-index",
                  "slug":  "/testautomation",
-                 "description":  "Testautomation für C#-, Java- und Browser-Anwendungen."
+                 "description":  "Testautomation für C#-, Java-, Browser- und WPF-Desktop-Anwendungen."
              }
 }

@@ -1,0 +1,150 @@
+# Fragen zur Lektion "FlaUI – Grundlagen"
+
+- id: ta-fu-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Über welche Windows-Schnittstelle steuert FlaUI Desktop-Anwendungen?"
+  optionen:
+    - "W3C WebDriver"
+    - "Microsoft UI Automation (UIA)"
+    - "Chrome DevTools Protocol"
+    - "COM-Automation von Microsoft Office"
+  richtig: [1]
+  erklaerung: "UI Automation wurde für Barrierefreiheit entwickelt und stellt den Elementbaum einer Anwendung bereit. FlaUI nutzt sie in der Variante UIA2 oder UIA3."
+  artikel: "#ui-automation"
+  tags: [flaui, uia]
+
+- id: ta-fu-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Eigenschaft eines Automation-Elements eignet sich am besten, um es in Tests zu finden?"
+  optionen:
+    - "Name"
+    - "AutomationId"
+    - "Position auf dem Bildschirm"
+    - "ClassName"
+  richtig: [1]
+  erklaerung: "Die AutomationId ist eine technische, stabile Kennung. Der Name ist der sichtbare Text und ändert sich bei Umformulierungen und Übersetzungen."
+  artikel: "#ui-automation"
+  tags: [flaui, locators]
+
+- id: ta-fu-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches FlaUI-Paket wird für WPF-Anwendungen empfohlen?"
+  optionen:
+    - "FlaUI.UIA2"
+    - "FlaUI.UIA3"
+    - "FlaUI.WebDriver"
+    - "FlaUI.WinForms"
+  richtig: [1]
+  erklaerung: "UIA3 nutzt die neuere native UI-Automation-Schnittstelle und funktioniert mit WPF am besten. UIA2 ist manchmal bei WinForms die bessere Wahl."
+  artikel: "#was-ist-flaui"
+  tags: [flaui, uia]
+
+- id: ta-fu-004
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Mit welchen Werkzeugen kannst du den Elementbaum einer WPF-Anwendung untersuchen?"
+  optionen:
+    - "FlaUInspect"
+    - "Accessibility Insights for Windows"
+    - "Inspect.exe aus dem Windows SDK"
+    - "Die Browser-DevTools mit F12"
+  richtig: [0, 1, 2]
+  erklaerung: "Alle drei zeigen AutomationId, Name und ControlType der Elemente. Browser-DevTools funktionieren nur für Webseiten."
+  artikel: "#inspect"
+  tags: [flaui, werkzeuge]
+
+- id: ta-fu-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was liefert _fenster.FindFirstDescendant(cf => cf.ByAutomationId(\"btnX\")), wenn es kein solches Element gibt?"
+  optionen:
+    - "Eine NoSuchElementException"
+    - "null"
+    - "Ein leeres Dummy-Element"
+    - "Das Hauptfenster"
+  richtig: [1]
+  erklaerung: "FlaUI liefert null statt einer Exception. Ein anschließendes .AsButton().Invoke() endet dann in einer NullReferenceException."
+  artikel: "#elemente-finden"
+  tags: [flaui, elemente]
+
+- id: ta-fu-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Unterschied zwischen FindFirstChild und FindFirstDescendant?"
+  optionen:
+    - "Es gibt keinen"
+    - "FindFirstChild sucht nur direkte Kinder, FindFirstDescendant den ganzen Unterbaum"
+    - "FindFirstChild sucht nach Name, FindFirstDescendant nach AutomationId"
+    - "FindFirstDescendant funktioniert nur mit UIA2"
+  richtig: [1]
+  erklaerung: "FindFirstDescendant durchsucht alle Ebenen unterhalb des Elements – bequemer, bei großen Fenstern aber langsamer."
+  artikel: "#elemente-finden"
+  tags: [flaui, elemente]
+
+- id: ta-fu-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum ist button.Invoke() meist stabiler als button.Click()?"
+  optionen:
+    - "Invoke ist schneller zu tippen"
+    - "Invoke nutzt das Invoke-Pattern ohne Mausbewegung und ist unabhängig von Fensterposition und Überlagerungen"
+    - "Click funktioniert nur unter UIA2"
+    - "Invoke löst zusätzlich einen Screenshot aus"
+  richtig: [1]
+  erklaerung: "Click bewegt den echten Mauszeiger und kann scheitern, wenn etwas über dem Button liegt. Invoke löst die Aktion direkt über UI Automation aus."
+  artikel: "#bedienen"
+  tags: [flaui, bedienen]
+
+- id: ta-fu-008
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Textfeld validiert die Eingabe bei jedem Tastendruck. Mit textBox.Text = \"abc\" wird die Validierung nicht ausgelöst. Was hilft?"
+  optionen:
+    - "textBox.Enter(\"abc\"), das echte Tastatureingaben sendet"
+    - "Thread.Sleep nach dem Setzen"
+    - "Den Test auf UIA2 umstellen"
+    - "Das Feld zweimal setzen"
+  richtig: [0]
+  erklaerung: "Text = … setzt den Wert direkt über das Value-Pattern. Enter(…) tippt Zeichen für Zeichen und löst damit die Tastatur-Events aus, auf die die Anwendung reagiert."
+  artikel: "#bedienen"
+  tags: [flaui, bedienen]
+
+- id: ta-fu-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Ergebnis erscheint erst nach einer Berechnung im Hintergrund. Wie wartest du in FlaUI richtig darauf?"
+  optionen:
+    - "Thread.Sleep(3000)"
+    - "Retry.WhileNull(() => _fenster.FindFirstDescendant(...), TimeSpan.FromSeconds(5), throwOnTimeout: true)"
+    - "FlaUI wartet automatisch wie Playwright"
+    - "Den Test zweimal ausführen"
+  richtig: [1]
+  erklaerung: "FlaUI hat kein Auto-Waiting. Retry.WhileNull und Retry.WhileFalse prüfen wiederholt, bis die Bedingung erfüllt ist oder das Timeout abläuft."
+  artikel: "#warten"
+  tags: [flaui, warten]
+
+- id: ta-fu-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie findest du eine modale MessageBox, die nach einem Klick erscheint?"
+  optionen:
+    - "Über _fenster.ModalWindows"
+    - "Über Application.Launch erneut"
+    - "Über die Windows-Taskleiste"
+    - "Gar nicht, MessageBoxen sind nicht automatisierbar"
+  richtig: [0]
+  erklaerung: "Modale Dialoge sind eigene Fenster und hängen am Hauptfenster. Mit Retry.WhileEmpty auf ModalWindows wartet man, bis der Dialog da ist."
+  artikel: "#dialoge"
+  tags: [flaui, dialoge]
+
+- id: ta-fu-011
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "FlaUI-Desktop-Tests sollten möglichst parallel laufen, damit die Suite schneller ist."
+  richtig: [1]
+  erklaerung: "Falsch. Desktop-Tests teilen sich Maus, Tastatur und Fokus und stören sich parallel gegenseitig. Deshalb [NonParallelizable] setzen."
+  artikel: "#typische-fehler"
+  tags: [flaui, parallel]

@@ -27,6 +27,11 @@ Empfohlene Reihenfolge:
 8. [Selenium WebDriver](./04-browser/02-selenium-webdriver.mdx) – C# und Java, Locator-Strategien, explizites Warten
 9. [Page Object Model](./04-browser/03-page-object-model.mdx) – wartbare Browser-Tests mit Page Objects und Komponenten
 
-Die C#- und Java-Module kannst du auch in beliebiger Reihenfolge oder nur eines davon bearbeiten.
+**Desktop (WPF)**
+
+10. [FlaUI – Grundlagen](./05-desktop/01-flaui-grundlagen.mdx) – UI Automation, Elemente finden und bedienen, warten, Dialoge
+11. [WPF testbar machen](./05-desktop/02-wpf-testbar-machen.mdx) – MVVM-Teststrategie, AutomationIds in XAML, Screen Objects, CI
+
+Die C#-, Java- und Desktop-Module kannst du auch in beliebiger Reihenfolge oder nur eines davon bearbeiten.
 
 Querverbindungen: Selenium Grid, Playwright im Container und Testcontainers im Bereich 🐳 [Docker](../05-docker/05-docker-testautomation.mdx).

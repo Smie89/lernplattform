@@ -1,0 +1,9 @@
+{
+  "label": "Desktop (WPF)",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "slug": "/testautomation/desktop",
+    "description": "UI-Tests für Windows-Desktop-Anwendungen (WPF, WinForms) mit FlaUI."
+  }
+}

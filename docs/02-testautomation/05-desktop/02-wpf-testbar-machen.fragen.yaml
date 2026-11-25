@@ -1,0 +1,150 @@
+# Fragen zur Lektion "WPF testbar machen"
+
+- id: ta-wp-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine WPF-Anwendung nutzt MVVM. Wo prüfst du die Regel 'Speichern ist deaktiviert, solange der Name leer ist' am effizientesten?"
+  optionen:
+    - "In einem FlaUI-Test über die Oberfläche"
+    - "In einem Unit-Test des ViewModels (CanExecute des Commands)"
+    - "Nur manuell"
+    - "In einem Lasttest"
+  richtig: [1]
+  erklaerung: "Die Logik steckt im ViewModel, einer normalen C#-Klasse. Ein Unit-Test läuft in Millisekunden und braucht kein Fenster."
+  artikel: "#teststrategie"
+  tags: [wpf, mvvm, teststrategie]
+
+- id: ta-wp-002
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Fehler finden UI-Tests mit FlaUI, die ViewModel-Unit-Tests nicht finden?"
+  optionen:
+    - "Tippfehler in einem Binding-Pfad in XAML"
+    - "Ein Button ist nicht mit dem Command verknüpft"
+    - "Falsche Berechnung im ViewModel"
+    - "Probleme mit Dialogen und Fensterwechseln"
+  richtig: [0, 1, 3]
+  erklaerung: "Bindings und Verknüpfungen in XAML werden erst zur Laufzeit aufgelöst. Eine falsche Berechnung im ViewModel findet dagegen schon der Unit-Test."
+  artikel: "#teststrategie"
+  tags: [wpf, teststrategie]
+
+- id: ta-wp-003
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie setzt du in XAML eine AutomationId für einen Button?"
+  optionen:
+    - "<Button Tag=\"btnSpeichern\" />"
+    - "<Button AutomationProperties.AutomationId=\"btnSpeichern\" />"
+    - "<Button ToolTip=\"btnSpeichern\" />"
+    - "<Button Uid=\"btnSpeichern\" />"
+  richtig: [1]
+  erklaerung: "Die angehängte Eigenschaft AutomationProperties.AutomationId legt die ID fest, die UI Automation und damit FlaUI sehen."
+  artikel: "#automationid"
+  tags: [wpf, automationid]
+
+- id: ta-wp-004
+  typ: wahr-falsch
+  schwierigkeit: 3
+  frage: "Ist in WPF keine AutomationId gesetzt, wird ersatzweise der Wert von x:Name verwendet."
+  richtig: [0]
+  erklaerung: "Wahr. Eine explizite AutomationId ist trotzdem klarer und bleibt stabil, wenn jemand das Feld im Code-Behind umbenennt."
+  artikel: "#automationid"
+  tags: [wpf, automationid]
+
+- id: ta-wp-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Button zeigt nur ein Mülleimer-Symbol. Was solltest du zusätzlich zur AutomationId setzen?"
+  optionen:
+    - "AutomationProperties.Name=\"Löschen\" – hilft Screenreadern und Tests"
+    - "Nichts, Symbole sind selbsterklärend"
+    - "Einen ToolTip mit der AutomationId"
+    - "Background=\"Red\""
+  richtig: [0]
+  erklaerung: "Ohne sichtbaren Text hat der Button keinen Namen. AutomationProperties.Name verbessert die Barrierefreiheit und macht das Element in Inspect-Werkzeugen und Reports verständlich."
+  artikel: "#automationid"
+  tags: [wpf, barrierefreiheit]
+
+- id: ta-wp-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Alle Zeilen einer ListBox haben dieselbe AutomationId aus dem DataTemplate. Wie machst du sie eindeutig?"
+  optionen:
+    - "Gar nicht, Listen sind nicht testbar"
+    - "Die AutomationId im ItemContainerStyle per Binding setzen, z. B. {Binding Id, StringFormat=kunde-{0}}"
+    - "Die Zeilen per Index über XPath ansprechen"
+    - "Für jede Zeile ein eigenes DataTemplate anlegen"
+  richtig: [1]
+  erklaerung: "Mit einem Binding auf eine fachliche ID bekommt jede Zeile eine eigene, stabile AutomationId – unabhängig von der Position in der Liste."
+  artikel: "#listen"
+  tags: [wpf, listen, automationid]
+
+- id: ta-wp-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein DataGrid mit 500 Zeilen ist geöffnet, aber FlaUI findet Zeile 450 nicht. Was ist die wahrscheinlichste Ursache?"
+  optionen:
+    - "FlaUI kann nur 100 Zeilen lesen"
+    - "UI-Virtualisierung: Nur sichtbare Zeilen existieren als UI-Elemente"
+    - "Die AutomationId ist zu lang"
+    - "Der Test läuft mit UIA3 statt UIA2"
+  richtig: [1]
+  erklaerung: "WPF erzeugt bei virtualisierten Listen nur die sichtbaren Zeilen. Man muss scrollen oder mit wenigen Testdaten arbeiten."
+  artikel: "#listen"
+  tags: [wpf, virtualisierung]
+
+- id: ta-wp-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist ein Screen Object?"
+  optionen:
+    - "Ein Screenshot, der bei Fehlschlag gespeichert wird"
+    - "Das Gegenstück zum Page Object für Desktop-Fenster und Dialoge"
+    - "Ein WPF-Steuerelement für Bildschirmausgaben"
+    - "Die Bildschirmauflösung des Testrechners"
+  richtig: [1]
+  erklaerung: "Ein Screen Object kapselt die Elemente und fachlichen Aktionen eines Fensters – mit denselben Regeln wie Page Objects, also z. B. keine Asserts darin."
+  artikel: "#screen-objects"
+  tags: [wpf, screen-object]
+
+- id: ta-wp-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Wie verhinderst du, dass gespeicherter Zustand früherer Läufe einen Desktop-Test beeinflusst?"
+  optionen:
+    - "Anwendung pro Test neu starten"
+    - "Einen Testmodus per Startargument nutzen, z. B. mit eigener Testdatenbank"
+    - "Einstellungsverzeichnis vor dem Start zurücksetzen"
+    - "Die Tests einfach öfter ausführen"
+  richtig: [0, 1, 2]
+  erklaerung: "Kontrollierter Startzustand macht Tests unabhängig und wiederholbar. Häufigeres Ausführen behebt das Problem nicht."
+  artikel: "#testdaten"
+  tags: [wpf, testdaten]
+
+- id: ta-wp-010
+  typ: single
+  schwierigkeit: 3
+  frage: "FlaUI-Tests laufen lokal grün, auf dem Build-Agent findet der Test aber kein Fenster. Der Agent läuft als Windows-Dienst. Was hilft?"
+  optionen:
+    - "Die Tests headless ausführen"
+    - "Den Agent im interaktiven Modus mit einer angemeldeten, entsperrten Sitzung betreiben"
+    - "Timeouts verdoppeln"
+    - "UIA2 statt UIA3 verwenden"
+  richtig: [1]
+  erklaerung: "Desktop-Tests brauchen eine echte Windows-Sitzung mit Desktop. Ein Dienst hat keinen sichtbaren Desktop; einen Headless-Modus wie im Browser gibt es nicht."
+  artikel: "#ci"
+  tags: [wpf, ci]
+
+- id: ta-wp-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Desktop-Tests auf einer VM scheitern immer dann, wenn die RDP-Verbindung minimiert ist. Warum?"
+  optionen:
+    - "RDP verlangsamt das Netzwerk"
+    - "Bei minimierter Sitzung zeichnet Windows die Oberfläche nicht mehr, Eingaben laufen ins Leere"
+    - "Minimierte Fenster haben keine AutomationId"
+    - "FlaUI unterstützt keine VMs"
+  richtig: [1]
+  erklaerung: "Eine minimierte RDP-Sitzung hat keine aktive Darstellung. Lösung: Sitzung nicht minimieren oder eine Konsolen-/VM-Sitzung nutzen."
+  artikel: "#ci"
+  tags: [wpf, ci]
