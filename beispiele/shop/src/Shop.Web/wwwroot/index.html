@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini-Shop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Mini-Shop</h1>
+    <p>Übungsanwendung für Testautomation: ab 100 € gibt es 10 % Rabatt, Stammkunden erhalten zusätzlich 5 %.</p>
+  </header>
+
+  <main>
+    <section aria-labelledby="titel-produkte">
+      <h2 id="titel-produkte">Produkte</h2>
+      <ul id="produkte" class="produkte" data-testid="produktliste"></ul>
+    </section>
+
+    <section aria-labelledby="titel-warenkorb" class="warenkorb">
+      <h2 id="titel-warenkorb">Warenkorb</h2>
+
+      <p id="leer" data-testid="warenkorb-leer">Der Warenkorb ist leer.</p>
+      <table id="positionen" data-testid="warenkorb-positionen" hidden>
+        <thead><tr><th>Produkt</th><th>Menge</th><th>Summe</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <dl class="summen">
+        <dt>Zwischensumme</dt><dd data-testid="zwischensumme">0,00 €</dd>
+        <dt>Rabatt</dt><dd data-testid="rabatt">0 %</dd>
+        <dt>Endpreis</dt><dd data-testid="endpreis"><strong>0,00 €</strong></dd>
+      </dl>
+
+      <form id="bestellformular">
+        <label for="kundenname">Name</label>
+        <input id="kundenname" name="kundenname" autocomplete="name">
+
+        <label class="checkbox"><input type="checkbox" id="stammkunde"> Stammkunde</label>
+
+        <button type="submit">Bestellen</button>
+      </form>
+
+      <p id="fehler" role="alert" data-testid="fehler" hidden></p>
+      <p id="bestaetigung" role="status" data-testid="bestaetigung" hidden></p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

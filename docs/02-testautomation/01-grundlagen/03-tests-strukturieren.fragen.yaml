@@ -1,0 +1,178 @@
+# Fragen zur Lektion "Tests strukturieren"
+
+- id: ta-st-001
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Warum hat die Testanwendung getrennte Testprojekte für Unit-, API- und UI-Tests?"
+  optionen:
+    - "Unterschiedliche Abhängigkeiten, z. B. braucht nur das UI-Projekt Playwright"
+    - "Die schnellen Unit-Tests lassen sich allein ausführen"
+    - "Ein Unit-Test kann so nicht versehentlich die Web-Anwendung starten"
+    - "NUnit erlaubt maximal 20 Tests pro Projekt"
+  richtig: [0, 1, 2]
+  erklaerung: "Getrennte Projekte halten Abhängigkeiten schlank, ermöglichen getrennte Ausführung und ziehen klare Grenzen. Eine Begrenzung der Testanzahl gibt es nicht."
+  artikel: "#loesung"
+  tags: [struktur]
+
+- id: ta-st-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Wo liegen die Unit-Tests für src/Shop.Core/Preise/Rabattrechner.cs?"
+  optionen:
+    - "tests/Shop.Core.Tests/Preise/RabattrechnerTests.cs"
+    - "tests/Shop.Core.Tests/Tests.cs"
+    - "src/Shop.Core/Preise/RabattrechnerTests.cs"
+    - "tests/Shop.UiTests/Rabatt.cs"
+  richtig: [0]
+  erklaerung: "Unit-Test-Projekte spiegeln die Ordnerstruktur des Produktivcodes. So findet man zu jeder Klasse die Tests ohne Suchen."
+  artikel: "#ordner"
+  tags: [struktur, ordner]
+
+- id: ta-st-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wonach sind API- und UI-Tests in der Testanwendung gegliedert?"
+  optionen:
+    - "Nach den Klassen in Shop.Core"
+    - "Nach Fachbereichen (Produkte, Warenkoerbe, Bestellungen), getrennt von der Infrastruktur"
+    - "Alphabetisch nach Testnamen"
+    - "Nach dem Datum, an dem sie geschrieben wurden"
+  richtig: [1]
+  erklaerung: "API- und UI-Tests prüfen Funktionen der Anwendung, nicht einzelne Klassen. Technischer Aufbau liegt getrennt in Infrastruktur/."
+  artikel: "#ordner"
+  tags: [struktur, ordner]
+
+- id: ta-st-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Für den Rabattrechner soll ein weiterer Grenzwert geprüft werden. Was tust du?"
+  optionen:
+    - "Eine neue Datei RabattrechnerTests2.cs anlegen"
+    - "Einen weiteren [TestCase] bzw. eine Methode in RabattrechnerTests ergänzen"
+    - "Eine neue Basisklasse erstellen"
+    - "Einen UI-Test schreiben"
+  richtig: [1]
+  erklaerung: "Neuer Testfall → neue Methode bzw. neuer TestCase in der bestehenden Testklasse. Neue Dateien entstehen für neue Klassen oder Fachbereiche."
+  artikel: "#neue-datei"
+  tags: [struktur, neue-datei]
+
+- id: ta-st-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Mehrere Testklassen bauen auf dieselbe Weise Warenkörbe auf. Wohin gehört dieser Code?"
+  optionen:
+    - "Per Copy-Paste in jede Testklasse"
+    - "In eine Hilfsklasse im Ordner TestDaten/, z. B. einen WarenkorbBuilder"
+    - "In den Produktivcode von Shop.Core"
+    - "In die Basisklasse aller Tests"
+  richtig: [1]
+  erklaerung: "Was in mehreren Testklassen gebraucht wird, bekommt eine eigene Hilfsklasse. Testhilfen gehören nicht in den Produktivcode, und Basisklassen bleiben Technik vorbehalten."
+  artikel: "#neue-datei"
+  tags: [struktur, testdaten]
+
+- id: ta-st-006
+  typ: single
+  schwierigkeit: 2
+  frage: "In welcher Reihenfolge ist eine Testklasse am besten gegliedert?"
+  optionen:
+    - "Private Hilfsmethoden → Tests → Setup → Felder"
+    - "Felder → Setup → Tests (Normalfall, Sonderfälle, Fehlerfälle) → private Hilfsmethoden"
+    - "Fehlerfälle zuerst, dann der Rest in beliebiger Reihenfolge"
+    - "Die Reihenfolge ist egal"
+  richtig: [1]
+  erklaerung: "Diese feste Reihenfolge macht Testklassen vorhersehbar: Man sieht zuerst die Ausgangslage und dann die Fälle vom Normalfall zu den Fehlern."
+  artikel: "#testklasse"
+  tags: [struktur, testklasse]
+
+- id: ta-st-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum werden die NSubstitute-Mocks in BestellServiceTests im [SetUp] erzeugt und nicht als static Felder?"
+  optionen:
+    - "Weil static in Testklassen verboten ist"
+    - "Weil Mocks veränderlich sind (Returns, aufgezeichnete Aufrufe) und jeder Test einen frischen Zustand braucht"
+    - "Weil NSubstitute keine static Felder unterstützt"
+    - "Weil SetUp schneller ist"
+  richtig: [1]
+  erklaerung: "Geteilte veränderliche Objekte führen zu abhängigen, flaky Tests. Unveränderliche Werte wie die Kunde-Records dürfen dagegen static sein."
+  artikel: "#testklasse"
+  tags: [struktur, setup]
+
+- id: ta-st-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum nutzen die Unit-Tests eigene TestProdukte statt des Katalogs der Anwendung?"
+  optionen:
+    - "Weil der Katalog zu groß ist"
+    - "Damit die Tests nicht brechen, wenn sich Preise oder Sortiment im Shop ändern"
+    - "Weil der Katalog nur in der Web-Anwendung existiert"
+    - "Weil runde Preise schneller berechnet werden"
+  richtig: [1]
+  erklaerung: "Die Unit-Tests prüfen Rechenregeln, nicht das Sortiment. Eigene Testdaten machen sie unabhängig von harmlosen Datenänderungen."
+  artikel: "#testdaten"
+  tags: [struktur, testdaten]
+
+- id: ta-st-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Was gehört in eine Basisklasse wie ApiTest oder ShopUiTest?"
+  optionen:
+    - "Nur Technik wie Client erstellen oder Browser konfigurieren"
+    - "Alle fachlichen Abläufe wie 'Kunde anlegen und bestellen'"
+    - "Die Asserts aller Tests"
+    - "Die Testdaten aller Tests"
+  richtig: [0]
+  erklaerung: "Basisklassen bleiben klein und technisch. Fachliche Schritte gehören in API-Client, Builder oder Page Object, Asserts in die Tests."
+  artikel: "#gemeinsamer-code"
+  tags: [struktur, basisklasse]
+
+- id: ta-st-010
+  typ: wahr-falsch
+  schwierigkeit: 3
+  frage: "Ein [SetUpFixture] im Wurzel-Namespace des Testprojekts wird von NUnit einmal für alle Tests in diesem Namespace und allen Unter-Namespaces ausgeführt."
+  richtig: [0]
+  erklaerung: "Wahr. Deshalb liegt ApiUmgebung im Namespace Shop.Api.Tests: Die Anwendung startet einmal für alle API-Tests."
+  artikel: "#gemeinsamer-code"
+  tags: [struktur, nunit]
+
+- id: ta-st-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum bilden die API-Tests die JSON-Antworten mit eigenen Records ab, statt die Klassen aus Shop.Web zu verwenden?"
+  optionen:
+    - "Weil man Klassen aus Shop.Web nicht referenzieren kann"
+    - "Damit eine Umbenennung in der API als Vertragsbruch auffällt, statt dass die Tests sich still mit ändern"
+    - "Weil Records schneller sind"
+    - "Ohne Grund, beides ist gleichwertig"
+  richtig: [1]
+  erklaerung: "Würden die Tests die API-Klassen nutzen, würde ein umbenanntes Feld in Test und API gleichzeitig geändert – und der Bruch für Clients bliebe unbemerkt."
+  artikel: "#gemeinsamer-code"
+  tags: [struktur, api]
+
+- id: ta-st-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bedeutet 'Hilfscode DRY, Tests DAMP'?"
+  optionen:
+    - "Hilfscode ohne Wiederholungen; Tests dürfen etwas wiederholen, wenn sie dadurch von oben nach unten verständlich bleiben"
+    - "Tests dürfen keine Wiederholungen enthalten"
+    - "Hilfscode soll möglichst lang sein"
+    - "Asserts gehören in Hilfsmethoden"
+  richtig: [0]
+  erklaerung: "DAMP heißt Descriptive And Meaningful Phrases. Arrange, Act und Assert sollen im Test sichtbar sein; Asserts gehören nie versteckt in Hilfsmethoden."
+  artikel: "#dry-damp"
+  tags: [struktur, dry-damp]
+
+- id: ta-st-013
+  typ: single
+  schwierigkeit: 3
+  frage: "Im Rabattrechner wird '>=' zu '>' geändert. Nur die Unit-Tests werden rot. Was zeigt das?"
+  optionen:
+    - "API- und UI-Tests sind überflüssig"
+    - "Grenzwerte werden in Unit-Tests geprüft; API- und UI-Tests haben andere Aufgaben"
+    - "Die Unit-Tests sind fehlerhaft"
+    - "Man sollte alle Grenzwerte zusätzlich im Browser testen"
+  richtig: [1]
+  erklaerung: "Das ist die Aufgabenteilung der Testpyramide: Unit-Tests prüfen Regeln und Grenzen gründlich, API- und UI-Tests das Zusammenspiel."
+  artikel: "#gegenprobe"
+  tags: [struktur, testpyramide]

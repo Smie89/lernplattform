@@ -61,6 +61,12 @@ npm run pruefen
 
 Prüft alle `*.fragen.yaml`: Pflichtfelder, eindeutige IDs, gültige `richtig`-Indizes und ob jeder `artikel`-Anker im Artikel existiert. Läuft auch automatisch in der GitHub Action.
 
+## Beispielprojekte
+
+`beispiele/shop/` enthält eine lauffähige Testanwendung (Mini-Shop, .NET 10) mit Unit-, API- und UI-Tests –
+Grundlage der Lektion „Tests strukturieren“. Details im [README des Projekts](beispiele/shop/README.md).
+Die Tests laufen bei Änderungen automatisch per GitHub Action (`.github/workflows/beispiele.yml`).
+
 ## Veröffentlichen
 
 Jeder Push auf `main` baut die Seite per GitHub Action (`.github/workflows/deploy.yml`) und veröffentlicht sie auf GitHub Pages.

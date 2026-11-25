@@ -1,0 +1,24 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; color: #1b1f23; background: #f6f8f7; line-height: 1.5; }
+header { background: #2e7d5b; color: #fff; padding: 1rem; }
+header h1 { margin: 0; }
+header p { margin: .25rem 0 0; }
+main { display: grid; gap: 1rem; padding: 1rem; max-width: 960px; margin: 0 auto; }
+@media (min-width: 760px) { main { grid-template-columns: 1fr 1fr; } }
+section { background: #fff; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+h2 { margin-top: 0; }
+.produkte { list-style: none; padding: 0; margin: 0; }
+.produkte li { display: grid; grid-template-columns: 1fr auto; gap: .25rem .75rem; padding: .5rem 0; border-bottom: 1px solid #e3e7e5; }
+.produkte .preis { font-weight: 600; }
+.produkte button { grid-column: 1 / -1; }
+button { min-height: 44px; padding: .5rem 1rem; border: 0; border-radius: 6px; background: #2e7d5b; color: #fff; font-size: 1rem; cursor: pointer; }
+table { width: 100%; border-collapse: collapse; }
+td, th { text-align: left; padding: .25rem; }
+td button { min-height: 32px; padding: .25rem .5rem; background: #b23b3b; font-size: .85rem; }
+.summen { display: grid; grid-template-columns: 1fr auto; }
+.summen dd { margin: 0; text-align: right; }
+form { display: grid; gap: .5rem; margin-top: 1rem; }
+input#kundenname { min-height: 44px; padding: .5rem; font-size: 1rem; border: 1px solid #b7c0bc; border-radius: 6px; }
+.checkbox { display: flex; align-items: center; gap: .5rem; }
+[role=alert] { color: #b23b3b; font-weight: 600; }
+[role=status] { color: #2e7d5b; font-weight: 600; }

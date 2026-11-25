@@ -1,0 +1,455 @@
+---
+title: Tests strukturieren
+description: Wie man Testprojekte, Ordner, Dateien und Testklassen sinnvoll aufbaut – erklärt an einer echten, lauffähigen Testanwendung mit Unit-, API- und UI-Tests.
+tags: [grundlagen, struktur, csharp, nunit, playwright, praxis]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './03-tests-strukturieren.fragen.yaml';
+
+# Tests strukturieren
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- eine **Lösung mit getrennten Testprojekten** für Unit-, API- und UI-Tests aufbauen,
+- entscheiden, **wann eine neue Datei oder Klasse** sinnvoll ist,
+- eine **Testklasse** übersichtlich gliedern,
+- gemeinsamen Code richtig ablegen: **Test Data Builder**, **Basisklassen**, **Setup-Fixtures**, **API-Clients**, **Page Objects**,
+- erklären, warum **Hilfscode DRY** und **Tests DAMP** sein sollten.
+:::
+
+## Die Testanwendung \{#testanwendung}
+
+Zu dieser Lektion gibt es eine **echte, lauffähige Anwendung**: einen kleinen **Mini-Shop** mit Warenkorb, Rabattregeln und Bestellung – plus **41 Tests** auf drei Ebenen. Alle Codebeispiele unten stammen aus diesem Projekt.
+
+👉 **Quellcode:** [github.com/Smie89/lernplattform/tree/main/beispiele/shop](https://github.com/Smie89/lernplattform/tree/main/beispiele/shop)
+
+Die fachlichen Regeln:
+- Ab **100 €** Zwischensumme gibt es **10 %** Rabatt, **Stammkunden** erhalten zusätzlich **5 %**.
+- Pro Produkt sind **1 bis 99** Stück erlaubt.
+- Der Demo-Zahlungsdienst **lehnt Beträge über 500 € ab** – so lässt sich auch der Fehlerfall testen.
+
+So holst du dir das Projekt und führst es aus (benötigt das **.NET 10 SDK**):
+
+```powershell
+git clone https://github.com/Smie89/lernplattform.git
+cd lernplattform/beispiele/shop
+dotnet build
+dotnet test tests/Shop.Core.Tests tests/Shop.Api.Tests   # Unit- und API-Tests
+dotnet run --project src/Shop.Web                        # Shop im Browser: http://localhost:5000
+```
+
+Für die UI-Tests muss Playwright einmalig einen Browser herunterladen – siehe [README](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/README.md).
+
+:::tip[Lernen mit dem Projekt]
+Lies die Lektion mit dem Projekt in der IDE daneben. Am Ende stehen Übungsaufgaben, mit denen du selbst Tests an der richtigen Stelle ergänzt.
+:::
+
+## Die Lösungsstruktur \{#loesung}
+
+```text
+beispiele/shop/
+├── Shop.slnx                     Lösung (Solution)
+├── src/                          Produktivcode
+│   ├── Shop.Core/                Fachlogik
+│   └── Shop.Web/                 REST-API + Oberfläche
+└── tests/                        Testcode
+    ├── Shop.Core.Tests/          Unit-Tests         → referenziert Shop.Core
+    ├── Shop.Api.Tests/           API-Tests          → referenziert Shop.Web
+    └── Shop.UiTests/             UI-Tests (Browser) → referenziert Shop.Web
+```
+
+**Warum drei Testprojekte statt einem?**
+
+| Grund | Erklärung |
+|---|---|
+| **Unterschiedliche Abhängigkeiten** | Unit-Tests brauchen NSubstitute, UI-Tests Playwright und einen Browser. Ein Unit-Test-Projekt bleibt dadurch schlank. |
+| **Unterschiedliche Geschwindigkeit** | Unit-Tests: 0,3 s. API-Tests: ~1 s. UI-Tests: mehrere Sekunden und ein Browser-Download. |
+| **Getrennt ausführbar** | Lokal beim Programmieren nur `dotnet test tests/Shop.Core.Tests`, in der CI alle als eigene Stufen. |
+| **Klare Grenzen** | Ein Unit-Test kann gar nicht versehentlich die Web-Anwendung starten – das Projekt kennt sie nicht. |
+
+Die **Projektnamen** folgen einem festen Muster: Name des getesteten Projekts plus Testart. So sieht man im Projektmappen-Explorer sofort, was wozu gehört.
+
+:::note[Kleinere Projekte]
+Bei einem sehr kleinen Projekt reicht auch **ein** Testprojekt mit Ordnern `Unit/`, `Api/`, `Ui/` und [Kategorien](../02-csharp/01-nunit-grundlagen.mdx#kategorien) zum Filtern. Sobald UI-Tests mit Browser dazukommen, lohnt sich die Trennung fast immer.
+:::
+
+## Ordner spiegeln den Produktivcode \{#ordner}
+
+Im **Unit-Test-Projekt** spiegelt die Ordnerstruktur die des getesteten Projekts:
+
+```text
+src/Shop.Core/                         tests/Shop.Core.Tests/
+├── Bestellungen/                      ├── Bestellungen/
+│   └── BestellService.cs       ◄──►   │   └── BestellServiceTests.cs
+├── Preise/                            ├── Preise/
+│   └── Rabattrechner.cs        ◄──►   │   └── RabattrechnerTests.cs
+├── Warenkoerbe/                       ├── Warenkoerbe/
+│   └── Warenkorb.cs            ◄──►   │   └── WarenkorbTests.cs
+└── ...                                └── TestDaten/          ← nur im Testprojekt
+                                           ├── TestProdukte.cs
+                                           └── WarenkorbBuilder.cs
+```
+
+- Zu `Rabattrechner.cs` findest du die Tests **ohne Suchen** in `RabattrechnerTests.cs` am selben relativen Ort.
+- Die **Namespaces** passen dazu: `Shop.Core.Preise` ↔ `Shop.Core.Tests.Preise`.
+- Ordner, die es nur im Testprojekt gibt (`TestDaten/`), enthalten **Hilfscode**, keine Tests.
+
+**API- und UI-Tests** sind dagegen nach **Fachlichkeit** gegliedert – sie testen nicht einzelne Klassen, sondern Funktionen der Anwendung:
+
+```text
+tests/Shop.Api.Tests/                  tests/Shop.UiTests/
+├── Infrastruktur/                     ├── Infrastruktur/
+│   ├── ApiUmgebung.cs                 │   ├── ShopServer.cs
+│   ├── ApiTest.cs                     │   └── ShopUiTest.cs
+│   ├── ShopApiClient.cs               ├── Seiten/
+│   └── Antworten.cs                   │   └── ShopSeite.cs
+├── Produkte/                          ├── Komponenten/
+│   └── ProdukteApiTests.cs            │   └── WarenkorbBereich.cs
+├── Warenkoerbe/                       ├── Warenkorb/
+│   └── WarenkorbApiTests.cs           │   └── WarenkorbUiTests.cs
+└── Bestellungen/                      └── Bestellungen/
+    └── BestellungApiTests.cs              └── BestellungUiTests.cs
+```
+
+Das Muster: **Infrastruktur** (wie wird getestet?) getrennt von den **Tests** (was wird getestet?), die Tests nach **Fachbereichen** sortiert.
+
+## Wann lege ich eine neue Datei an? \{#neue-datei}
+
+Das ist die häufigste Frage beim Einstieg. Diese Regeln decken fast alle Fälle ab:
+
+| Situation | Neue Datei? | Beispiel im Shop |
+|---|---|---|
+| Neue Klasse im Produktivcode | **Ja** – neue Testklasse `<Klasse>Tests.cs` im gespiegelten Ordner | `Rabattrechner.cs` → `Preise/RabattrechnerTests.cs` |
+| Neuer Fachbereich / neuer Endpunkt in API- oder UI-Tests | **Ja** – neue Testklasse im passenden Fachordner | `/api/bestellungen` → `Bestellungen/BestellungApiTests.cs` |
+| Neuer Testfall für etwas, das schon eine Testklasse hat | **Nein** – Methode in der bestehenden Klasse | neue Rabattstufe → weiterer `[TestCase]` in `RabattrechnerTests` |
+| Gleiche Testdaten in **mehreren** Testklassen | **Ja** – Hilfsklasse in `TestDaten/` | `TestProdukte.cs`, `WarenkorbBuilder.cs` |
+| Hilfsmethode nur in **einer** Testklasse | **Nein** – `private` Methode am Ende dieser Klasse | – |
+| Technischer Aufbau, den alle Tests eines Projekts brauchen | **Ja** – in `Infrastruktur/` | `ApiUmgebung.cs`, `ApiTest.cs` |
+| Neue Seite oder neuer wiederkehrender Bereich in der Oberfläche | **Ja** – Page Object in `Seiten/`, Komponente in `Komponenten/` | `ShopSeite.cs`, `WarenkorbBereich.cs` |
+| Testklasse wird **unübersichtlich** (z. B. über 20–30 Tests oder mehrere Themen) | **Ja** – nach Verhalten aufteilen | `BestellServiceTests` → `BestellService_ZahlungTests`, `BestellService_ValidierungTests` |
+
+Und immer: **eine öffentliche Klasse pro Datei**, Dateiname = Klassenname.
+
+:::tip[Faustregel]
+Neue **Produktivklasse** → neue **Testklasse**. Neuer **Testfall** → neue **Methode**. Etwas wird **zweimal** gebraucht → eigene **Hilfsklasse**.
+:::
+
+## Aufbau einer Testklasse \{#testklasse}
+
+Eine Testklasse liest sich am besten in fester Reihenfolge: **Felder → Setup → Tests (Normalfall → Sonderfälle → Fehlerfälle) → private Hilfsmethoden**. Ausschnitt aus [BestellServiceTests.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Core.Tests/Bestellungen/BestellServiceTests.cs):
+
+```csharp
+public class BestellServiceTests
+{
+    // 1. Feste Testdaten, die alle Tests nutzen (unveränderlich -> dürfen static sein)
+    private static readonly Kunde Max = new("Max", IstStammkunde: false);
+    private static readonly Kunde Stammkundin = new("Anna", IstStammkunde: true);
+
+    // 2. Veränderliche Objekte – werden im SetUp für JEDEN Test neu erzeugt
+    private IZahlungsdienst _zahlung = null!;
+    private IBestellRepository _repository = null!;
+    private FakeTimeProvider _zeit = null!;
+    private BestellService _service = null!;
+
+    [SetUp]
+    public void Vorbereiten()
+    {
+        _zahlung = Substitute.For<IZahlungsdienst>();
+        _zahlung.Abbuchen(Arg.Any<string>(), Arg.Any<decimal>()).Returns(true);  // Normalfall
+        _repository = Substitute.For<IBestellRepository>();
+        _zeit = new FakeTimeProvider(new DateTimeOffset(2026, 3, 15, 10, 0, 0, TimeSpan.Zero));
+        _service = new BestellService(new Rabattrechner(), _zahlung, _repository, _zeit);
+    }
+
+    // 3. Normalfall
+    [Test]
+    public void Bestellen_mit_genehmigter_Zahlung_speichert_Bestellung() { /* ... */ }
+
+    // 4. Sonderfall: weicht nur in EINEM Punkt vom Setup ab – und zeigt genau diesen Punkt
+    [Test]
+    public void Bestellen_bei_abgelehnter_Zahlung_speichert_nichts()
+    {
+        _zahlung.Abbuchen(Arg.Any<string>(), Arg.Any<decimal>()).Returns(false);
+        var warenkorb = EinWarenkorb().Mit(TestProdukte.Monitor).Bauen();
+
+        var ergebnis = _service.Bestellen(warenkorb, Max);
+
+        Assert.That(ergebnis.Erfolgreich, Is.False);
+        _repository.DidNotReceiveWithAnyArgs().Speichern(default!);
+    }
+
+    // 5. Fehlerfälle
+    [Test]
+    public void Bestellen_mit_leerem_Warenkorb_wirft_Exception() { /* ... */ }
+}
+```
+
+Worauf es ankommt:
+- Das **Setup baut den Normalfall** auf. Ein Test, der davon abweicht, ändert **nur den einen Punkt** – und genau dieser Punkt steht sichtbar im Test.
+- **Unveränderliche** Werte (`Kunde`-Records) dürfen `static` geteilt werden. **Veränderliche** Objekte (Mocks, Service) werden **pro Test neu** erzeugt – sonst entstehen [Flaky Tests](./02-flaky-tests.mdx#gemeinsamer-zustand).
+- Die **Zeit** wird über `FakeTimeProvider` festgelegt. Deshalb kann der Test `Bestellnummer_enthaelt_das_Bestelldatum` exakt `B-20260315-` erwarten.
+
+## Testdaten: Test Data Builder \{#testdaten}
+
+Testdaten aufzubauen ist oft der längste Teil eines Tests. Ein **Test Data Builder** macht daraus eine lesbare Zeile. Aus [WarenkorbBuilder.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Core.Tests/TestDaten/WarenkorbBuilder.cs):
+
+```csharp
+public sealed class WarenkorbBuilder
+{
+    private readonly List<(Produkt Produkt, int Menge)> _positionen = [];
+
+    public static WarenkorbBuilder EinWarenkorb() => new();
+
+    public WarenkorbBuilder Mit(Produkt produkt, int menge = 1)
+    {
+        _positionen.Add((produkt, menge));
+        return this;
+    }
+
+    public WarenkorbBuilder MitWert(decimal zwischensumme) => Mit(TestProdukte.MitPreis(zwischensumme));
+
+    public Warenkorb Bauen() { /* erzeugt den Warenkorb und fügt alle Positionen hinzu */ }
+}
+```
+
+Im Test (mit `using static ...WarenkorbBuilder;`):
+
+```csharp
+var warenkorb = EinWarenkorb()
+    .Mit(TestProdukte.Buch, 2)     // 2 x 25 €
+    .Mit(TestProdukte.Tasse)       // 1 x 10 €
+    .Bauen();
+
+var teuer = EinWarenkorb().MitWert(200m).Bauen();   // nur die Summe ist wichtig
+```
+
+Zwei Entscheidungen, die du bewusst treffen solltest:
+
+1. **`TestProdukte` statt des echten Katalogs.** Die Unit-Tests nutzen eigene Produkte mit runden Preisen. Ändert jemand im Shop den Preis des Buchs, brechen die Unit-Tests **nicht** – sie testen ja Rechenregeln, nicht das Sortiment.
+2. **`MitWert(200m)`** drückt aus, was für den Test zählt: die Zwischensumme. Welche Produkte das sind, ist egal – also steht es auch nicht im Test.
+
+## Gemeinsamer Code: Fixture, Basisklasse, Client \{#gemeinsamer-code}
+
+Die API-Tests zeigen drei Bausteine, die in fast jedem größeren Testprojekt vorkommen:
+
+**1. Setup-Fixture – einmal für alle Tests** ([ApiUmgebung.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Api.Tests/Infrastruktur/ApiUmgebung.cs))
+
+```csharp
+namespace Shop.Api.Tests;   // Wurzel-Namespace: gilt für alle Tests im Projekt
+
+[SetUpFixture]
+public class ApiUmgebung
+{
+    public static WebApplicationFactory<Program> Anwendung { get; private set; } = null!;
+
+    [OneTimeSetUp]
+    public void Starten() => Anwendung = new WebApplicationFactory<Program>();
+
+    [OneTimeTearDown]
+    public void Beenden() => Anwendung.Dispose();
+}
+```
+
+Die Anwendung wird **einmal** im Arbeitsspeicher gestartet, nicht für jeden der 15 Tests neu. NUnit führt einen `[SetUpFixture]` für alle Tests in seinem **Namespace und darunter** aus.
+
+**2. Basisklasse – nur Technik** ([ApiTest.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Api.Tests/Infrastruktur/ApiTest.cs))
+
+```csharp
+public abstract class ApiTest
+{
+    private HttpClient _http = null!;
+    protected ShopApiClient Shop { get; private set; } = null!;
+
+    [SetUp]
+    public void ClientErstellen()
+    {
+        _http = ApiUmgebung.Anwendung.CreateClient();
+        Shop = new ShopApiClient(_http);
+    }
+
+    [TearDown]
+    public void ClientFreigeben() => _http.Dispose();
+}
+```
+
+**3. API-Client – fachliche Methoden** ([ShopApiClient.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Api.Tests/Infrastruktur/ShopApiClient.cs)) – das Gegenstück zum Page Object:
+
+```csharp
+public Task<HttpResponseMessage> HinzufuegenAsync(Guid warenkorbId, string produktId, int menge = 1) =>
+    http.PostAsJsonAsync($"/api/warenkoerbe/{warenkorbId}/positionen", new { produktId, menge });
+
+public async Task<WarenkorbDto> WarenkorbMitAsync(params (string ProduktId, int Menge)[] positionen) { /* ... */ }
+```
+
+Damit wird ein API-Test kurz und fachlich:
+
+```csharp
+public class BestellungApiTests : ApiTest
+{
+    [Test]
+    public async Task Zahlung_ueber_dem_Limit_wird_mit_422_abgelehnt()
+    {
+        var warenkorb = await Shop.WarenkorbMitAsync(("monitor", 2));   // 628,20 € > 500 €
+
+        var antwort = await Shop.BestellenAsync(warenkorb.Id, "Max Muster");
+
+        Assert.That(antwort.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
+    }
+}
+```
+
+:::warning[Basisklassen klein halten]
+Eine Basisklasse enthält **nur Technik** (Client erstellen, Browser konfigurieren). Fachliche Schritte („Kunde anlegen und einloggen“) gehören in Client, Builder oder Page Object. Sonst wächst die Basisklasse zur „God Class“, und jeder Test erbt Verhalten, das er gar nicht braucht.
+:::
+
+**Eigene DTOs in den Tests:** [Antworten.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Api.Tests/Infrastruktur/Antworten.cs) bildet die JSON-Antworten mit eigenen Records ab, statt die Klassen aus `Shop.Web` zu verwenden. Benennt jemand in der API ein Feld um, merken die Tests den **Vertragsbruch**, statt sich still mit umzubenennen.
+
+## DRY im Hilfscode, DAMP in Tests \{#dry-damp}
+
+- **DRY** – *Don't Repeat Yourself*: Wiederholungen vermeiden. Gilt für **Hilfscode**: Builder, Clients, Page Objects.
+- **DAMP** – *Descriptive And Meaningful Phrases*: lieber etwas Wiederholung, wenn der Test dadurch **ohne Herumspringen verständlich** ist. Gilt für die **Tests selbst**.
+
+```csharp
+// ❌ Zu DRY: Was wird hier eigentlich geprüft?
+[Test]
+public async Task Test_Bestellung() => await PruefeBestellung("monitor", 2, 422);
+
+// ✅ DAMP: Arrange, Act und Assert stehen sichtbar im Test
+[Test]
+public async Task Zahlung_ueber_dem_Limit_wird_mit_422_abgelehnt()
+{
+    var warenkorb = await Shop.WarenkorbMitAsync(("monitor", 2));
+
+    var antwort = await Shop.BestellenAsync(warenkorb.Id, "Max Muster");
+
+    Assert.That(antwort.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
+}
+```
+
+Faustregel: **Asserts nie in Hilfsmethoden verstecken.** Wer einen roten Test öffnet, soll sofort sehen, was erwartet wurde.
+
+## UI-Tests: Seiten und Komponenten \{#ui-struktur}
+
+Die UI-Tests nutzen das [Page Object Model](../04-browser/03-page-object-model.mdx). Die einzige Seite des Shops ist [ShopSeite.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.UiTests/Seiten/ShopSeite.cs), der Warenkorb ist eine Komponente ([WarenkorbBereich.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.UiTests/Komponenten/WarenkorbBereich.cs)):
+
+```csharp
+public sealed class ShopSeite
+{
+    public WarenkorbBereich Warenkorb { get; }
+    public ILocator Bestaetigung => _page.GetByRole(AriaRole.Status);
+
+    public static async Task<ShopSeite> OeffnenAsync(IPage page)
+    {
+        await page.GotoAsync("/");
+        await page.Locator("body[data-bereit=true]").WaitForAsync();   // Seite fertig geladen
+        return new ShopSeite(page);
+    }
+
+    public async Task BestellenAsync(string name, bool stammkunde = false)
+    {
+        await _page.GetByLabel("Name").FillAsync(name);
+        await _page.GetByLabel("Stammkunde").SetCheckedAsync(stammkunde);
+        await _page.GetByRole(AriaRole.Button, new() { Name = "Bestellen" }).ClickAsync();
+    }
+}
+```
+
+Der Test liest sich dadurch wie eine Beschreibung des Ablaufs:
+
+```csharp
+public class BestellungUiTests : ShopUiTest
+{
+    [Test]
+    public async Task Stammkunde_kann_bestellen_und_sieht_Bestaetigung()
+    {
+        await Shop.InDenWarenkorbAsync("buch");
+
+        await Shop.BestellenAsync("Anna Beispiel", stammkunde: true);
+
+        await Expect(Shop.Bestaetigung).ToContainTextAsync("Vielen Dank, Anna Beispiel!");
+        await Expect(Shop.Bestaetigung).ToContainTextAsync("23,66 €");   // 24,90 € - 5 %
+    }
+}
+```
+
+Die Basisklasse `ShopUiTest` setzt Basis-URL, Sprache und Fenstergröße und öffnet die Seite vor jedem Test. Die Anwendung selbst startet [ShopServer.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.UiTests/Infrastruktur/ShopServer.cs) einmal auf einem freien Port – oder nutzt eine laufende Umgebung, wenn die Umgebungsvariable `SHOP_URL` gesetzt ist.
+
+## Gegenprobe: Welche Ebene findet welchen Fehler? \{#gegenprobe}
+
+Ein lehrreiches Experiment mit der Testanwendung: Im `Rabattrechner` wird absichtlich `>=` durch `>` ersetzt. Ab genau 100,00 € gibt es dann keinen Rabatt mehr.
+
+```text
+Shop.Core.Tests   Fehler: 2   erfolgreich: 19   ← Endpreis_wendet_Rabattregeln_an(100, …) rot
+Shop.Api.Tests    Fehler: 0   erfolgreich: 15
+Shop.UiTests      Fehler: 0   erfolgreich: 5
+```
+
+**Nur die Unit-Tests** finden den Fehler – weil nur sie den **Grenzwert 100 €** prüfen. Die API- und UI-Tests rechnen mit 158 € und 24,90 €, weit weg von der Grenze.
+
+Das ist kein Mangel der API- und UI-Tests, sondern **genau die Aufgabenteilung** der [Testpyramide](./01-grundlagen-testautomation.mdx#testpyramide):
+- **Unit-Tests** prüfen Regeln und Grenzwerte gründlich und schnell.
+- **API-Tests** prüfen Statuscodes, Fehlerfälle und das JSON-Format.
+- **UI-Tests** prüfen, dass die Oberfläche alles richtig zusammensetzt und anzeigt.
+
+## In Java: dieselben Ideen \{#java}
+
+In Java gibt **Maven** die Grundstruktur vor. Die Prinzipien sind identisch:
+
+```text
+shop/
+├── pom.xml
+└── src/
+    ├── main/java/de/shop/preise/Rabattrechner.java
+    └── test/java/de/shop/
+        ├── preise/RabattrechnerTest.java          ← gleiches Paket, Unit-Test
+        ├── testdaten/WarenkorbBuilder.java
+        └── api/BestellungApiIT.java               ← "IT" = Integrationstest
+```
+
+| .NET | Java |
+|---|---|
+| eigenes Testprojekt pro Testart | eigenes Maven-Modul oder Namenskonvention: `*Test` (Surefire, `mvn test`) und `*IT` (Failsafe, `mvn verify`) |
+| Ordner/Namespace spiegeln | Pakete spiegeln (`de.shop.preise` ↔ `de.shop.preise`) |
+| `[SetUpFixture]` | JUnit-Extension oder `@BeforeAll` in einer gemeinsamen Basisklasse |
+| `Category` + `--filter` | `@Tag` + `-Dgroups` |
+
+Weil Testklasse und getestete Klasse im **selben Paket** liegen, können Java-Tests auch auf Methoden mit Paket-Sichtbarkeit zugreifen.
+
+## Checkliste \{#checkliste}
+
+- [ ] Produktivcode und Tests liegen in getrennten Ordnern (`src/` und `tests/`).
+- [ ] Getrennte Testprojekte (oder klar getrennte Ordner und Kategorien) für Unit-, API- und UI-Tests.
+- [ ] Unit-Tests spiegeln die Ordner des Produktivcodes, API- und UI-Tests sind nach Fachbereichen sortiert.
+- [ ] Eine Testklasse pro Produktivklasse bzw. Fachbereich, eine öffentliche Klasse pro Datei.
+- [ ] Testklassen sind gegliedert: Felder → Setup → Tests → private Hilfsmethoden.
+- [ ] Testdaten kommen aus Buildern bzw. eigenen Testdaten, nicht aus dem Produktiv-Katalog.
+- [ ] Gemeinsames liegt in `TestDaten/`, `Infrastruktur/`, `Seiten/`, `Komponenten/`.
+- [ ] Basisklassen enthalten nur Technik, Hilfsmethoden enthalten keine Asserts.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Eine riesige Datei `Tests.cs`** mit allen Tests – niemand findet etwas, Merge-Konflikte sind vorprogrammiert.
+- **Unit-, API- und UI-Tests im selben Projekt ohne Kategorien** – man kann die schnellen Tests nicht allein ausführen.
+- **Copy-Paste von Testdaten-Aufbau** in jeden Test, statt einen Builder anzulegen.
+- **Asserts in Hilfsmethoden** oder Page Objects – der Test verrät nicht mehr, was er prüft.
+- **Riesige Basisklassen** mit fachlichen Schritten, die nur wenige Tests brauchen.
+- **Produktiv-Daten in Unit-Tests** (z. B. der echte Katalog): Tests brechen bei harmlosen Datenänderungen.
+- **Veränderliche Objekte als `static` Felder** – Tests beeinflussen sich gegenseitig.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Lösung:** `src/` und `tests/`, ein Testprojekt pro Testart, Namen nach dem Muster `<Projekt>.Tests`, `.Api.Tests`, `.UiTests`.
+- **Unit-Tests** spiegeln die Ordner des Produktivcodes, **API- und UI-Tests** sind nach Fachbereichen gegliedert.
+- **Neue Datei**, wenn eine neue Produktivklasse oder ein neuer Fachbereich dazukommt oder etwas zweimal gebraucht wird; **neue Methode** für einen neuen Testfall.
+- **Hilfscode DRY** (Builder, Client, Page Object, Fixture), **Tests DAMP** (lesbar von oben nach unten, Asserts im Test).
+- Die Ebenen **ergänzen sich**: Grenzwerte in Unit-Tests, Schnittstellen in API-Tests, das Zusammenspiel in UI-Tests.
+
+## Übungen mit der Testanwendung \{#uebungen}
+
+1. **Neue Regel:** Ab 3 Stück desselben Produkts ist eines gratis. Wo schreibst du welchen Test – und brauchst du eine neue Datei?
+2. Schreibe einen **API-Test** für `DELETE /api/warenkoerbe/{id}/positionen/{produktId}`. Welche Methode ergänzt du im `ShopApiClient`?
+3. Ergänze in der `ShopSeite` eine Methode „Produkt entfernen“ und schreibe einen **UI-Test** für die Stammkunden-Checkbox.
+4. Mache die **Gegenprobe** selbst: Baue einen Fehler in `Warenkorb.Hinzufuegen` ein. Welche Tests werden rot?
+
+<Quiz fragen={fragen} titel="Quiz: Tests strukturieren" />
