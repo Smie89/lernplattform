@@ -1,0 +1,204 @@
+---
+title: Grundlagen der Testautomation
+description: Testpyramide, was sich zu automatisieren lohnt, das AAA-Muster und die Eigenschaften guter automatisierter Tests.
+tags: [grundlagen, teststrategie]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-grundlagen-testautomation.fragen.yaml';
+
+# Grundlagen der Testautomation
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, was Testautomation leistet – und was nicht,
+- die **Testpyramide** und das Anti-Muster **Eistüte** beschreiben,
+- entscheiden, **welche Tests** sich zu automatisieren lohnen,
+- Tests nach dem **AAA-Muster** strukturieren und gut benennen,
+- die **FIRST-Prinzipien** für gute Tests anwenden.
+:::
+
+## Was ist Testautomation? \{#was-ist-testautomation}
+
+Testautomation bedeutet, dass **Software andere Software prüft**: Ein Testprogramm ruft das System auf, vergleicht das Ergebnis mit einer Erwartung und meldet „bestanden“ oder „fehlgeschlagen“ – ohne dass ein Mensch zuschaut.
+
+Was Testautomation gut kann:
+- **Regressionen finden:** Funktioniert nach einer Änderung noch alles, was vorher funktioniert hat?
+- **Schnelles Feedback** geben – idealerweise bei jedem Commit in der CI.
+- **Wiederholbar** prüfen: tausendmal genau gleich, ohne Ermüdung.
+- Viele **Datenkombinationen** durchspielen.
+
+Was Testautomation **nicht** kann:
+- Neue, unerwartete Fehler „entdecken“ – sie prüft nur, was jemand vorher als Erwartung aufgeschrieben hat.
+- Bewerten, ob eine Oberfläche **verständlich** oder **angenehm** ist.
+- Manuelles, **exploratives Testen** ersetzen.
+
+:::tip[Merksatz]
+Automatisierte Tests sind ein **Sicherheitsnetz für Bekanntes**. Exploratives Testen sucht nach dem Unbekannten. Beides ergänzt sich.
+:::
+
+## Die Testpyramide \{#testpyramide}
+
+Die Testpyramide (nach Mike Cohn) beschreibt, **wie viele Tests welcher Art** ein Projekt haben sollte:
+
+```text
+          /\
+         /E2E\         wenige   – langsam, teuer, fragil
+        /------\
+       /  Inte- \      einige   – mehrere Bausteine zusammen
+      / gration  \
+     /------------\
+    /  Unit-Tests  \   viele    – schnell, billig, stabil
+   /----------------\
+```
+
+| Ebene | Prüft | Laufzeit | Beispiel |
+|---|---|---|---|
+| **Unit** | eine Klasse/Methode isoliert | Millisekunden | `Rabattrechner.Berechne(100)` liefert `90` |
+| **Integration** | Zusammenspiel mehrerer Teile (z. B. Code + Datenbank) | Sekunden | Repository speichert und lädt einen Kunden aus PostgreSQL |
+| **End-to-End (E2E)** | das ganze System aus Nutzersicht | Sekunden bis Minuten | Login im Browser, Artikel in den Warenkorb, Bestellung |
+
+Je **weiter oben**, desto realistischer – aber auch langsamer, teurer in der Wartung und anfälliger für zufällige Fehler.
+
+Dazwischen liegen oft **API-Tests**: Sie prüfen die Geschäftslogik über die Schnittstelle (REST), ohne den Browser – schneller und stabiler als E2E-Tests.
+
+## Anti-Muster: die Eistüte \{#eistuete}
+
+Viele Projekte haben die Pyramide auf dem Kopf stehen:
+
+```text
+   \‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾/
+    \   manuelle    /    sehr viel manuelles Testen
+     \   Tests     /
+      \‾‾‾‾‾‾‾‾‾‾‾/
+       \   E2E   /       viele UI-Tests
+        \‾‾‾‾‾‾‾/
+         \ Int. /
+          \‾‾‾/
+           \U/           kaum Unit-Tests
+```
+
+Folgen: Die Testsuite läuft **stundenlang**, Fehler werden **spät** gefunden, und bei jedem roten Test muss man lange suchen, **wo** der Fehler eigentlich steckt.
+
+:::warning[Typische Ursache]
+„Wir automatisieren einfach die manuellen Testfälle 1:1 im Browser.“ Besser: Prüfe für jeden Testfall, auf **welcher Ebene** er am günstigsten geprüft werden kann. Eine Rabattregel braucht keinen Browser.
+:::
+
+## Was soll man automatisieren? \{#was-automatisieren}
+
+Automatisierung kostet: Tests müssen geschrieben, gepflegt und ausgeführt werden. Sie lohnt sich besonders, wenn ein Test …
+
+- **oft wiederholt** wird (Regressionstests, Smoke-Tests nach jedem Deployment),
+- ein **hohes Risiko** absichert (Bezahlung, Login, Berechnungen),
+- **viele Datenkombinationen** braucht,
+- ein **stabiles** Verhalten prüft, das sich nicht jede Woche ändert,
+- manuell **fehleranfällig** oder mühsam wäre.
+
+Weniger geeignet:
+- Funktionen, die sich gerade noch stark ändern (Prototypen),
+- einmalige Prüfungen,
+- Bewertungen wie „sieht gut aus“ oder „ist verständlich“.
+
+:::note[Faustregel]
+Ein Test, der **häufiger läuft, als er sich ändert**, ist ein guter Kandidat für Automatisierung.
+:::
+
+## Das AAA-Muster \{#aaa-muster}
+
+Fast jeder gute Test besteht aus drei klar getrennten Teilen:
+
+1. **Arrange** – Vorbereiten: Objekte erzeugen, Testdaten anlegen.
+2. **Act** – Ausführen: genau **eine** Aktion, die getestet wird.
+3. **Assert** – Prüfen: Ist das Ergebnis wie erwartet?
+
+```csharp
+[Test]
+public void Berechne_Bestellwert_ueber_100_gibt_10_Prozent_Rabatt()
+{
+    // Arrange
+    var rechner = new Rabattrechner();
+
+    // Act
+    var preis = rechner.Berechne(bestellwert: 200m);
+
+    // Assert
+    Assert.That(preis, Is.EqualTo(180m));
+}
+```
+
+Dasselbe in Java:
+
+```java
+@Test
+void bestellwertUeber100Gibt10ProzentRabatt() {
+    // Arrange
+    var rechner = new Rabattrechner();
+
+    // Act
+    var preis = rechner.berechne(new BigDecimal("200"));
+
+    // Assert
+    assertEquals(new BigDecimal("180"), preis);
+}
+```
+
+In BDD-Sprache heißt dasselbe **Given – When – Then**.
+
+## Gute Testnamen \{#testnamen}
+
+Wenn ein Test fehlschlägt, ist sein **Name** oft das Erste, was man sieht. Ein guter Name beantwortet: **Was** wird getestet, **unter welchen Bedingungen**, und **was wird erwartet**?
+
+| Schlecht | Besser |
+|---|---|
+| `Test1` | `Login_mit_falschem_Passwort_zeigt_Fehlermeldung` |
+| `TestRabatt` | `Berechne_Bestellwert_unter_100_gibt_keinen_Rabatt` |
+| `testUser` | `neuerNutzerOhneEmailWirdAbgelehnt` |
+
+Ein Muster, das sich bewährt hat: **Methode_Bedingung_Erwartung**.
+
+## Die FIRST-Prinzipien \{#first}
+
+Gute automatisierte Tests sind:
+
+| Buchstabe | Bedeutung | Konkret |
+|---|---|---|
+| **F** | Fast – schnell | Unit-Tests in Millisekunden, damit man sie ständig ausführt |
+| **I** | Independent – unabhängig | Kein Test verlässt sich auf einen anderen oder auf eine Reihenfolge |
+| **R** | Repeatable – wiederholbar | Gleiches Ergebnis auf jedem Rechner, zu jeder Uhrzeit |
+| **S** | Self-validating – selbstprüfend | Ergebnis ist eindeutig grün oder rot, kein Log-Lesen nötig |
+| **T** | Timely – rechtzeitig | Tests entstehen zusammen mit dem Code, nicht Monate später |
+
+:::tip[Ein Verhalten pro Test]
+Ein Test sollte **einen Grund haben, rot zu werden**. Prüft ein Test fünf verschiedene Dinge, weiß man beim Fehlschlag nicht sofort, was kaputt ist. Mehrere Asserts sind in Ordnung, wenn sie **dasselbe Verhalten** beschreiben (z. B. Name und E-Mail eines angelegten Nutzers).
+:::
+
+## Praxis: eine kleine Teststrategie \{#praxis-strategie}
+
+Ein Webshop soll Rabatte berechnen: ab 100 € gibt es 10 %, für Stammkunden zusätzlich 5 %. Wo testet man was?
+
+| Prüfung | Ebene | Warum |
+|---|---|---|
+| Rabattregeln mit 10 Kombinationen (99,99 €, 100 €, Stammkunde ja/nein …) | **Unit** | reine Logik, viele Daten, Millisekunden |
+| Rabatt wird in der Datenbank mit der Bestellung gespeichert | **Integration** | Zusammenspiel Code + DB |
+| `POST /bestellungen` liefert den korrekten Endpreis | **API** | Schnittstelle prüfen, ohne Browser |
+| Kunde sieht im Warenkorb den Rabatt und kann bestellen | **E2E** | ein einziger „Happy Path“ im Browser |
+
+Die Grenzwerte (99,99 € / 100 €) gehören in die **Unit-Tests** – im Browser würde jede Kombination Sekunden kosten.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Alles über die Oberfläche testen** – langsam und fragil (Eistüte).
+- **Tests voneinander abhängig machen:** Test B funktioniert nur, wenn Test A vorher den Nutzer angelegt hat.
+- **Kein Assert:** Ein Test, der nur Code ausführt, aber nichts prüft, ist immer grün – und wertlos.
+- **Zu viel in einem Test** prüfen – bei Fehlschlag unklar, was kaputt ist.
+- **Rote Tests ignorieren** („der ist halt manchmal rot“): Dann vertraut bald niemand mehr der Suite. Mehr dazu in der Lektion [Flaky Tests](./02-flaky-tests.mdx).
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Testautomation sichert **Bekanntes** ab und gibt schnelles Feedback – sie ersetzt kein exploratives Testen.
+- **Testpyramide:** viele Unit-Tests, einige Integrations- und API-Tests, wenige E2E-Tests.
+- Automatisiere, was **oft läuft, riskant ist und stabil bleibt**.
+- Struktur: **Arrange – Act – Assert**, sprechende Namen, ein Verhalten pro Test.
+- **FIRST:** schnell, unabhängig, wiederholbar, selbstprüfend, rechtzeitig.
+
+<Quiz fragen={fragen} titel="Quiz: Grundlagen der Testautomation" />

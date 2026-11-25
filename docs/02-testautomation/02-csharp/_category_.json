@@ -1,0 +1,9 @@
+{
+  "label": "C# / .NET",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "slug": "/testautomation/csharp",
+    "description": "Unit-Tests mit NUnit und Testdoubles mit NSubstitute."
+  }
+}

@@ -1,0 +1,155 @@
+# Fragen zur Lektion "JUnit 5 – Grundlagen"
+
+- id: ta-ju-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher Teil von JUnit 5 stellt die API bereit, mit der du Tests schreibst (@Test, assertEquals)?"
+  optionen:
+    - "JUnit Platform"
+    - "JUnit Jupiter"
+    - "JUnit Vintage"
+    - "Maven Surefire"
+  richtig: [1]
+  erklaerung: "Jupiter ist die Programmier-API. Die Platform startet Tests, Vintage führt alte JUnit-4-Tests aus, Surefire ist das Maven-Plugin."
+  artikel: "#ueberblick"
+  tags: [junit]
+
+- id: ta-ju-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dient die junit-bom im dependencyManagement der pom.xml?"
+  optionen:
+    - "Sie führt die Tests aus"
+    - "Sie legt die Versionen aller JUnit-Bausteine zentral und zueinander passend fest"
+    - "Sie erzeugt Testberichte"
+    - "Sie ist nur für Gradle nötig"
+  richtig: [1]
+  erklaerung: "Eine BOM (Bill of Materials) definiert Versionen zentral. Die einzelnen Abhängigkeiten brauchen dann keine eigene Versionsangabe."
+  artikel: "#maven"
+  tags: [junit, maven]
+
+- id: ta-ju-003
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie führst du mit Maven nur die Testklasse RabattrechnerTest aus?"
+  optionen:
+    - "mvn test RabattrechnerTest"
+    - "mvn test -Dtest=RabattrechnerTest"
+    - "mvn run -Dclass=RabattrechnerTest"
+    - "java RabattrechnerTest"
+  richtig: [1]
+  erklaerung: "Mit -Dtest=Klasse bzw. -Dtest=Klasse#methode wählt Surefire einzelne Tests aus."
+  artikel: "#maven"
+  tags: [junit, maven]
+
+- id: ta-ju-004
+  typ: single
+  schwierigkeit: 2
+  frage: "In welcher Reihenfolge stehen die Werte bei assertEquals in JUnit?"
+  optionen:
+    - "assertEquals(ist, erwartet)"
+    - "assertEquals(erwartet, ist)"
+    - "Die Reihenfolge ist egal, auch für die Fehlermeldung"
+    - "assertEquals(meldung, ist)"
+  richtig: [1]
+  erklaerung: "Erwartet zuerst, dann der Ist-Wert. Vertauscht man sie, lautet die Fehlermeldung falsch herum und führt in die Irre."
+  artikel: "#erster-test"
+  tags: [junit, assertions]
+
+- id: ta-ju-005
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum schlägt assertEquals(new BigDecimal(\"180\"), new BigDecimal(\"180.00\")) fehl?"
+  optionen:
+    - "BigDecimal kann man grundsätzlich nicht vergleichen"
+    - "equals vergleicht auch die Anzahl der Nachkommastellen (Scale)"
+    - "180.00 wird als double gespeichert"
+    - "Es schlägt nicht fehl"
+  richtig: [1]
+  erklaerung: "BigDecimal.equals berücksichtigt die Scale, 180 und 180.00 sind daher ungleich. Für Werte vergleicht man mit compareTo oder AssertJ isEqualByComparingTo."
+  artikel: "#erster-test"
+  tags: [junit, bigdecimal]
+
+- id: ta-ju-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist das JUnit-Gegenstück zu Assert.Multiple aus NUnit?"
+  optionen:
+    - "assertTrue"
+    - "assertAll"
+    - "assertIterableEquals"
+    - "@Nested"
+  richtig: [1]
+  erklaerung: "assertAll führt alle übergebenen Prüfungen aus und meldet alle Fehler gemeinsam."
+  artikel: "#assert-all"
+  tags: [junit, assertions]
+
+- id: ta-ju-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu assertThrows sind richtig?"
+  optionen:
+    - "Es gibt die geworfene Exception zurück, sodass man z. B. die Message prüfen kann"
+    - "Es akzeptiert auch Unterklassen des angegebenen Exception-Typs"
+    - "Der Test schlägt fehl, wenn gar keine Exception geworfen wird"
+    - "Es fängt jede Exception, unabhängig vom Typ"
+  richtig: [0, 1, 2]
+  erklaerung: "assertThrows prüft den Typ inklusive Unterklassen und gibt die Exception zurück. Für exakt einen Typ gibt es assertThrowsExactly."
+  artikel: "#exceptions"
+  tags: [junit, exceptions]
+
+- id: ta-ju-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Test soll mit mehreren Wertepaaren (Bestellwert, erwarteter Preis) laufen. Welche Quelle passt am besten?"
+  optionen:
+    - "@ValueSource"
+    - "@CsvSource"
+    - "@Tag"
+    - "@RepeatedTest"
+  richtig: [1]
+  erklaerung: "@CsvSource liefert mehrere Parameter pro Zeile. @ValueSource eignet sich nur für einen einzelnen Parameter."
+  artikel: "#parametrisiert"
+  tags: [junit, parametrisiert]
+
+- id: ta-ju-009
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum muss eine @BeforeAll-Methode standardmäßig static sein?"
+  optionen:
+    - "Weil statische Methoden schneller sind"
+    - "Weil JUnit für jeden Test eine neue Instanz erzeugt und @BeforeAll vor allen Instanzen läuft"
+    - "Weil Maven das verlangt"
+    - "Sie muss nicht static sein"
+  richtig: [1]
+  erklaerung: "JUnit 5 erzeugt pro Test eine neue Instanz der Testklasse. @BeforeAll läuft einmal vorher, also ohne Instanz. Mit @TestInstance(PER_CLASS) lässt sich das ändern."
+  artikel: "#lebenszyklus"
+  tags: [junit, lebenszyklus]
+
+- id: ta-ju-010
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie führst du nur Tests mit @Tag(\"smoke\") aus?"
+  optionen:
+    - "mvn test -Dgroups=smoke"
+    - "mvn smoke"
+    - "mvn test -Dtag=smoke"
+    - "mvn test --only smoke"
+  richtig: [0]
+  erklaerung: "Surefire wählt Tags über -Dgroups aus und schließt sie mit -DexcludedGroups aus."
+  artikel: "#tags"
+  tags: [junit, tags]
+
+- id: ta-ju-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein neuer Test wird von 'mvn test' einfach nicht ausgeführt, ohne Fehlermeldung. Der Import lautet 'import org.junit.Test;', JUnit 4 liegt noch im Klassenpfad. Was ist los?"
+  optionen:
+    - "Die Methode ist nicht public"
+    - "Das ist die JUnit-4-Annotation; Jupiter erwartet org.junit.jupiter.api.Test"
+    - "Der Testname ist zu lang"
+    - "Es fehlt @DisplayName"
+  richtig: [1]
+  erklaerung: "org.junit.Test gehört zu JUnit 4. Ohne Vintage-Engine findet die Platform den Test nicht. Richtig ist org.junit.jupiter.api.Test."
+  artikel: "#typische-fehler"
+  tags: [junit, fehlersuche]

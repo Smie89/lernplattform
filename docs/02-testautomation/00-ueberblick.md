@@ -5,12 +5,28 @@ sidebar_label: Überblick
 
 # Überblick Testautomation
 
-Geplante Module:
+Empfohlene Reihenfolge:
 
-1. **Grundlagen:** Testpyramide, AAA-Muster, Page Object Pattern, Flaky Tests
-2. **C#:** NUnit / xUnit / MSTest, FluentAssertions, FlaUI (Desktop), Reqnroll (BDD)
-3. **Java:** JUnit 5, TestNG, REST Assured, Cucumber
-4. **Browser:** Playwright ✅, Selenium WebDriver, Locator-Strategien
-5. **API-Tests** und **CI/CD** (GitHub Actions, Jenkins)
+**Grundlagen**
+1. [Grundlagen der Testautomation](./01-grundlagen/01-grundlagen-testautomation.mdx) – Testpyramide, was automatisieren, AAA-Muster, FIRST
+2. [Flaky Tests](./01-grundlagen/02-flaky-tests.mdx) – Ursachen finden und beseitigen, Retries und Quarantäne
 
-Querverbindungen: Selenium Grid und Testcontainers im Bereich 🐳 Docker.
+**C# / .NET**
+
+3. [NUnit – Grundlagen](./02-csharp/01-nunit-grundlagen.mdx) – Attribute, `Assert.That`, parametrisierte Tests, Setup/Teardown
+4. [Testdoubles mit NSubstitute](./02-csharp/02-testdoubles-nsubstitute.mdx) – Stub, Mock, Fake; Abhängigkeiten ersetzen
+
+**Java**
+
+5. [JUnit 5 – Grundlagen](./03-java/01-junit5-grundlagen.mdx) – Maven, Assertions, AssertJ, `@ParameterizedTest`, Tags
+6. [API-Tests mit REST Assured](./03-java/02-rest-assured.mdx) – REST-APIs testen, JSON prüfen, Schema-Validierung (mit C#-Gegenstück)
+
+**Browser**
+
+7. [Playwright – Grundlagen](./04-browser/01-playwright-grundlagen.mdx) – Locators, Auto-Waiting, Web-First Assertions (C#)
+8. [Selenium WebDriver](./04-browser/02-selenium-webdriver.mdx) – C# und Java, Locator-Strategien, explizites Warten
+9. [Page Object Model](./04-browser/03-page-object-model.mdx) – wartbare Browser-Tests mit Page Objects und Komponenten
+
+Die C#- und Java-Module kannst du auch in beliebiger Reihenfolge oder nur eines davon bearbeiten.
+
+Querverbindungen: Selenium Grid, Playwright im Container und Testcontainers im Bereich 🐳 [Docker](../05-docker/05-docker-testautomation.mdx).

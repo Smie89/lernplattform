@@ -1,0 +1,150 @@
+# Fragen zur Lektion "API-Tests mit REST Assured"
+
+- id: ta-ra-001
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Welche Vorteile haben API-Tests gegenüber Browser-Tests?"
+  optionen:
+    - "Sie sind deutlich schneller"
+    - "Sie sind stabiler, weil keine Oberfläche und keine Locators beteiligt sind"
+    - "Sie prüfen, ob die Oberfläche gut aussieht"
+    - "Fehler lassen sich leichter einem Endpunkt zuordnen"
+  richtig: [0, 1, 3]
+  erklaerung: "API-Tests prüfen die Logik direkt über die Schnittstelle. Wie die Oberfläche aussieht, können sie naturgemäß nicht beurteilen."
+  artikel: "#warum"
+  tags: [api, teststrategie]
+
+- id: ta-ra-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Welcher Statuscode ist nach dem erfolgreichen Anlegen einer Ressource per POST üblich?"
+  optionen:
+    - "200 OK"
+    - "201 Created"
+    - "204 No Content"
+    - "302 Found"
+  richtig: [1]
+  erklaerung: "201 Created zeigt an, dass etwas neu angelegt wurde – oft mit einem Location-Header, der auf die neue Ressource zeigt."
+  artikel: "#http"
+  tags: [api, http]
+
+- id: ta-ra-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein angemeldeter Nutzer ruft die Daten eines fremden Kunden ab, für die er keine Berechtigung hat. Welcher Statuscode ist korrekt?"
+  optionen:
+    - "401 Unauthorized"
+    - "403 Forbidden"
+    - "404 Not Found"
+    - "500 Internal Server Error"
+  richtig: [1]
+  erklaerung: "401 heißt: nicht angemeldet. 403 heißt: angemeldet, aber keine Berechtigung. (Manche APIs antworten bewusst mit 404, um nicht zu verraten, dass es die Ressource gibt.)"
+  artikel: "#http"
+  tags: [api, http]
+
+- id: ta-ra-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Wofür steht der Aufbau given() – when() – then() in REST Assured?"
+  optionen:
+    - "Vorbereitung – Aktion (Request) – Prüfung der Antwort"
+    - "Login – Request – Logout"
+    - "Header – Body – Footer"
+    - "Test – Retry – Report"
+  richtig: [0]
+  erklaerung: "given() bereitet Header, Parameter und Body vor, when() sendet den Request, then() prüft Statuscode, Header und Body."
+  artikel: "#erster-test"
+  tags: [rest-assured]
+
+- id: ta-ra-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Mit welchem Ausdruck prüfst du, dass in der Liste 'kunden' die Namen Max und Anna vorkommen?"
+  optionen:
+    - ".body(\"kunden.name\", hasItems(\"Max\", \"Anna\"))"
+    - ".body(\"kunden\", equalTo(\"Max, Anna\"))"
+    - ".statusCode(\"Max\", \"Anna\")"
+    - ".body(\"name\", contains(\"kunden\"))"
+  richtig: [0]
+  erklaerung: "Der GPath-Ausdruck kunden.name sammelt die Namen aller Listeneinträge, hasItems prüft, dass die gesuchten Werte enthalten sind."
+  artikel: "#json-pruefen"
+  tags: [rest-assured, gpath]
+
+- id: ta-ra-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Test legt bei jedem Lauf den Kunden 'max@test.de' an. Ab dem zweiten Lauf kommt 409 Conflict. Was ist die beste Lösung?"
+  optionen:
+    - "409 im Test als Erfolg akzeptieren"
+    - "Eindeutige Testdaten erzeugen, z. B. mit UUID in der E-Mail"
+    - "Die Datenbank vor jedem Lauf manuell leeren"
+    - "Den Test nur einmal ausführen"
+  richtig: [1]
+  erklaerung: "Eindeutige Testdaten machen Tests wiederholbar und parallel lauffähig. Zusätzlich sollte der Test aufräumen, was er angelegt hat."
+  artikel: "#daten-senden"
+  tags: [rest-assured, testdaten]
+
+- id: ta-ra-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Negativtests sind für einen POST /kunden sinnvoll?"
+  optionen:
+    - "Fehlendes Pflichtfeld liefert 400"
+    - "Bereits vergebene E-Mail liefert 409"
+    - "Ungültige Eingaben liefern 500"
+    - "Request ohne Token liefert 401"
+  richtig: [0, 1, 3]
+  erklaerung: "Fehlerhafte Eingaben müssen sauber mit 4xx abgelehnt werden. Ein 500 ist immer ein Fehler im Server und kein erwartetes Ergebnis."
+  artikel: "#daten-senden"
+  tags: [api, negativtests]
+
+- id: ta-ra-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie übernimmst du die ID eines neu angelegten Kunden aus der Antwort?"
+  optionen:
+    - ".then().extract().path(\"id\")"
+    - ".then().body(\"id\")"
+    - ".when().get(\"id\")"
+    - ".given().id()"
+  richtig: [0]
+  erklaerung: "extract().path(...) liefert einen einzelnen Wert, extract().as(Klasse.class) die ganze Antwort als Objekt."
+  artikel: "#extract"
+  tags: [rest-assured, extract]
+
+- id: ta-ra-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dient eine RequestSpecification?"
+  optionen:
+    - "Sie beschreibt die erwartete Antwort"
+    - "Sie bündelt gemeinsame Einstellungen wie Basis-URL und Content-Type für viele Tests"
+    - "Sie erzeugt automatisch Testdaten"
+    - "Sie ersetzt JUnit"
+  richtig: [1]
+  erklaerung: "Mit given().spec(api) übernimmt jeder Test die gemeinsamen Einstellungen. Die URL kann dabei aus einer System-Property kommen, damit derselbe Test gegen verschiedene Umgebungen läuft."
+  artikel: "#spezifikation"
+  tags: [rest-assured, konfiguration]
+
+- id: ta-ra-010
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Für API-Tests ist es in Ordnung, das Passwort des Testnutzers direkt in den Quellcode zu schreiben, wenn das Repository privat ist."
+  richtig: [1]
+  erklaerung: "Falsch. Zugangsdaten gehören nie ins Repository – auch nicht in private. Sie kommen aus Umgebungsvariablen oder CI-Secrets."
+  artikel: "#auth"
+  tags: [api, sicherheit]
+
+- id: ta-ra-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Das Backend benennt das Feld 'email' in 'mail' um. Welche Prüfung erkennt das am zuverlässigsten für alle Endpunkte?"
+  optionen:
+    - "Statuscode 200 prüfen"
+    - "Validierung der Antwort gegen ein JSON-Schema mit 'email' als Pflichtfeld"
+    - "Prüfen, dass der Body nicht leer ist"
+    - "Antwortzeit messen"
+  richtig: [1]
+  erklaerung: "Ein JSON-Schema beschreibt die erwartete Struktur. Fehlt ein Pflichtfeld oder ändert sich ein Typ, schlägt matchesJsonSchemaInClasspath fehl."
+  artikel: "#schema"
+  tags: [rest-assured, schema]

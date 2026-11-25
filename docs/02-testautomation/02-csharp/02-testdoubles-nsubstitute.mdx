@@ -1,0 +1,229 @@
+---
+title: Testdoubles mit NSubstitute
+description: Abhängigkeiten im Unit-Test ersetzen – Dummy, Stub, Spy, Mock und Fake sowie die Praxis mit NSubstitute in C#.
+tags: [csharp, nunit, mocking, nsubstitute]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-testdoubles-nsubstitute.fragen.yaml';
+
+# Testdoubles mit NSubstitute
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, **warum** man Abhängigkeiten in Unit-Tests ersetzt,
+- die Arten von **Testdoubles** unterscheiden: Dummy, Stub, Spy, Mock, Fake,
+- Code so gestalten, dass er **testbar** ist (Dependency Injection über Interfaces),
+- mit **NSubstitute** Rückgabewerte festlegen, Aufrufe prüfen und Exceptions simulieren.
+:::
+
+## Warum Testdoubles? \{#warum}
+
+Eine Klasse arbeitet selten allein. Ein `BestellService` braucht vielleicht eine Datenbank, einen Zahlungsdienst und einen E-Mail-Versand. Im Unit-Test willst du aber **nur die Logik des Service** prüfen:
+
+- **Schnell:** keine echte Datenbank, kein Netzwerk.
+- **Kontrolliert:** Du bestimmst, was der Zahlungsdienst antwortet – auch Fehlerfälle.
+- **Ohne Nebenwirkungen:** Es werden keine echten E-Mails verschickt und kein Geld abgebucht.
+
+Ein **Testdouble** ist ein Ersatzobjekt, das im Test die echte Abhängigkeit vertritt – wie ein Stunt-Double im Film.
+
+## Arten von Testdoubles \{#arten}
+
+| Art | Aufgabe | Beispiel |
+|---|---|---|
+| **Dummy** | wird nur übergeben, nie benutzt | ein Logger-Parameter, den der getestete Pfad nicht braucht |
+| **Stub** | liefert **vorgegebene Antworten** | Zahlungsdienst antwortet immer „genehmigt“ |
+| **Spy** | zeichnet auf, **wie** er aufgerufen wurde | merkt sich, welche E-Mails „gesendet“ wurden |
+| **Mock** | Stub/Spy, bei dem der Test die **erwarteten Aufrufe prüft** | „`Senden` muss genau einmal mit dieser Adresse aufgerufen worden sein“ |
+| **Fake** | **funktionierende**, vereinfachte Implementierung | In-Memory-Repository mit einer `List` statt Datenbank |
+
+Im Alltag sagt man oft pauschal „Mock“. Wichtig ist der Unterschied zwischen:
+- **Zustand prüfen** (Stub/Fake): Was ist das Ergebnis?
+- **Verhalten prüfen** (Mock/Spy): Wurde die Abhängigkeit richtig aufgerufen?
+
+## Testbarer Code \{#testbarer-code}
+
+Testdoubles funktionieren nur, wenn die Klasse ihre Abhängigkeiten **nicht selbst erzeugt**, sondern **übergeben bekommt** – meist über ein Interface im Konstruktor (Dependency Injection).
+
+```csharp
+// ❌ Schwer testbar: erzeugt die Abhängigkeit selbst
+public class BestellService
+{
+    private readonly SmtpMailer _mailer = new SmtpMailer("smtp.firma.de");
+}
+
+// ✅ Testbar: bekommt die Abhängigkeiten übergeben
+public interface IZahlungsdienst
+{
+    Task<bool> AbbuchenAsync(string kundenId, decimal betrag);
+}
+
+public interface IMailer
+{
+    void Senden(string an, string betreff);
+}
+
+public class BestellService(IZahlungsdienst zahlung, IMailer mailer)
+{
+    public async Task<bool> BestellenAsync(string kundenId, string email, decimal betrag)
+    {
+        if (betrag <= 0) throw new ArgumentException("Betrag muss positiv sein", nameof(betrag));
+
+        var bezahlt = await zahlung.AbbuchenAsync(kundenId, betrag);
+        if (bezahlt)
+            mailer.Senden(email, "Bestellbestätigung");
+
+        return bezahlt;
+    }
+}
+```
+
+## NSubstitute einrichten \{#einrichten}
+
+```bash
+dotnet add package NSubstitute
+dotnet add package NSubstitute.Analyzers.CSharp   # optional: warnt vor typischen Fehlern
+```
+
+Ein Ersatzobjekt erzeugst du mit `Substitute.For<T>()`:
+
+```csharp
+using NSubstitute;
+
+var zahlung = Substitute.For<IZahlungsdienst>();
+var mailer = Substitute.For<IMailer>();
+var service = new BestellService(zahlung, mailer);
+```
+
+Ohne weitere Angaben liefert ein Substitute **Standardwerte**: `false`, `0`, `null`, leere Strings bzw. bei `Task<T>` einen fertigen Task mit Standardwert.
+
+:::tip[Alternativen]
+Weitere verbreitete Bibliotheken sind **Moq** und **FakeItEasy**. Die Konzepte sind gleich, nur die Syntax unterscheidet sich. NSubstitute ist besonders gut lesbar, weil man die Methode fast wie im echten Code aufruft.
+:::
+
+## Rückgabewerte festlegen (Stub) \{#returns}
+
+```csharp
+[Test]
+public async Task Bestellen_bei_erfolgreicher_Zahlung_gibt_true_zurueck()
+{
+    var zahlung = Substitute.For<IZahlungsdienst>();
+    var mailer = Substitute.For<IMailer>();
+    zahlung.AbbuchenAsync("K-1", 50m).Returns(true);
+    var service = new BestellService(zahlung, mailer);
+
+    var ergebnis = await service.BestellenAsync("K-1", "max@test.de", 50m);
+
+    Assert.That(ergebnis, Is.True);
+}
+```
+
+Mit **Argument-Matchern** muss man nicht jeden Wert exakt angeben:
+
+```csharp
+zahlung.AbbuchenAsync(Arg.Any<string>(), Arg.Any<decimal>()).Returns(true);
+zahlung.AbbuchenAsync("K-1", Arg.Is<decimal>(b => b > 1000)).Returns(false); // Limit
+```
+
+Mehrere Rückgabewerte nacheinander (z. B. erst Fehler, dann Erfolg):
+
+```csharp
+zahlung.AbbuchenAsync(Arg.Any<string>(), Arg.Any<decimal>()).Returns(false, true);
+```
+
+## Aufrufe prüfen (Mock) \{#received}
+
+```csharp
+[Test]
+public async Task Bestellen_bei_erfolgreicher_Zahlung_sendet_Bestaetigung()
+{
+    var zahlung = Substitute.For<IZahlungsdienst>();
+    var mailer = Substitute.For<IMailer>();
+    zahlung.AbbuchenAsync(Arg.Any<string>(), Arg.Any<decimal>()).Returns(true);
+    var service = new BestellService(zahlung, mailer);
+
+    await service.BestellenAsync("K-1", "max@test.de", 50m);
+
+    mailer.Received(1).Senden("max@test.de", "Bestellbestätigung");
+}
+
+[Test]
+public async Task Bestellen_bei_abgelehnter_Zahlung_sendet_keine_Mail()
+{
+    var zahlung = Substitute.For<IZahlungsdienst>();
+    var mailer = Substitute.For<IMailer>();
+    zahlung.AbbuchenAsync(Arg.Any<string>(), Arg.Any<decimal>()).Returns(false);
+    var service = new BestellService(zahlung, mailer);
+
+    await service.BestellenAsync("K-1", "max@test.de", 50m);
+
+    mailer.DidNotReceive().Senden(Arg.Any<string>(), Arg.Any<string>());
+}
+```
+
+- `Received()` – mindestens einmal aufgerufen
+- `Received(1)` – **genau** einmal
+- `DidNotReceive()` – gar nicht aufgerufen
+
+Schlägt die Prüfung fehl, zeigt NSubstitute an, **welche Aufrufe tatsächlich** stattgefunden haben – sehr hilfreich bei der Fehlersuche.
+
+## Exceptions simulieren \{#exceptions}
+
+Fehlerfälle sind mit echten Diensten schwer herzustellen – mit einem Substitute ist es eine Zeile:
+
+```csharp
+using NSubstitute.ExceptionExtensions;
+
+[Test]
+public void Bestellen_wenn_Zahlungsdienst_nicht_erreichbar_wirft_Exception()
+{
+    var zahlung = Substitute.For<IZahlungsdienst>();
+    var mailer = Substitute.For<IMailer>();
+    zahlung.AbbuchenAsync(Arg.Any<string>(), Arg.Any<decimal>())
+           .ThrowsAsync(new HttpRequestException("Timeout"));
+    var service = new BestellService(zahlung, mailer);
+
+    Assert.ThrowsAsync<HttpRequestException>(
+        () => service.BestellenAsync("K-1", "max@test.de", 50m));
+    mailer.DidNotReceive().Senden(Arg.Any<string>(), Arg.Any<string>());
+}
+```
+
+## Praxis: ein Fake statt Mock \{#fake}
+
+Für Repositories ist ein kleiner **Fake** oft lesbarer als viele `Returns`-Zeilen:
+
+```csharp
+public interface IKundenRepository
+{
+    Kunde? Finde(string id);
+    void Speichern(Kunde kunde);
+}
+
+public class InMemoryKundenRepository : IKundenRepository
+{
+    private readonly Dictionary<string, Kunde> _daten = new();
+    public Kunde? Finde(string id) => _daten.GetValueOrDefault(id);
+    public void Speichern(Kunde kunde) => _daten[kunde.Id] = kunde;
+}
+```
+
+Im Test prüfst du dann den **Zustand** („Ist der Kunde gespeichert?“) statt einzelner Aufrufe. Das macht Tests robuster gegen interne Umbauten.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Alles mocken:** Auch einfache Wertobjekte oder die getestete Klasse selbst werden ersetzt – dann testet man nur noch die Mocks.
+- **Zu viele `Received`-Prüfungen:** Tests prüfen jeden internen Aufruf und brechen bei jedem Refactoring. Prüfe Aufrufe nur dort, wo sie das **Ergebnis** sind (E-Mail gesendet, Zahlung ausgelöst).
+- **Konkrete Klassen ersetzen:** NSubstitute kann bei Klassen nur `virtual`-Member ersetzen. Nicht-virtuelle Methoden führen dann **echten Code** aus. Besser Interfaces verwenden (der Analyzer warnt davor).
+- **Typen mocken, die einem nicht gehören** (z. B. `HttpClient` direkt): Besser eine eigene, schmale Schnittstelle davorsetzen.
+- **Unit-Tests mit Mocks als Ersatz für Integrationstests** sehen: Ob die echte Datenbank-Abfrage funktioniert, zeigt nur ein Test gegen eine echte Datenbank (z. B. mit [Testcontainers](../../05-docker/05-docker-testautomation.mdx)).
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Testdoubles ersetzen Abhängigkeiten: **Dummy, Stub, Spy, Mock, Fake**.
+- Voraussetzung: Abhängigkeiten über **Interfaces im Konstruktor** übergeben.
+- NSubstitute: `Substitute.For<T>()`, `.Returns(...)`, `Arg.Any<T>()`, `Arg.Is<T>(...)`.
+- Aufrufe prüfen mit `Received(n)` und `DidNotReceive()`, Fehler simulieren mit `Throws`/`ThrowsAsync`.
+- Sparsam mocken: so viel wie nötig, so wenig wie möglich.
+
+<Quiz fragen={fragen} titel="Quiz: Testdoubles mit NSubstitute" />

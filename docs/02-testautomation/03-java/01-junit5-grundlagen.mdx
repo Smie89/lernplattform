@@ -1,0 +1,344 @@
+---
+title: JUnit 5 – Grundlagen
+description: Tests in Java mit JUnit 5 (Jupiter) und Maven – Annotationen, Assertions, parametrisierte Tests, Lebenszyklus und Tags.
+tags: [java, junit, unit-test, maven]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-junit5-grundlagen.fragen.yaml';
+
+# JUnit 5 – Grundlagen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- ein **Maven-Projekt** mit JUnit 5 aufsetzen und Tests mit `mvn test` ausführen,
+- Tests mit `@Test`, `@BeforeEach` und `@AfterEach` schreiben,
+- mit **Assertions** wie `assertEquals`, `assertAll` und `assertThrows` prüfen,
+- **parametrisierte Tests** mit `@ParameterizedTest` schreiben,
+- Tests mit `@Tag` gruppieren und gezielt ausführen.
+:::
+
+## JUnit 5 im Überblick \{#ueberblick}
+
+JUnit ist **das** Test-Framework für Java. JUnit 5 besteht aus drei Teilen:
+
+| Teil | Aufgabe |
+|---|---|
+| **JUnit Platform** | startet Tests – Grundlage für Maven, Gradle und IDEs |
+| **JUnit Jupiter** | die API, mit der du Tests schreibst (`@Test`, `assertEquals` …) |
+| **JUnit Vintage** | führt alte JUnit-4-Tests aus (nur für Migrationen) |
+
+:::note[JUnit 6]
+Seit 2025 gibt es **JUnit 6**. Die Jupiter-API aus dieser Lektion bleibt dort nahezu unverändert, JUnit 6 setzt aber mindestens Java 17 voraus. Alles hier Gelernte gilt also weiter.
+:::
+
+Häufig ergänzt man JUnit um **AssertJ** für noch besser lesbare Prüfungen – dazu weiter unten mehr.
+
+## Projekt mit Maven \{#maven}
+
+Die wichtigsten Teile der `pom.xml`:
+
+```xml
+<properties>
+  <maven.compiler.release>21</maven.compiler.release>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.junit</groupId>
+      <artifactId>junit-bom</artifactId>
+      <version>5.11.4</version> <!-- aktuelle Version auf junit.org prüfen -->
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
+<dependencies>
+  <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
+
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>3.5.2</version>
+    </plugin>
+  </plugins>
+</build>
+```
+
+- Die **BOM** (Bill of Materials) legt die Version aller JUnit-Bausteine zentral fest.
+- `scope test` sorgt dafür, dass JUnit nicht in der fertigen Anwendung landet.
+- Das **Surefire-Plugin** führt bei `mvn test` die Tests aus. Sehr alte Surefire-Versionen (vor 2.22) erkennen JUnit-5-Tests nicht.
+
+Die Ordnerstruktur nach Maven-Konvention:
+
+```text
+src/main/java/de/shop/Rabattrechner.java        Produktivcode
+src/test/java/de/shop/RabattrechnerTest.java    Tests
+```
+
+```bash
+mvn test                              # alle Tests
+mvn test -Dtest=RabattrechnerTest     # eine Testklasse
+mvn test -Dtest=RabattrechnerTest#ab100EuroGibt10ProzentRabatt   # eine Methode
+```
+
+## Der erste Test \{#erster-test}
+
+```java
+package de.shop;
+
+import java.math.BigDecimal;
+
+public class Rabattrechner {
+    public BigDecimal berechne(BigDecimal bestellwert) {
+        if (bestellwert.signum() < 0) {
+            throw new IllegalArgumentException("Bestellwert darf nicht negativ sein");
+        }
+        if (bestellwert.compareTo(new BigDecimal("100")) >= 0) {
+            return bestellwert.multiply(new BigDecimal("0.90"));
+        }
+        return bestellwert;
+    }
+}
+```
+
+```java
+package de.shop;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class RabattrechnerTest {
+
+    @Test
+    @DisplayName("Ab 100 € gibt es 10 % Rabatt")
+    void ab100EuroGibt10ProzentRabatt() {
+        var rechner = new Rabattrechner();
+
+        var preis = rechner.berechne(new BigDecimal("200"));
+
+        assertEquals(0, new BigDecimal("180").compareTo(preis));
+    }
+}
+```
+
+- Testklassen und -methoden müssen in JUnit 5 **nicht `public`** sein.
+- `@DisplayName` gibt einen lesbaren Namen für Reports und IDE.
+- Bei `assertEquals(erwartet, ist)` steht der **erwartete Wert zuerst** – umgekehrt als bei NUnit.
+
+:::warning[BigDecimal vergleichen]
+`new BigDecimal("180").equals(new BigDecimal("180.00"))` ist **false**, weil `equals` auch die Nachkommastellen (Scale) vergleicht. Für Geldbeträge deshalb `compareTo` verwenden – oder mit AssertJ `isEqualByComparingTo`.
+:::
+
+## Assertions \{#assertions}
+
+Die wichtigsten Methoden aus `org.junit.jupiter.api.Assertions`:
+
+```java
+assertEquals(3, liste.size());
+assertEquals(0.3, 0.1 + 0.2, 0.0001);       // Gleitkomma mit Toleranz
+assertTrue(kunde.istAktiv());
+assertFalse(liste.isEmpty());
+assertNull(kunde.getFirma());
+assertNotNull(kunde.getId());
+assertIterableEquals(List.of("A", "B"), ergebnis);
+assertEquals(3, warenkorb.anzahl(), "Anzahl falsch");  // eigene Fehlermeldung
+```
+
+### Mehrere Prüfungen mit assertAll \{#assert-all}
+
+```java
+@Test
+void neuerKundeHatKorrekteDaten() {
+    var kunde = new Kunde("Max", "max@test.de");
+
+    assertAll("kunde",
+        () -> assertEquals("Max", kunde.getName()),
+        () -> assertEquals("max@test.de", kunde.getEmail()),
+        () -> assertTrue(kunde.istAktiv())
+    );
+}
+```
+
+`assertAll` führt **alle** Prüfungen aus und meldet alle Fehler gemeinsam – das Gegenstück zu `Assert.Multiple` in NUnit.
+
+### Exceptions prüfen \{#exceptions}
+
+```java
+@Test
+void negativerBestellwertWirftException() {
+    var rechner = new Rabattrechner();
+
+    var ex = assertThrows(IllegalArgumentException.class,
+        () -> rechner.berechne(new BigDecimal("-1")));
+
+    assertEquals("Bestellwert darf nicht negativ sein", ex.getMessage());
+}
+```
+
+`assertThrows` akzeptiert auch **Unterklassen** des angegebenen Typs. Soll es genau dieser Typ sein, gibt es `assertThrowsExactly`.
+
+### AssertJ: flüssige Assertions \{#assertj}
+
+```xml
+<dependency>
+  <groupId>org.assertj</groupId>
+  <artifactId>assertj-core</artifactId>
+  <version>3.27.3</version>
+  <scope>test</scope>
+</dependency>
+```
+
+```java
+import static org.assertj.core.api.Assertions.assertThat;
+
+assertThat(preis).isEqualByComparingTo("180");
+assertThat(name).startsWith("Max").endsWith("Mustermann");
+assertThat(liste).hasSize(3).contains("Apfel").doesNotContain("Birne");
+assertThat(kunde).extracting(Kunde::getName, Kunde::getEmail)
+                 .containsExactly("Max", "max@test.de");
+```
+
+AssertJ liest sich wie ein Satz, und die IDE schlägt nach `assertThat(x).` passende Prüfungen vor.
+
+## Parametrisierte Tests \{#parametrisiert}
+
+Parametrisierte Tests brauchen das Modul `junit-jupiter-params` – es ist im Artefakt `junit-jupiter` bereits enthalten.
+
+```java
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+@ParameterizedTest(name = "{0} € → {1} €")
+@CsvSource({
+    "50,     50",
+    "99.99,  99.99",
+    "100,    90.00",
+    "200,    180.00"
+})
+void berechnetPreisKorrekt(BigDecimal wert, BigDecimal erwartet) {
+    var preis = new Rabattrechner().berechne(wert);
+
+    assertEquals(0, erwartet.compareTo(preis));
+}
+
+@ParameterizedTest
+@ValueSource(strings = {"", "ohne-at.de", "a@"})
+void ungueltigeEmailWirdAbgelehnt(String email) {
+    assertFalse(EmailValidator.istGueltig(email));
+}
+```
+
+- `@ValueSource` – ein Parameter, mehrere Werte
+- `@CsvSource` – mehrere Parameter pro Zeile; JUnit wandelt Texte automatisch in `int`, `BigDecimal` usw. um
+- `@CsvFileSource(resources = "/testdaten.csv")` – Daten aus einer Datei
+- `@MethodSource("methodenName")` – Daten aus einer statischen Methode, die einen `Stream<Arguments>` liefert
+- `@NullAndEmptySource` – testet zusätzlich `null` und `""`
+
+## Lebenszyklus \{#lebenszyklus}
+
+| Annotation | Wird ausgeführt … | NUnit-Gegenstück |
+|---|---|---|
+| `@BeforeEach` | vor **jedem** Test | `[SetUp]` |
+| `@AfterEach` | nach **jedem** Test | `[TearDown]` |
+| `@BeforeAll` | **einmal** vor allen Tests (Methode muss `static` sein) | `[OneTimeSetUp]` |
+| `@AfterAll` | **einmal** nach allen Tests (`static`) | `[OneTimeTearDown]` |
+
+```java
+class WarenkorbTest {
+
+    private Warenkorb warenkorb;
+
+    @BeforeEach
+    void vorbereiten() {
+        warenkorb = new Warenkorb();
+    }
+
+    @Test
+    void neuerWarenkorbIstLeer() {
+        assertTrue(warenkorb.getPositionen().isEmpty());
+    }
+
+    @Test
+    void artikelHinzufuegenErhoehtAnzahl() {
+        warenkorb.hinzufuegen("Apfel", 2);
+
+        assertEquals(1, warenkorb.getPositionen().size());
+    }
+}
+```
+
+:::tip[Neue Instanz pro Test]
+JUnit 5 erzeugt standardmäßig **für jeden Test eine neue Instanz** der Testklasse. Deshalb müssen `@BeforeAll`-Methoden `static` sein – sie laufen, bevor es überhaupt eine Instanz gibt. (Mit `@TestInstance(Lifecycle.PER_CLASS)` lässt sich das ändern.)
+:::
+
+## Tags, Deaktivieren und Verschachteln \{#tags}
+
+```java
+@Tag("smoke")
+@Test
+void startseiteIstErreichbar() { /* ... */ }
+
+@Disabled("TA-123: wartet auf Fix im Backend")
+@Test
+void exportAlsPdf() { /* ... */ }
+```
+
+```bash
+mvn test -Dgroups=smoke              # nur Tests mit Tag "smoke"
+mvn test -DexcludedGroups=langsam    # alles außer "langsam"
+```
+
+Mit `@Nested` lassen sich Tests thematisch gruppieren – die Reports werden dadurch sehr übersichtlich:
+
+```java
+@DisplayName("Warenkorb")
+class WarenkorbTest {
+
+    @Nested
+    @DisplayName("wenn leer")
+    class WennLeer {
+        @Test void hatKeinePositionen() { /* ... */ }
+        @Test void summeIstNull() { /* ... */ }
+    }
+
+    @Nested
+    @DisplayName("mit einem Artikel")
+    class MitEinemArtikel {
+        @Test void summeEntsprichtPreis() { /* ... */ }
+    }
+}
+```
+
+## Typische Fehler \{#typische-fehler}
+
+- **Falscher Import:** `org.junit.Test` (JUnit 4) statt `org.junit.jupiter.api.Test`. Liegt JUnit 4 noch (oft unbemerkt über eine andere Abhängigkeit) im Klassenpfad, kompiliert das – aber Jupiter **findet den Test nicht**. Er läuft einfach nicht, ohne Fehlermeldung.
+- **Erwartet und Ist vertauscht** bei `assertEquals` – die Meldung „expected 200 but was 180“ führt dann in die Irre.
+- **`BigDecimal` mit `assertEquals`** vergleichen, obwohl die Scale unterschiedlich ist (`180` vs. `180.00`).
+- **`@BeforeAll` nicht `static`** – JUnit bricht mit einer Fehlermeldung ab.
+- **Veraltetes Surefire-Plugin** – `mvn test` meldet „Tests run: 0“.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- JUnit 5 = Platform + **Jupiter** (+ Vintage für Altlasten); Abhängigkeit `junit-jupiter` mit BOM, Ausführung über Surefire mit `mvn test`.
+- `@Test`, `@DisplayName`, `@BeforeEach`/`@AfterEach`, `@BeforeAll`/`@AfterAll` (static).
+- Prüfen mit `assertEquals(erwartet, ist)`, `assertAll`, `assertThrows`; lesbarer mit **AssertJ**.
+- Parametrisieren mit `@ParameterizedTest` und `@ValueSource`, `@CsvSource`, `@MethodSource`.
+- Gruppieren mit `@Tag` (`-Dgroups=...`) und `@Nested`.
+
+<Quiz fragen={fragen} titel="Quiz: JUnit 5 – Grundlagen" />

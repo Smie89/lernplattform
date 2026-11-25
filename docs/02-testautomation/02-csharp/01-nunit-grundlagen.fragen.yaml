@@ -1,0 +1,150 @@
+# Fragen zur Lektion "NUnit – Grundlagen"
+
+- id: ta-nu-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Mit welchem Befehl legst du ein neues NUnit-Testprojekt an?"
+  optionen:
+    - "dotnet add nunit"
+    - "dotnet new nunit -n Shop.Core.Tests"
+    - "nuget install nunit-project"
+    - "dotnet test --create"
+  richtig: [1]
+  erklaerung: "dotnet new nunit erzeugt ein Testprojekt mit NUnit, NUnit3TestAdapter und Microsoft.NET.Test.Sdk. Ausgeführt wird mit dotnet test."
+  artikel: "#projekt-anlegen"
+  tags: [nunit, dotnet]
+
+- id: ta-nu-002
+  typ: single
+  schwierigkeit: 2
+  frage: "dotnet test meldet 'No test is available', obwohl Testmethoden mit [Test] existieren. Was fehlt wahrscheinlich?"
+  optionen:
+    - "Das Attribut [TestFixture] an der Klasse"
+    - "Das Paket NUnit3TestAdapter"
+    - "Eine Main-Methode"
+    - "Das Paket Newtonsoft.Json"
+  richtig: [1]
+  erklaerung: "Der Test-Adapter verbindet NUnit mit dotnet test und Visual Studio. [TestFixture] ist dagegen optional, NUnit erkennt Testklassen an ihren Testmethoden."
+  artikel: "#typische-fehler"
+  tags: [nunit, fehlersuche]
+
+- id: ta-nu-003
+  typ: single
+  schwierigkeit: 1
+  frage: "Welcher Assert ist in NUnit 4 der empfohlene Stil?"
+  optionen:
+    - "Assert.AreEqual(180m, preis);"
+    - "Assert.That(preis, Is.EqualTo(180m));"
+    - "Assert.Equal(180m, preis);"
+    - "preis.ShouldEqual(180m);"
+  richtig: [1]
+  erklaerung: "NUnit setzt auf das Constraint-Modell Assert.That(ist, Bedingung). Assert.AreEqual liegt in NUnit 4 nur noch als ClassicAssert vor, Assert.Equal ist xUnit."
+  artikel: "#asserts"
+  tags: [nunit, asserts]
+
+- id: ta-nu-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie vergleichst du ein double-Ergebnis von 0.1 + 0.2 sinnvoll mit 0.3?"
+  optionen:
+    - "Assert.That(ergebnis, Is.EqualTo(0.3));"
+    - "Assert.That(ergebnis, Is.EqualTo(0.3).Within(0.0001));"
+    - "Assert.That(ergebnis.ToString(), Is.EqualTo(\"0.3\"));"
+    - "Gar nicht, double kann man nicht testen"
+  richtig: [1]
+  erklaerung: "Gleitkommazahlen sind nicht exakt darstellbar. Mit Within(Toleranz) wird ein Vergleich mit Toleranz durchgeführt. Für Geld besser decimal verwenden."
+  artikel: "#asserts"
+  tags: [nunit, asserts]
+
+- id: ta-nu-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt Assert.Multiple(() => { ... })?"
+  optionen:
+    - "Der Test wird mehrfach ausgeführt"
+    - "Alle enthaltenen Asserts werden geprüft und gemeinsam gemeldet, statt beim ersten Fehler abzubrechen"
+    - "Die Asserts laufen parallel in mehreren Threads"
+    - "Nur der letzte Assert zählt"
+  richtig: [1]
+  erklaerung: "Mit Assert.Multiple siehst du auf einen Blick alle fehlgeschlagenen Prüfungen, z. B. wenn Name und E-Mail eines Objekts falsch sind."
+  artikel: "#assert-multiple"
+  tags: [nunit, asserts]
+
+- id: ta-nu-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie prüfst du, dass eine Methode eine ArgumentOutOfRangeException wirft?"
+  optionen:
+    - "try/catch im Test und bei Erfolg Assert.Fail()"
+    - "Assert.Throws<ArgumentOutOfRangeException>(() => rechner.Berechne(-1m));"
+    - "[ExpectedException] an der Methode"
+    - "Assert.That(rechner.Berechne(-1m), Is.Null);"
+  richtig: [1]
+  erklaerung: "Assert.Throws<T> führt den Code aus, prüft den Exception-Typ und gibt die Exception zurück, sodass du z. B. ParamName weiter prüfen kannst."
+  artikel: "#exceptions"
+  tags: [nunit, exceptions]
+
+- id: ta-nu-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu [TestCase] sind richtig?"
+  optionen:
+    - "Jeder [TestCase] erscheint als eigener Test im Ergebnis"
+    - "Die Werte werden als Parameter an die Testmethode übergeben"
+    - "Man kann pro Methode nur einen [TestCase] verwenden"
+    - "Für komplexe Objekte eignet sich [TestCaseSource] besser"
+  richtig: [0, 1, 3]
+  erklaerung: "Mehrere [TestCase]-Attribute sind erlaubt und erzeugen jeweils einen eigenen Test. Attribute akzeptieren nur Konstanten, deshalb nutzt man für Objekte [TestCaseSource]."
+  artikel: "#parametrisiert"
+  tags: [nunit, parametrisiert]
+
+- id: ta-nu-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Datenbank-Container soll nur einmal für alle Tests einer Klasse gestartet werden. Welches Attribut passt?"
+  optionen:
+    - "[SetUp]"
+    - "[OneTimeSetUp]"
+    - "[TestCase]"
+    - "[Category]"
+  richtig: [1]
+  erklaerung: "[OneTimeSetUp] läuft einmal vor allen Tests der Klasse, [SetUp] dagegen vor jedem einzelnen Test."
+  artikel: "#setup-teardown"
+  tags: [nunit, setup]
+
+- id: ta-nu-009
+  typ: wahr-falsch
+  schwierigkeit: 3
+  frage: "NUnit erzeugt für jeden Test automatisch eine neue Instanz der Testklasse, deshalb können Felder nie zwischen Tests geteilt werden."
+  richtig: [1]
+  erklaerung: "Falsch – das gilt für xUnit. NUnit verwendet standardmäßig eine Instanz für alle Tests der Klasse. Felder deshalb im [SetUp] neu setzen."
+  artikel: "#setup-teardown"
+  tags: [nunit, setup, xunit]
+
+- id: ta-nu-010
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie führst du nur Tests der Kategorie 'Smoke' aus?"
+  optionen:
+    - "dotnet test --category Smoke"
+    - "dotnet test --filter \"Category=Smoke\""
+    - "dotnet run Smoke"
+    - "dotnet test Smoke.cs"
+  richtig: [1]
+  erklaerung: "Mit --filter lassen sich Tests nach Category, Name (FullyQualifiedName~...) und weiteren Eigenschaften auswählen."
+  artikel: "#kategorien"
+  tags: [nunit, filter]
+
+- id: ta-nu-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Test ist als 'public async void' deklariert. Was ist das Problem?"
+  optionen:
+    - "Keins, das ist der empfohlene Stil"
+    - "Das Framework kann nicht auf das Ende warten; NUnit lehnt solche Tests ab, richtig ist 'async Task'"
+    - "async-Tests werden in NUnit grundsätzlich nicht unterstützt"
+    - "Der Test läuft dadurch doppelt"
+  richtig: [1]
+  erklaerung: "Bei async void kann das Framework nicht auf das Ende der Methode warten, NUnit meldet den Test deshalb als nicht ausführbar. Asynchrone Testmethoden müssen Task zurückgeben."
+  artikel: "#typische-fehler"
+  tags: [nunit, async]

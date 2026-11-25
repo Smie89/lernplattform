@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Testdoubles mit NSubstitute"
+
+- id: ta-ns-001
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Warum ersetzt man in Unit-Tests Abhängigkeiten wie Datenbank oder Zahlungsdienst?"
+  optionen:
+    - "Damit der Test schnell läuft"
+    - "Damit man Antworten und Fehlerfälle kontrollieren kann"
+    - "Damit keine echten Nebenwirkungen entstehen, z. B. echte Abbuchungen"
+    - "Damit man keine Integrationstests mehr braucht"
+  richtig: [0, 1, 2]
+  erklaerung: "Testdoubles machen Unit-Tests schnell, kontrollierbar und frei von Nebenwirkungen. Ob das Zusammenspiel mit echten Systemen klappt, zeigen trotzdem nur Integrationstests."
+  artikel: "#warum"
+  tags: [mocking]
+
+- id: ta-ns-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein In-Memory-Repository, das intern eine Dictionary statt einer Datenbank nutzt, ist ein …"
+  optionen:
+    - "Dummy"
+    - "Stub"
+    - "Mock"
+    - "Fake"
+  richtig: [3]
+  erklaerung: "Ein Fake ist eine funktionierende, vereinfachte Implementierung. Ein Stub liefert nur vorgegebene Antworten, ein Mock prüft Aufrufe."
+  artikel: "#arten"
+  tags: [mocking, testdoubles]
+
+- id: ta-ns-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was unterscheidet einen Mock von einem Stub?"
+  optionen:
+    - "Ein Mock liefert keine Rückgabewerte"
+    - "Beim Mock prüft der Test, ob und wie er aufgerufen wurde (Verhalten)"
+    - "Ein Stub ist immer eine echte Implementierung"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Ein Stub versorgt den Test mit Daten (Zustandsprüfung). Bei einem Mock ist der Aufruf selbst das, was geprüft wird (Verhaltensprüfung)."
+  artikel: "#arten"
+  tags: [mocking, testdoubles]
+
+- id: ta-ns-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Klasse erzeugt im Feld 'new SmtpMailer(...)'. Was ist das Problem für Unit-Tests?"
+  optionen:
+    - "Keins, NSubstitute ersetzt das automatisch"
+    - "Die Abhängigkeit kann nicht durch ein Testdouble ersetzt werden; sie sollte über ein Interface übergeben werden"
+    - "SmtpMailer ist zu langsam zum Kompilieren"
+    - "Felder sind in Tests nicht erlaubt"
+  richtig: [1]
+  erklaerung: "Erzeugt die Klasse ihre Abhängigkeit selbst, kann der Test sie nicht austauschen. Mit Dependency Injection über ein Interface (IMailer) wird sie testbar."
+  artikel: "#testbarer-code"
+  tags: [mocking, di]
+
+- id: ta-ns-005
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie erzeugst du mit NSubstitute ein Ersatzobjekt für IMailer?"
+  optionen:
+    - "new Mock<IMailer>()"
+    - "Substitute.For<IMailer>()"
+    - "A.Fake<IMailer>()"
+    - "Mock.Create(IMailer)"
+  richtig: [1]
+  erklaerung: "Substitute.For<T>() ist die NSubstitute-Syntax. new Mock<T>() ist Moq, A.Fake<T>() ist FakeItEasy."
+  artikel: "#einrichten"
+  tags: [nsubstitute]
+
+- id: ta-ns-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was liefert zahlung.AbbuchenAsync(...) auf einem Substitute, wenn du kein Returns festgelegt hast?"
+  optionen:
+    - "Eine NotImplementedException"
+    - "Einen Task mit dem Standardwert false"
+    - "null, wodurch await abstürzt"
+    - "Immer true"
+  richtig: [1]
+  erklaerung: "Ohne Konfiguration liefern Substitutes Standardwerte; bei Task<bool> einen fertigen Task mit false."
+  artikel: "#einrichten"
+  tags: [nsubstitute]
+
+- id: ta-ns-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Zahlungsdienst soll für jeden Kunden und jeden Betrag 'true' liefern. Welche Zeile ist richtig?"
+  optionen:
+    - "zahlung.AbbuchenAsync(Arg.Any<string>(), Arg.Any<decimal>()).Returns(true);"
+    - "zahlung.Returns(true);"
+    - "zahlung.AbbuchenAsync(null, 0).Returns(true);"
+    - "Arg.Any(zahlung).Returns(true);"
+  richtig: [0]
+  erklaerung: "Mit Arg.Any<T>() passt die Konfiguration auf beliebige Argumente. Mit konkreten Werten gilt sie nur genau für diese."
+  artikel: "#returns"
+  tags: [nsubstitute, returns]
+
+- id: ta-ns-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie prüfst du, dass bei abgelehnter Zahlung keine E-Mail versendet wurde?"
+  optionen:
+    - "mailer.Received(0);"
+    - "mailer.DidNotReceive().Senden(Arg.Any<string>(), Arg.Any<string>());"
+    - "Assert.That(mailer, Is.Null);"
+    - "mailer.Senden(null, null).Returns(false);"
+  richtig: [1]
+  erklaerung: "DidNotReceive() prüft, dass die Methode gar nicht aufgerufen wurde. Received(1) prüft dagegen genau einen Aufruf."
+  artikel: "#received"
+  tags: [nsubstitute, received]
+
+- id: ta-ns-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie simulierst du, dass der Zahlungsdienst mit einer HttpRequestException ausfällt?"
+  optionen:
+    - "Netzwerkkabel ziehen"
+    - "zahlung.AbbuchenAsync(...).ThrowsAsync(new HttpRequestException()); mit using NSubstitute.ExceptionExtensions"
+    - "throw new HttpRequestException(); im Test vor dem Act"
+    - "Assert.Throws<HttpRequestException>(zahlung)"
+  richtig: [1]
+  erklaerung: "Mit Throws/ThrowsAsync aus NSubstitute.ExceptionExtensions wirft das Substitute beim Aufruf die gewünschte Exception – Fehlerfälle werden so einfach testbar."
+  artikel: "#exceptions"
+  tags: [nsubstitute, exceptions]
+
+- id: ta-ns-010
+  typ: wahr-falsch
+  schwierigkeit: 3
+  frage: "NSubstitute kann bei konkreten Klassen jede Methode ersetzen, auch nicht-virtuelle."
+  richtig: [1]
+  erklaerung: "Falsch. Bei Klassen lassen sich nur virtual-Member ersetzen; nicht-virtuelle führen echten Code aus. Deshalb arbeitet man bevorzugt mit Interfaces."
+  artikel: "#typische-fehler"
+  tags: [nsubstitute, fallstricke]
+
+- id: ta-ns-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Deine Tests brechen bei jedem Refactoring, obwohl sich das Verhalten nicht geändert hat. Was ist eine wahrscheinliche Ursache?"
+  optionen:
+    - "Zu wenige Asserts"
+    - "Zu viele Received-Prüfungen auf interne Aufrufe statt auf das Ergebnis"
+    - "Die Tests laufen zu schnell"
+    - "NSubstitute ist veraltet"
+  richtig: [1]
+  erklaerung: "Wer jeden internen Aufruf prüft, koppelt die Tests an die Implementierung. Prüfe Aufrufe nur dort, wo sie das gewünschte Ergebnis sind."
+  artikel: "#typische-fehler"
+  tags: [mocking, fallstricke]

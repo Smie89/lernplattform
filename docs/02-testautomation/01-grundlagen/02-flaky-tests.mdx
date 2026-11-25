@@ -1,0 +1,179 @@
+---
+title: Flaky Tests
+description: Warum Tests mal grün und mal rot sind, wie man die Ursachen findet und wie man sie dauerhaft beseitigt.
+tags: [flaky, grundlagen, stabilitaet]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-flaky-tests.fragen.yaml';
+
+# Flaky Tests
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, was ein **Flaky Test** ist und warum er so schädlich ist,
+- die **häufigsten Ursachen** erkennen: Timing, gemeinsamer Zustand, Reihenfolge, Umgebung,
+- **feste Wartezeiten** durch bedingtes Warten ersetzen,
+- Retries und Quarantäne **sinnvoll** einsetzen – ohne Probleme zu verstecken.
+:::
+
+## Was ist ein Flaky Test? \{#was-ist-flaky}
+
+Ein **Flaky Test** (deutsch etwa „wackeliger Test“) liefert **bei gleichem Code** mal ein grünes, mal ein rotes Ergebnis. Nichts am Programm hat sich geändert – trotzdem schlägt er gelegentlich fehl.
+
+Warum das so schädlich ist:
+- Das Team **gewöhnt sich an rote Builds** („einfach nochmal starten“).
+- Echte Fehler gehen im Rauschen **unter**.
+- Jeder Neustart kostet **Zeit** in der CI.
+- Am Ende **vertraut niemand mehr** der Testsuite – und sie verliert ihren Wert.
+
+:::warning[Wichtig]
+Ein Flaky Test ist **kein harmloser Test**. Manchmal steckt dahinter ein **echter Fehler** im Produkt, z. B. eine Race Condition, die auch Kunden treffen kann.
+:::
+
+## Ursache 1: Timing und feste Wartezeiten \{#timing}
+
+Die häufigste Ursache, besonders bei Browser- und API-Tests: Der Test wartet **nicht auf den richtigen Zustand**.
+
+```csharp
+// ❌ Schlecht: hofft, dass 2 Sekunden reichen
+driver.FindElement(By.Id("speichern")).Click();
+Thread.Sleep(2000);
+var meldung = driver.FindElement(By.Id("erfolg")).Text;
+```
+
+Auf deinem schnellen Laptop reichen 2 Sekunden immer – auf dem ausgelasteten CI-Server manchmal nicht. Und wenn es nach 0,2 Sekunden fertig ist, wartest du trotzdem 2 Sekunden.
+
+```csharp
+// ✅ Besser: warten, bis die Bedingung erfüllt ist (max. 10 s)
+driver.FindElement(By.Id("speichern")).Click();
+var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+var meldung = wait.Until(d => d.FindElement(By.Id("erfolg"))).Text;
+```
+
+:::tip[Regel]
+Warte **auf einen Zustand**, nicht **eine Zeit**. Playwright macht das mit Auto-Waiting automatisch, Selenium mit `WebDriverWait`. Details in [Selenium WebDriver](../04-browser/02-selenium-webdriver.mdx) und [Playwright – Grundlagen](../04-browser/01-playwright-grundlagen.mdx).
+:::
+
+## Ursache 2: Gemeinsamer Zustand \{#gemeinsamer-zustand}
+
+Tests teilen sich etwas, das sie verändern:
+
+- eine **statische Variable** oder ein Singleton,
+- **dieselbe Datenbank** mit denselben Datensätzen,
+- **denselben Benutzer-Account** in der Testumgebung,
+- Dateien im gleichen Verzeichnis.
+
+Laufen die Tests **parallel**, kommen sie sich in die Quere. Beispiel: Test A legt den Nutzer `max@test.de` an, Test B löscht ihn gerade gleichzeitig.
+
+**Gegenmaßnahmen:**
+- Jeder Test erzeugt **eigene, eindeutige Testdaten**:
+
+```csharp
+var email = $"nutzer-{Guid.NewGuid()}@test.de";
+```
+
+```java
+var email = "nutzer-" + UUID.randomUUID() + "@test.de";
+```
+
+- Zustand im **Setup** frisch anlegen und im **Teardown** aufräumen.
+- Für Datenbanken: pro Testlauf ein frischer Container mit [Testcontainers](../../05-docker/05-docker-testautomation.mdx).
+
+## Ursache 3: Reihenfolge-Abhängigkeit \{#reihenfolge}
+
+Test B funktioniert nur, wenn Test A **vorher** gelaufen ist – etwa weil A den Datensatz anlegt, den B bearbeitet. Läuft B allein, parallel oder in anderer Reihenfolge, wird er rot.
+
+So findest du das:
+- Den Test **einzeln** ausführen.
+- Die Reihenfolge **zufällig** machen (JUnit: `@TestMethodOrder(MethodOrderer.Random.class)`, NUnit führt Tests ohnehin nicht in garantierter Reihenfolge aus).
+
+Lösung: Jeder Test bereitet **alles selbst** vor, was er braucht (siehe FIRST-Prinzip **Independent** in den [Grundlagen](./01-grundlagen-testautomation.mdx#first)).
+
+## Ursache 4: Umgebung, Zeit und Zufall \{#umgebung}
+
+| Ursache | Beispiel | Lösung |
+|---|---|---|
+| **Uhrzeit/Datum** | Test schlägt nur um Mitternacht oder am 29. Februar fehl | Zeit als Abhängigkeit injizieren (`TimeProvider` in .NET, `Clock` in Java) |
+| **Zeitzone/Sprache** | Datum wird auf dem CI-Server als `11/25/2026` statt `25.11.2026` formatiert | Kultur bzw. `Locale` im Test explizit setzen |
+| **Zufall** | Zufällige Testdaten erzeugen manchmal einen ungültigen Wert | Festen Seed verwenden oder Grenzen prüfen |
+| **Externe Dienste** | Test ruft echte Zahlungs-API auf, die gelegentlich langsam ist | Dienst durch Stub/Mock oder WireMock ersetzen |
+| **Ressourcen** | CI-Agent hat wenig CPU, Browser startet langsam | Großzügige Timeouts beim **bedingten** Warten, weniger parallele Worker |
+
+Beispiel in C#, Uhrzeit injizieren statt `DateTime.Now`:
+
+```csharp
+public class Gutschein(TimeProvider zeit)
+{
+    public bool IstGueltig(DateTimeOffset ablauf) => zeit.GetUtcNow() < ablauf;
+}
+
+// Im Test: feste Zeit (Paket Microsoft.Extensions.TimeProvider.Testing)
+var zeit = new FakeTimeProvider(new DateTimeOffset(2026, 2, 28, 23, 59, 0, TimeSpan.Zero));
+var gutschein = new Gutschein(zeit);
+```
+
+## Vorgehen bei einem Flaky Test \{#vorgehen}
+
+1. **Reproduzieren:** Test in einer Schleife oft hintereinander ausführen.
+
+```bash
+# .NET: 50-mal denselben Test
+for i in $(seq 50); do dotnet test --filter "FullyQualifiedName~Bestellung_wird_gespeichert" || break; done
+
+# Maven: einzelnen Test wiederholt ausführen
+for i in $(seq 50); do mvn -q test -Dtest=BestellungTest || break; done
+```
+
+2. **Beweise sammeln:** Logs, Screenshots, bei Playwright den **Trace** (`trace: 'on-first-retry'`).
+3. **Ursache einordnen:** Timing? Zustand? Reihenfolge? Umgebung?
+4. **Ursache beheben** – nicht das Symptom (also kein längeres `Sleep`).
+5. **Gegenprobe:** wieder 50-mal laufen lassen.
+
+## Retries und Quarantäne \{#retries}
+
+Viele Frameworks können fehlgeschlagene Tests **automatisch wiederholen**:
+
+| Framework | Retry |
+|---|---|
+| Playwright | `retries: 2` in der Konfiguration |
+| NUnit | Attribut `[Retry(2)]` (wiederholt nur bei fehlgeschlagenem Assert, nicht bei Exceptions) |
+| Maven Surefire (JUnit 5) | `-Dsurefire.rerunFailingTestsCount=2` |
+
+Retries sind ein **Pflaster**, keine Heilung. Sinnvoll eingesetzt:
+- **Nur in der CI**, nicht lokal.
+- Tests, die erst beim Retry grün werden, als **„flaky“ melden** (Playwright und Surefire tun das).
+- Jeden gemeldeten Flaky Test als **Aufgabe** erfassen und beheben.
+
+**Quarantäne:** Ein bekannter Flaky Test wird vorübergehend aus der Pflicht-Pipeline genommen (z. B. mit einer Kategorie `Quarantaene`), läuft aber weiter separat – bis er repariert ist. So blockiert er niemanden, gerät aber nicht in Vergessenheit.
+
+```csharp
+[Test, Category("Quarantaene")] // Ticket TA-123: Race Condition beim Speichern
+public void Bestellung_wird_gespeichert() { /* ... */ }
+```
+
+```bash
+dotnet test --filter "Category!=Quarantaene"
+```
+
+:::danger[Nicht tun]
+`[Ignore]` setzen und vergessen. Ein ignorierter Test ist ein **gelöschter Test mit schlechtem Gewissen**.
+:::
+
+## Typische Fehler \{#typische-fehler}
+
+- **`Sleep` verlängern**, bis es „meistens“ klappt – macht die Suite langsam und bleibt flaky.
+- **Retries ohne Auswertung** – Probleme werden unsichtbar.
+- **Fest verdrahtete Testdaten** (`max@test.de`) bei parallelen Läufen.
+- **Implizite Annahmen** über Zeitzone, Sprache oder Bildschirmgröße.
+- **Echte externe Dienste** in jedem Test aufrufen.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Flaky Tests liefern bei gleichem Code **unterschiedliche Ergebnisse** und zerstören das Vertrauen in die Suite.
+- Hauptursachen: **Timing**, **gemeinsamer Zustand**, **Reihenfolge**, **Umgebung/Zeit/Zufall**, **externe Dienste**.
+- Auf **Zustände warten** statt feste Zeiten, **eindeutige Testdaten** pro Test, **Zeit injizieren**.
+- Vorgehen: reproduzieren → Beweise sammeln → Ursache beheben → Gegenprobe.
+- Retries und Quarantäne nur als **vorübergehende** Maßnahme mit Ticket.
+
+<Quiz fragen={fragen} titel="Quiz: Flaky Tests" />

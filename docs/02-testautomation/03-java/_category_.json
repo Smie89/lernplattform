@@ -1,0 +1,9 @@
+{
+  "label": "Java",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "slug": "/testautomation/java",
+    "description": "Tests mit JUnit 5 und API-Tests mit REST Assured."
+  }
+}

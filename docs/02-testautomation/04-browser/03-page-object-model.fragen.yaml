@@ -1,0 +1,136 @@
+# Fragen zur Lektion "Page Object Model"
+
+- id: ta-po-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welches Problem löst das Page Object Model in erster Linie?"
+  optionen:
+    - "Tests laufen dadurch schneller"
+    - "Locators und Seitenaktionen stehen an einer Stelle, sodass UI-Änderungen nur dort angepasst werden müssen"
+    - "Man braucht keine Asserts mehr"
+    - "Es ersetzt das Test-Framework"
+  richtig: [1]
+  erklaerung: "Ändert sich die Oberfläche, passt man nur das Page Object an – nicht 40 einzelne Tests."
+  artikel: "#problem"
+  tags: [page-object]
+
+- id: ta-po-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Methode passt am besten in ein Page Object für die Login-Seite?"
+  optionen:
+    - "KlickeButtonMitCssKlasseBtnPrimaryAsync()"
+    - "AnmeldenAsync(benutzer, passwort)"
+    - "PruefeDassLoginKlapptAsync()"
+    - "ErzeugeTestnutzerInDatenbankAsync()"
+  richtig: [1]
+  erklaerung: "Page Objects bieten fachliche Methoden an. Technische Klick-Methoden bringen keinen Mehrwert, Prüfungen gehören in den Test und Testdaten-Erzeugung nicht in die UI-Schicht."
+  artikel: "#idee"
+  tags: [page-object]
+
+- id: ta-po-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wo gehört die Prüfung 'Fehlermeldung lautet: Benutzername oder Passwort falsch' hin?"
+  optionen:
+    - "In das Page Object, als Methode PruefeFehlermeldung()"
+    - "In den Test; das Page Object stellt nur den Locator bzw. den Text bereit"
+    - "In eine Konfigurationsdatei"
+    - "In den Teardown"
+  richtig: [1]
+  erklaerung: "Das Page Object beschreibt die Seite, der Test prüft. So sieht man im Test auf einen Blick, was erwartet wird, und das Page Object bleibt für andere Tests wiederverwendbar."
+  artikel: "#keine-asserts"
+  tags: [page-object, asserts]
+
+- id: ta-po-004
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Eine Prüfung, ob die richtige Seite geladen wurde (z. B. Überschrift sichtbar), darf ausnahmsweise im Page Object stehen."
+  richtig: [0]
+  erklaerung: "Wahr. Sie sichert das Page Object selbst ab (wir sind auf der erwarteten Seite) und ist keine fachliche Prüfung des Testergebnisses."
+  artikel: "#keine-asserts"
+  tags: [page-object, asserts]
+
+- id: ta-po-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was gibt eine Methode wie AnmeldenAlsAsync() bei Fluent-Navigation zurück?"
+  optionen:
+    - "true oder false"
+    - "Das Page Object der Seite, auf der man nach dem Login landet"
+    - "Den HTML-Quelltext der Seite"
+    - "Nichts (void)"
+  richtig: [1]
+  erklaerung: "Führt eine Aktion auf eine neue Seite, gibt sie deren Page Object zurück. So bildet der Testcode den Weg durch die Anwendung ab."
+  artikel: "#fluent"
+  tags: [page-object, fluent]
+
+- id: ta-po-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Die Kopfzeile mit Warenkorb-Symbol erscheint auf allen Seiten. Wie bildest du sie am besten ab?"
+  optionen:
+    - "In jedes Page Object die gleichen Locators kopieren"
+    - "Als eigene Komponente, die von mehreren Page Objects eingebunden wird"
+    - "Direkt im Test mit Locators"
+    - "Gar nicht, Kopfzeilen testet man nicht"
+  richtig: [1]
+  erklaerung: "Wiederkehrende Bereiche werden zu Komponenten. Sie existieren einmal und werden von allen Seiten genutzt, die sie enthalten."
+  artikel: "#komponenten"
+  tags: [page-object, komponenten]
+
+- id: ta-po-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum sucht eine Komponente ihre Elemente relativ zu ihrem Bereich (z. B. Bereich.GetByRole(...))?"
+  optionen:
+    - "Weil das schneller ausgeführt wird"
+    - "Damit nur Elemente innerhalb der Komponente gefunden werden und keine gleichnamigen woanders auf der Seite"
+    - "Weil Playwright globale Locators verbietet"
+    - "Damit die Komponente ohne Browser funktioniert"
+  richtig: [1]
+  erklaerung: "Ein 'Abmelden'-Button kann mehrfach vorkommen. Relativ zum Bereich gesucht, findet die Komponente eindeutig ihr eigenes Element."
+  artikel: "#komponenten"
+  tags: [page-object, komponenten, locators]
+
+- id: ta-po-008
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Regeln gelten für gute Page Objects?"
+  optionen:
+    - "Locators möglichst privat halten"
+    - "Eine Seite oder ein Bereich pro Klasse"
+    - "Testdaten fest im Page Object hinterlegen"
+    - "Wartelogik mit Thread.Sleep im Page Object kapseln"
+  richtig: [0, 1]
+  erklaerung: "Testdaten gehören in den Test, und Sleep ist überall tabu. Bei Selenium kapselt man stattdessen WebDriverWait, bei Playwright übernimmt Auto-Waiting das Warten."
+  artikel: "#regeln"
+  tags: [page-object]
+
+- id: ta-po-009
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Selenium-Page-Object speichert ein IWebElement im Konstruktor. Nach dem Neuladen der Seite schlägt der Zugriff fehl. Mit welcher Exception, und was hilft?"
+  optionen:
+    - "NoSuchElementException – Locator ändern"
+    - "StaleElementReferenceException – den Locator (By) speichern und das Element bei Bedarf neu suchen"
+    - "TimeoutException – Timeout erhöhen"
+    - "NullReferenceException – Feld mit null initialisieren"
+  richtig: [1]
+  erklaerung: "Das gespeicherte Element gehört zum alten DOM. Speichert man den Locator, wird bei jedem Zugriff das aktuelle Element gesucht."
+  artikel: "#typische-fehler"
+  tags: [page-object, selenium, exceptions]
+
+- id: ta-po-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Kollege verwendet in einem Test 'nur dieses eine Mal' direkt einen CSS-Locator statt des Page Objects. Warum ist das problematisch?"
+  optionen:
+    - "Es ist nicht problematisch"
+    - "Bei einer UI-Änderung muss dieser Test zusätzlich gefunden und angepasst werden – der Vorteil des Page Objects geht verloren"
+    - "CSS-Locators funktionieren in Tests grundsätzlich nicht"
+    - "Der Test wird dadurch automatisch flaky"
+  richtig: [1]
+  erklaerung: "Das Page Object Model wirkt nur, wenn Locators wirklich an einer Stelle bleiben. Jede Ausnahme ist eine zusätzliche Stelle, die bei Änderungen bricht."
+  artikel: "#typische-fehler"
+  tags: [page-object]

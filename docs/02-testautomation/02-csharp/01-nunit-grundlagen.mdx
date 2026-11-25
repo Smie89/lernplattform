@@ -1,0 +1,279 @@
+---
+title: NUnit – Grundlagen
+description: Unit-Tests in C# mit NUnit 4 – Projekt anlegen, Attribute, Constraint-Asserts, parametrisierte Tests, Setup/Teardown und Kategorien.
+tags: [csharp, nunit, unit-test]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-nunit-grundlagen.fragen.yaml';
+
+# NUnit – Grundlagen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- ein **NUnit-Testprojekt** anlegen und Tests mit `dotnet test` ausführen,
+- Tests mit `[Test]`, `[SetUp]` und `[TearDown]` schreiben,
+- Ergebnisse mit dem **Constraint-Modell** `Assert.That(...)` prüfen,
+- **parametrisierte Tests** mit `[TestCase]` und `[TestCaseSource]` schreiben,
+- Exceptions prüfen und Tests mit **Kategorien** filtern.
+:::
+
+## NUnit, xUnit, MSTest – welches? \{#frameworks}
+
+In .NET gibt es drei verbreitete Test-Frameworks:
+
+| Framework | Merkmal |
+|---|---|
+| **NUnit** | sehr ausdrucksstarke Asserts, viele Attribute, weit verbreitet in der Testautomation |
+| **xUnit** | minimalistisch, neue Instanz pro Test, kein `[SetUp]` (stattdessen Konstruktor) |
+| **MSTest** | von Microsoft, eng mit Visual Studio verzahnt |
+
+Die Konzepte sind überall gleich. Diese Lektion nutzt **NUnit 4**, weil auch Playwright für .NET und viele Selenium-Projekte darauf aufsetzen.
+
+## Projekt anlegen \{#projekt-anlegen}
+
+```bash
+# Lösung mit Produktivcode und Testprojekt
+dotnet new sln -n Shop
+dotnet new classlib -n Shop.Core
+dotnet new nunit -n Shop.Core.Tests
+dotnet sln add Shop.Core Shop.Core.Tests
+dotnet add Shop.Core.Tests reference Shop.Core
+
+# Alle Tests ausführen
+dotnet test
+```
+
+Die Vorlage `nunit` bringt die Pakete `NUnit`, `NUnit3TestAdapter` (damit `dotnet test` und Visual Studio die Tests finden) und `Microsoft.NET.Test.Sdk` mit.
+
+:::tip[Konvention]
+Testprojekt = Name des getesteten Projekts + `.Tests`. Die Testklasse heißt wie die getestete Klasse + `Tests`, z. B. `RabattrechnerTests`.
+:::
+
+## Der erste Test \{#erster-test}
+
+Der Produktivcode in `Shop.Core/Rabattrechner.cs`:
+
+```csharp
+namespace Shop.Core;
+
+public class Rabattrechner
+{
+    public decimal Berechne(decimal bestellwert, bool stammkunde = false)
+    {
+        if (bestellwert < 0)
+            throw new ArgumentOutOfRangeException(nameof(bestellwert), "Bestellwert darf nicht negativ sein");
+
+        var rabatt = bestellwert >= 100 ? 0.10m : 0m;
+        if (stammkunde) rabatt += 0.05m;
+        return bestellwert * (1 - rabatt);
+    }
+}
+```
+
+Der Test in `Shop.Core.Tests/RabattrechnerTests.cs`:
+
+```csharp
+using Shop.Core;
+
+namespace Shop.Core.Tests;
+
+public class RabattrechnerTests
+{
+    [Test]
+    public void Berechne_ab_100_Euro_gibt_10_Prozent_Rabatt()
+    {
+        var rechner = new Rabattrechner();
+
+        var preis = rechner.Berechne(200m);
+
+        Assert.That(preis, Is.EqualTo(180m));
+    }
+}
+```
+
+- `[Test]` markiert eine Methode als Test.
+- Die Klasse braucht kein `[TestFixture]`-Attribut mehr – NUnit erkennt sie an den Testmethoden.
+- `using NUnit.Framework;` steht bereits als **globales Using** in der Projektvorlage.
+
+## Asserts mit dem Constraint-Modell \{#asserts}
+
+NUnit prüft mit `Assert.That(istWert, Bedingung)`. Die Bedingung liest sich fast wie ein Satz:
+
+```csharp
+Assert.That(preis, Is.EqualTo(180m));
+Assert.That(preis, Is.GreaterThan(0));
+Assert.That(preis, Is.InRange(170m, 190m));
+Assert.That(name, Is.Not.Null.And.Not.Empty);
+Assert.That(name, Does.StartWith("Max").IgnoreCase);
+Assert.That(text, Does.Contain("Bestellung"));
+Assert.That(liste, Has.Count.EqualTo(3));
+Assert.That(liste, Does.Contain("Apfel"));
+Assert.That(liste, Is.Ordered);
+Assert.That(wert, Is.EqualTo(0.3).Within(0.0001)); // Gleitkomma mit Toleranz
+```
+
+:::warning[NUnit 4: klassische Asserts]
+Ältere Beispiele nutzen `Assert.AreEqual(erwartet, ist)`. In **NUnit 4** wurden diese klassischen Asserts nach `ClassicAssert` (Namespace `NUnit.Framework.Legacy`) verschoben. Für neuen Code: immer `Assert.That`.
+:::
+
+Bei `Assert.That` steht der **Ist-Wert zuerst**. Das ist wichtig für die Fehlermeldung:
+
+```text
+Expected: 180m
+But was:  200m
+```
+
+### Mehrere Prüfungen auf einmal \{#assert-multiple}
+
+Normalerweise bricht ein Test beim ersten fehlgeschlagenen Assert ab. Mit `Assert.Multiple` werden **alle** Prüfungen ausgeführt und gemeinsam gemeldet:
+
+```csharp
+[Test]
+public void Neuer_Kunde_hat_korrekte_Daten()
+{
+    var kunde = new Kunde("Max", "max@test.de");
+
+    Assert.Multiple(() =>
+    {
+        Assert.That(kunde.Name, Is.EqualTo("Max"));
+        Assert.That(kunde.Email, Is.EqualTo("max@test.de"));
+        Assert.That(kunde.IstAktiv, Is.True);
+    });
+}
+```
+
+## Exceptions prüfen \{#exceptions}
+
+```csharp
+[Test]
+public void Berechne_mit_negativem_Wert_wirft_Exception()
+{
+    var rechner = new Rabattrechner();
+
+    var ex = Assert.Throws<ArgumentOutOfRangeException>(() => rechner.Berechne(-1m));
+
+    Assert.That(ex.ParamName, Is.EqualTo("bestellwert"));
+}
+```
+
+Für `async`-Methoden gibt es `Assert.ThrowsAsync<T>(async () => await ...)`.
+
+`Assert.Throws<T>` erwartet **genau** diesen Typ. Soll auch eine abgeleitete Exception akzeptiert werden, nimm `Assert.Catch<T>`.
+
+## Parametrisierte Tests \{#parametrisiert}
+
+Statt fünfmal fast denselben Test zu schreiben, übergibt man die Daten als Parameter:
+
+```csharp
+[TestCase(50, false, 50)]
+[TestCase(99.99, false, 99.99)]   // knapp unter der Grenze
+[TestCase(100, false, 90)]        // genau auf der Grenze
+[TestCase(100, true, 85)]         // Stammkunde: 15 %
+[TestCase(0, false, 0)]
+public void Berechne_liefert_erwarteten_Preis(decimal wert, bool stammkunde, decimal erwartet)
+{
+    var preis = new Rabattrechner().Berechne(wert, stammkunde);
+
+    Assert.That(preis, Is.EqualTo(erwartet));
+}
+```
+
+Jeder `[TestCase]` erscheint als **eigener Test** im Ergebnis. NUnit wandelt die `double`-Literale passend in `decimal` um.
+
+Kommen die Daten aus komplexeren Objekten, nutzt man `[TestCaseSource]`:
+
+```csharp
+private static IEnumerable<TestCaseData> UngueltigeEmails()
+{
+    yield return new TestCaseData("").SetName("leer");
+    yield return new TestCaseData("ohne-at.de").SetName("ohne @");
+    yield return new TestCaseData("a@").SetName("ohne Domain");
+}
+
+[TestCaseSource(nameof(UngueltigeEmails))]
+public void Ungueltige_Email_wird_abgelehnt(string email)
+{
+    Assert.That(EmailValidator.IstGueltig(email), Is.False);
+}
+```
+
+## Setup und Teardown \{#setup-teardown}
+
+| Attribut | Wird ausgeführt … | Typischer Einsatz |
+|---|---|---|
+| `[SetUp]` | vor **jedem** Test | frisches Objekt anlegen |
+| `[TearDown]` | nach **jedem** Test | aufräumen, Browser schließen |
+| `[OneTimeSetUp]` | **einmal** vor allen Tests der Klasse | teure Ressource starten (Datenbank-Container) |
+| `[OneTimeTearDown]` | **einmal** nach allen Tests der Klasse | Ressource stoppen |
+
+```csharp
+public class WarenkorbTests
+{
+    private Warenkorb _warenkorb = null!;
+
+    [SetUp]
+    public void Vorbereiten()
+    {
+        _warenkorb = new Warenkorb();   // jeder Test bekommt einen leeren Warenkorb
+    }
+
+    [Test]
+    public void Neuer_Warenkorb_ist_leer()
+    {
+        Assert.That(_warenkorb.Positionen, Is.Empty);
+    }
+
+    [Test]
+    public void Artikel_hinzufuegen_erhoeht_Anzahl()
+    {
+        _warenkorb.Hinzufuegen("Apfel", 2);
+
+        Assert.That(_warenkorb.Positionen, Has.Count.EqualTo(1));
+    }
+}
+```
+
+:::warning[Achtung bei NUnit]
+Anders als xUnit verwendet NUnit standardmäßig **eine Instanz der Testklasse für alle Tests**. Felder, die nicht im `[SetUp]` neu gesetzt werden, behalten ihren Wert von Test zu Test – eine typische Quelle für [Flaky Tests](../01-grundlagen/02-flaky-tests.mdx#gemeinsamer-zustand).
+:::
+
+## Kategorien und Filter \{#kategorien}
+
+```csharp
+[Test, Category("Smoke")]
+public void Startseite_ist_erreichbar() { /* ... */ }
+
+[Test, Category("Langsam")]
+public void Import_von_10000_Datensaetzen() { /* ... */ }
+```
+
+```bash
+dotnet test --filter "Category=Smoke"                 # nur Smoke-Tests
+dotnet test --filter "Category!=Langsam"              # alles außer langsamen
+dotnet test --filter "FullyQualifiedName~Warenkorb"   # Name enthält "Warenkorb"
+```
+
+Weitere nützliche Attribute:
+- `[Ignore("Grund")]` – Test überspringen (immer mit Begründung!)
+- `[Description("...")]` – Beschreibung im Report
+- `[Timeout(5000)]` bzw. `[CancelAfter(5000)]` – Test nach 5 s abbrechen
+- `[Parallelizable]` – Tests parallel ausführen
+
+## Typische Fehler \{#typische-fehler}
+
+- **Erwartet und Ist vertauscht** bei klassischen Asserts – die Fehlermeldung wird dann irreführend. `Assert.That(ist, Is.EqualTo(erwartet))` macht die Reihenfolge eindeutig.
+- **Gleitkommazahlen mit `EqualTo` ohne `Within`** vergleichen – `0.1 + 0.2` ist nicht exakt `0.3`. Für Geldbeträge besser `decimal` verwenden.
+- **Zustand in Feldern** zwischen Tests teilen, statt ihn im `[SetUp]` neu anzulegen.
+- **`async void`-Tests** – Testmethoden mit `await` müssen `async Task` zurückgeben. NUnit lehnt `async void` ab, weil es nicht auf das Ende der Methode warten kann.
+- Testprojekt ohne **`NUnit3TestAdapter`** – `dotnet test` findet dann keine Tests.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Projekt mit `dotnet new nunit`, ausführen mit `dotnet test`.
+- `[Test]` für Tests, `[SetUp]`/`[TearDown]` pro Test, `[OneTimeSetUp]`/`[OneTimeTearDown]` pro Klasse.
+- Prüfen mit **`Assert.That(ist, Bedingung)`**, mehrere Prüfungen mit `Assert.Multiple`.
+- Exceptions mit `Assert.Throws<T>`, parametrisieren mit `[TestCase]` und `[TestCaseSource]`.
+- Mit `Category` und `--filter` gezielt Testgruppen ausführen.
+
+<Quiz fragen={fragen} titel="Quiz: NUnit – Grundlagen" />

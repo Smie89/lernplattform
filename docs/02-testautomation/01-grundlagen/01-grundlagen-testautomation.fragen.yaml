@@ -1,0 +1,136 @@
+# Fragen zur Lektion "Grundlagen der Testautomation"
+
+- id: ta-gl-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Wofür ist Testautomation besonders gut geeignet?"
+  optionen:
+    - "Um zu bewerten, ob eine Oberfläche verständlich ist"
+    - "Um nach Änderungen schnell Regressionen zu finden"
+    - "Um exploratives Testen vollständig zu ersetzen"
+    - "Um Anforderungen zu schreiben"
+  richtig: [1]
+  erklaerung: "Automatisierte Tests prüfen wiederholbar, ob Bekanntes nach einer Änderung noch funktioniert. Verständlichkeit bewerten und Unbekanntes entdecken bleibt Aufgabe von Menschen."
+  artikel: "#was-ist-testautomation"
+  tags: [grundlagen]
+
+- id: ta-gl-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Verteilung empfiehlt die Testpyramide?"
+  optionen:
+    - "Viele E2E-Tests, wenige Unit-Tests"
+    - "Gleich viele Tests auf jeder Ebene"
+    - "Viele Unit-Tests, einige Integrationstests, wenige E2E-Tests"
+    - "Nur Integrationstests"
+  richtig: [2]
+  erklaerung: "Unit-Tests sind schnell, billig und stabil – davon sollte es die meisten geben. E2E-Tests sind realistisch, aber langsam und fragil – davon nur wenige."
+  artikel: "#testpyramide"
+  tags: [testpyramide]
+
+- id: ta-gl-003
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Eigenschaften nehmen zu, je weiter oben ein Test in der Pyramide liegt?"
+  optionen:
+    - "Laufzeit"
+    - "Wartungsaufwand"
+    - "Realitätsnähe aus Nutzersicht"
+    - "Genauigkeit, wo im Code der Fehler steckt"
+  richtig: [0, 1, 2]
+  erklaerung: "Oben wird es realistischer, aber auch langsamer und teurer. Die Fehlerlokalisierung wird dagegen schlechter: Ein roter E2E-Test sagt nicht, welche Klasse kaputt ist."
+  artikel: "#testpyramide"
+  tags: [testpyramide]
+
+- id: ta-gl-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Was beschreibt das Anti-Muster „Eistüte“?"
+  optionen:
+    - "Viele Unit-Tests und wenige manuelle Tests"
+    - "Viele manuelle und UI-Tests, aber kaum Unit-Tests"
+    - "Tests, die nur im Sommer laufen"
+    - "Eine Testsuite ohne E2E-Tests"
+  richtig: [1]
+  erklaerung: "Die Eistüte ist die umgedrehte Pyramide: Der Großteil wird über die Oberfläche oder manuell geprüft. Folge: langsame Suiten und späte, schwer lokalisierbare Fehler."
+  artikel: "#eistuete"
+  tags: [testpyramide, anti-pattern]
+
+- id: ta-gl-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Tests sind gute Kandidaten für Automatisierung?"
+  optionen:
+    - "Regressionstests, die bei jedem Release laufen"
+    - "Prüfung der Rabattberechnung mit vielen Datenkombinationen"
+    - "Einmalige Prüfung eines Datenimports"
+    - "Bewertung, ob die neue Farbgebung angenehm wirkt"
+  richtig: [0, 1]
+  erklaerung: "Automatisierung lohnt sich bei häufiger Wiederholung, hohem Risiko und vielen Daten. Einmalige Prüfungen und subjektive Bewertungen sind schlechte Kandidaten."
+  artikel: "#was-automatisieren"
+  tags: [teststrategie]
+
+- id: ta-gl-006
+  typ: single
+  schwierigkeit: 1
+  frage: "Wofür stehen die drei A im AAA-Muster?"
+  optionen:
+    - "Analyse – Automatisierung – Abnahme"
+    - "Arrange – Act – Assert"
+    - "Assert – Act – Arrange"
+    - "Add – Apply – Approve"
+  richtig: [1]
+  erklaerung: "Arrange bereitet vor, Act führt genau eine Aktion aus, Assert prüft das Ergebnis. In BDD heißt das Given – When – Then."
+  artikel: "#aaa-muster"
+  tags: [aaa]
+
+- id: ta-gl-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher Testname ist am aussagekräftigsten?"
+  optionen:
+    - "Test1"
+    - "TestLogin"
+    - "Login_mit_falschem_Passwort_zeigt_Fehlermeldung"
+    - "LoginTestNeu2"
+  richtig: [2]
+  erklaerung: "Ein guter Name nennt, was getestet wird, unter welcher Bedingung und was erwartet wird – so erkennt man bei einem Fehlschlag sofort, was kaputt ist."
+  artikel: "#testnamen"
+  tags: [testnamen]
+
+- id: ta-gl-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Test B schlägt fehl, wenn er allein läuft, aber nicht, wenn Test A vorher läuft. Gegen welches FIRST-Prinzip verstößt das?"
+  optionen:
+    - "Fast"
+    - "Independent"
+    - "Self-validating"
+    - "Timely"
+  richtig: [1]
+  erklaerung: "Independent: Jeder Test muss für sich allein und in beliebiger Reihenfolge laufen. Test B hängt hier von einem Zustand ab, den Test A hinterlässt."
+  artikel: "#first"
+  tags: [first]
+
+- id: ta-gl-009
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Ein Test ohne Assert, der nur prüft, dass keine Exception fliegt, ist ein vollwertiger, aussagekräftiger Test."
+  richtig: [1]
+  erklaerung: "Falsch. Ein Test ohne Erwartung ist fast immer grün und sagt wenig aus. Gute Tests sind selbstprüfend und vergleichen ein Ergebnis mit einer klaren Erwartung."
+  artikel: "#typische-fehler"
+  tags: [grundlagen]
+
+- id: ta-gl-010
+  typ: single
+  schwierigkeit: 3
+  frage: "Die Grenzwerte einer Rabattregel (99,99 € / 100 €) sollen geprüft werden. Auf welcher Ebene am besten?"
+  optionen:
+    - "E2E-Tests im Browser"
+    - "Unit-Tests der Rabattlogik"
+    - "Manuell vor jedem Release"
+    - "Gar nicht, Grenzwerte sind unwichtig"
+  richtig: [1]
+  erklaerung: "Reine Logik mit vielen Kombinationen gehört in Unit-Tests: Sie laufen in Millisekunden. Im Browser würde jede Kombination Sekunden kosten."
+  artikel: "#praxis-strategie"
+  tags: [teststrategie, testpyramide]

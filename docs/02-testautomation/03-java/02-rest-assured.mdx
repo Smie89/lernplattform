@@ -1,0 +1,347 @@
+---
+title: API-Tests mit REST Assured
+description: REST-APIs in Java mit REST Assured und JUnit 5 testen – Requests, Statuscodes, JSON prüfen, Werte übernehmen, Authentifizierung und Schema-Validierung. Mit C#-Gegenstück.
+tags: [java, api, rest-assured, junit]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-rest-assured.fragen.yaml';
+
+# API-Tests mit REST Assured
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, warum **API-Tests** in der Testpyramide so wertvoll sind,
+- die wichtigsten **HTTP-Methoden und Statuscodes** einordnen,
+- mit **REST Assured** Requests senden und Antworten im **Given–When–Then**-Stil prüfen,
+- Werte aus einer Antwort **übernehmen** und in weiteren Requests verwenden,
+- Authentifizierung, gemeinsame Konfiguration und **JSON-Schema-Validierung** einsetzen.
+:::
+
+## Warum API-Tests? \{#warum}
+
+Die meisten Web-Anwendungen bestehen aus einer Oberfläche und einer **REST-API** dahinter. Testet man die Geschäftslogik direkt über die API, ist das:
+
+- **schneller** als im Browser (Millisekunden statt Sekunden),
+- **stabiler**, weil keine Oberfläche, keine Animationen und keine Locators im Spiel sind,
+- **näher an der Logik:** Fehler lassen sich leichter einem Endpunkt zuordnen.
+
+In der [Testpyramide](../01-grundlagen/01-grundlagen-testautomation.mdx#testpyramide) liegen API-Tests zwischen Integrations- und E2E-Tests. Eine gute Strategie: **Viele Fälle über die API**, nur wenige **Happy Paths** im Browser.
+
+## HTTP in 2 Minuten \{#http}
+
+| Methode | Bedeutung | Beispiel |
+|---|---|---|
+| `GET` | lesen | `GET /api/kunden/42` |
+| `POST` | neu anlegen | `POST /api/kunden` mit JSON-Body |
+| `PUT` | komplett ersetzen | `PUT /api/kunden/42` |
+| `PATCH` | teilweise ändern | `PATCH /api/kunden/42` mit `{"email": "..."}` |
+| `DELETE` | löschen | `DELETE /api/kunden/42` |
+
+| Statuscode | Bedeutung |
+|---|---|
+| `200 OK` | Erfolg mit Inhalt |
+| `201 Created` | angelegt (oft mit `Location`-Header) |
+| `204 No Content` | Erfolg ohne Inhalt (z. B. nach `DELETE`) |
+| `400 Bad Request` | Anfrage ungültig (z. B. Pflichtfeld fehlt) |
+| `401 Unauthorized` | nicht angemeldet / Token fehlt |
+| `403 Forbidden` | angemeldet, aber keine Berechtigung |
+| `404 Not Found` | Ressource gibt es nicht |
+| `409 Conflict` | Konflikt (z. B. E-Mail schon vergeben) |
+| `500 Internal Server Error` | Fehler im Server – sollte ein Test **nie** provozieren können |
+
+## Einrichtung \{#einrichtung}
+
+Zusätzlich zu JUnit (siehe [JUnit 5 – Grundlagen](./01-junit5-grundlagen.mdx#maven)) in die `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>io.rest-assured</groupId>
+  <artifactId>rest-assured</artifactId>
+  <version>5.5.0</version> <!-- aktuelle Version prüfen -->
+  <scope>test</scope>
+</dependency>
+<dependency>
+  <groupId>io.rest-assured</groupId>
+  <artifactId>json-schema-validator</artifactId>
+  <version>5.5.0</version>
+  <scope>test</scope>
+</dependency>
+```
+
+Üblich sind statische Imports, damit sich der Test wie ein Satz liest:
+
+```java
+import static io.restassured.RestAssured.*;
+import static org.hamcrest.Matchers.*;
+```
+
+Die Beispiele gehen von einer Kunden-API unter `http://localhost:8080/api` aus – etwa deiner eigenen Anwendung, gestartet per [Docker Compose](../../05-docker/04-docker-compose.mdx).
+
+## Der erste API-Test \{#erster-test}
+
+```java
+@Test
+void kundeMitId1WirdGefunden() {
+    given()
+        .baseUri("http://localhost:8080/api")
+    .when()
+        .get("/kunden/1")
+    .then()
+        .statusCode(200)
+        .contentType(ContentType.JSON)
+        .body("id", equalTo(1))
+        .body("name", equalTo("Max Mustermann"));
+}
+```
+
+Der Aufbau folgt **Given – When – Then**:
+
+1. **`given()`** – Vorbereitung: Basis-URL, Header, Parameter, Body, Authentifizierung
+2. **`when()`** – die Aktion: `get`, `post`, `put`, `patch`, `delete`
+3. **`then()`** – die Prüfungen: Statuscode, Header, Body
+
+`ContentType` kommt aus `io.restassured.http.ContentType`.
+
+## JSON prüfen \{#json-pruefen}
+
+REST Assured nutzt **GPath**-Ausdrücke, um Werte im JSON anzusprechen, und **Hamcrest**-Matcher, um sie zu prüfen. Angenommen, `GET /kunden?stadt=Berlin` liefert:
+
+```json
+{
+  "anzahl": 2,
+  "kunden": [
+    { "id": 1, "name": "Max",  "tags": ["vip"],  "adresse": { "plz": "10115" } },
+    { "id": 7, "name": "Anna", "tags": [],       "adresse": { "plz": "10117" } }
+  ]
+}
+```
+
+```java
+given()
+    .baseUri("http://localhost:8080/api")
+    .queryParam("stadt", "Berlin")
+.when()
+    .get("/kunden")
+.then()
+    .statusCode(200)
+    .body("anzahl", equalTo(2))
+    .body("kunden", hasSize(2))
+    .body("kunden.name", hasItems("Max", "Anna"))           // alle Namen der Liste
+    .body("kunden[0].adresse.plz", equalTo("10115"))        // verschachtelt + Index
+    .body("kunden.find { it.id == 7 }.name", equalTo("Anna")) // Suche in der Liste
+    .body("kunden[0].tags", contains("vip"));
+```
+
+Nützliche Matcher: `equalTo`, `not`, `nullValue`, `notNullValue`, `hasSize`, `hasItem(s)`, `contains`, `containsString`, `greaterThan`, `lessThan`, `everyItem`.
+
+## Daten senden \{#daten-senden}
+
+Den Body kannst du als Text, als `Map` oder als Java-Objekt übergeben. Objekte werden automatisch in JSON umgewandelt, wenn **Jackson** oder **Gson** im Klassenpfad ist.
+
+```java
+record NeuerKunde(String name, String email) {}
+
+@Test
+void neuerKundeWirdAngelegt() {
+    var email = "anna-" + UUID.randomUUID() + "@test.de";   // eindeutige Testdaten!
+
+    given()
+        .baseUri("http://localhost:8080/api")
+        .contentType(ContentType.JSON)
+        .body(new NeuerKunde("Anna", email))
+    .when()
+        .post("/kunden")
+    .then()
+        .statusCode(201)
+        .header("Location", containsString("/kunden/"))
+        .body("id", notNullValue())
+        .body("email", equalTo(email));
+}
+```
+
+:::tip[Negativtests nicht vergessen]
+Die wertvollsten API-Tests prüfen oft das, was **nicht** klappen darf: fehlende Pflichtfelder (`400`), doppelte E-Mail (`409`), fremde Daten ohne Berechtigung (`403`), ungültige IDs (`404`). Und: Keine Eingabe darf einen `500` auslösen.
+:::
+
+```java
+@Test
+void kundeOhneNameWirdAbgelehnt() {
+    given()
+        .baseUri("http://localhost:8080/api")
+        .contentType(ContentType.JSON)
+        .body("""
+              { "email": "ohne-name@test.de" }
+              """)
+    .when()
+        .post("/kunden")
+    .then()
+        .statusCode(400)
+        .body("fehler", hasItem(containsString("name")));
+}
+```
+
+## Werte übernehmen \{#extract}
+
+Oft braucht ein Test einen Wert aus der Antwort, etwa die ID eines neu angelegten Kunden:
+
+```java
+@Test
+void angelegterKundeKannGelesenUndGeloeschtWerden() {
+    int id =
+        given()
+            .baseUri("http://localhost:8080/api")
+            .contentType(ContentType.JSON)
+            .body(new NeuerKunde("Tom", "tom-" + UUID.randomUUID() + "@test.de"))
+        .when()
+            .post("/kunden")
+        .then()
+            .statusCode(201)
+            .extract().path("id");
+
+    given().baseUri("http://localhost:8080/api")
+        .when().get("/kunden/{id}", id)
+        .then().statusCode(200).body("name", equalTo("Tom"));
+
+    given().baseUri("http://localhost:8080/api")
+        .when().delete("/kunden/{id}", id)
+        .then().statusCode(204);
+
+    given().baseUri("http://localhost:8080/api")
+        .when().get("/kunden/{id}", id)
+        .then().statusCode(404);
+}
+```
+
+- `extract().path("id")` holt einen einzelnen Wert.
+- `extract().as(Kunde.class)` wandelt die ganze Antwort in ein Objekt um.
+- `"/kunden/{id}", id` setzt **Pfadparameter** sicher ein.
+
+## Gemeinsame Konfiguration \{#spezifikation}
+
+Damit `baseUri`, Content-Type und Logging nicht in jedem Test stehen, legt man eine **RequestSpecification** an:
+
+```java
+class KundenApiTest {
+
+    private static RequestSpecification api;
+
+    @BeforeAll
+    static void konfigurieren() {
+        api = new RequestSpecBuilder()
+            .setBaseUri(System.getProperty("api.url", "http://localhost:8080"))
+            .setBasePath("/api")
+            .setContentType(ContentType.JSON)
+            .build();
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+    }
+
+    @Test
+    void kundeWirdGefunden() {
+        given().spec(api)
+            .when().get("/kunden/1")
+            .then().statusCode(200);
+    }
+}
+```
+
+- Die URL kommt aus einer **System-Property** – so läuft derselbe Test lokal und gegen die Testumgebung: `mvn test -Dapi.url=https://staging.example.com`
+- Das Logging gibt Request und Response **nur bei Fehlschlag** aus – ideal für die CI.
+
+## Authentifizierung \{#auth}
+
+```java
+// Basic Auth
+given().spec(api).auth().preemptive().basic("tester", System.getenv("API_PASSWORT"))
+
+// Bearer-Token (z. B. JWT)
+given().spec(api).header("Authorization", "Bearer " + token)
+
+// Token per Login-Request holen
+String token =
+    given().spec(api)
+        .body(Map.of("benutzer", "tester", "passwort", System.getenv("API_PASSWORT")))
+    .when().post("/login")
+    .then().statusCode(200)
+        .extract().path("token");
+```
+
+:::danger[Keine Passwörter im Code]
+Zugangsdaten gehören **nie** in den Quellcode oder ins Git-Repository. Lies sie aus Umgebungsvariablen oder CI-Secrets (`System.getenv(...)`).
+:::
+
+## Schema-Validierung \{#schema}
+
+Statt jedes Feld einzeln zu prüfen, kann man die **Struktur** der Antwort gegen ein JSON-Schema prüfen. Datei `src/test/resources/schemas/kunde.json`:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id", "name", "email"],
+  "properties": {
+    "id":    { "type": "integer" },
+    "name":  { "type": "string", "minLength": 1 },
+    "email": { "type": "string" }
+  }
+}
+```
+
+```java
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+
+given().spec(api)
+    .when().get("/kunden/1")
+    .then().statusCode(200)
+    .body(matchesJsonSchemaInClasspath("schemas/kunde.json"));
+```
+
+So fällt sofort auf, wenn das Backend ein Feld umbenennt oder den Typ ändert – ein typischer **Vertragsbruch** zwischen Frontend und Backend.
+
+## Das Gleiche in C# \{#csharp}
+
+In .NET gibt es kein exaktes Gegenstück, aber mit `HttpClient` und NUnit geht es gut:
+
+```csharp
+using System.Net;
+using System.Net.Http.Json;
+
+public class KundenApiTests
+{
+    private static readonly HttpClient Api = new() { BaseAddress = new Uri("http://localhost:8080/api/") };
+
+    record Kunde(int Id, string Name, string Email);
+
+    [Test]
+    public async Task Neuer_Kunde_wird_angelegt()
+    {
+        var email = $"anna-{Guid.NewGuid()}@test.de";
+
+        var antwort = await Api.PostAsJsonAsync("kunden", new { name = "Anna", email });
+
+        Assert.That(antwort.StatusCode, Is.EqualTo(HttpStatusCode.Created));
+        var kunde = await antwort.Content.ReadFromJsonAsync<Kunde>();
+        Assert.That(kunde!.Email, Is.EqualTo(email));
+    }
+}
+```
+
+Alternativen sind **RestSharp** oder der API-Client von **Playwright** (`APIRequestContext`), mit dem man auch in Browser-Tests Testdaten per API anlegen kann.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Nur den Statuscode prüfen:** `200` heißt nicht, dass die richtigen Daten zurückkommen.
+- **Feste Testdaten** wie `max@test.de` – der zweite Lauf scheitert mit `409`. Immer eindeutige Werte erzeugen und am Ende aufräumen.
+- **Tests voneinander abhängig machen:** Test 2 liest den Kunden, den Test 1 angelegt hat. Jeder Test legt seine Daten selbst an.
+- **URL und Passwörter fest im Code** statt aus Konfiguration und Umgebungsvariablen.
+- **Kein Logging bei Fehlschlag** – in der CI weiß man dann nicht, was der Server geantwortet hat.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- API-Tests sind **schneller und stabiler** als UI-Tests und prüfen die Logik direkt.
+- REST Assured: **`given()` – `when()` – `then()`**, Prüfungen mit GPath und Hamcrest-Matchern.
+- Body als Objekt senden, Werte mit **`extract().path(...)`** übernehmen, Pfadparameter mit `{id}`.
+- Gemeinsame Einstellungen in eine **RequestSpecification**, URL und Secrets aus der Umgebung.
+- **Negativtests** und **Schema-Validierung** finden die Fehler, die Happy-Path-Tests übersehen.
+
+<Quiz fragen={fragen} titel="Quiz: API-Tests mit REST Assured" />

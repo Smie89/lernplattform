@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Selenium WebDriver"
+
+- id: ta-se-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie kommuniziert ein Selenium-Test mit dem Browser?"
+  optionen:
+    - "Direkt über das Betriebssystem per Mausklicks"
+    - "Über das W3C-WebDriver-Protokoll mit einem Treiber wie chromedriver"
+    - "Über eine Browser-Erweiterung, die man manuell installiert"
+    - "Über das Chrome DevTools Protocol ohne Treiber"
+  richtig: [1]
+  erklaerung: "Selenium spricht über das standardisierte W3C-WebDriver-Protokoll mit einem Treiber, der den Browser steuert."
+  artikel: "#architektur"
+  tags: [selenium, architektur]
+
+- id: ta-se-002
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Seit Selenium 4.6 muss man chromedriver nicht mehr selbst herunterladen, weil der Selenium Manager das übernimmt."
+  richtig: [0]
+  erklaerung: "Wahr. Der Selenium Manager ermittelt die Browserversion und lädt den passenden Treiber automatisch."
+  artikel: "#architektur"
+  tags: [selenium, einrichtung]
+
+- id: ta-se-003
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Methode sollte im Teardown aufgerufen werden, um Browser und Treiber vollständig zu beenden?"
+  optionen:
+    - "Close()"
+    - "Quit()"
+    - "Navigate().Back()"
+    - "Navigate().Refresh()"
+  richtig: [1]
+  erklaerung: "Close() schließt nur das aktuelle Fenster. Quit() beendet den ganzen Browser und den Treiberprozess."
+  artikel: "#erster-test"
+  tags: [selenium, teardown]
+
+- id: ta-se-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher Locator ist am robustesten gegen Design- und Layout-Änderungen?"
+  optionen:
+    - "By.XPath(\"//div[2]/form/div[3]/button\")"
+    - "By.LinkText(\"Speichern\")"
+    - "By.CssSelector(\"[data-testid='speichern']\")"
+    - "By.CssSelector(\"div.col-md-6 > button.btn.btn-primary\")"
+  richtig: [2]
+  erklaerung: "Ein data-testid-Attribut existiert nur für Tests und ändert sich weder bei Layout-Umbauten noch bei Textänderungen oder Übersetzungen."
+  artikel: "#locators"
+  tags: [selenium, locators]
+
+- id: ta-se-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie prüfst du am einfachsten, dass ein Element NICHT auf der Seite vorhanden ist?"
+  optionen:
+    - "FindElement aufrufen und auf eine Exception hoffen"
+    - "FindElements aufrufen und prüfen, dass die Liste leer ist"
+    - "Thread.Sleep und dann einen Screenshot machen"
+    - "Das geht mit Selenium nicht"
+  richtig: [1]
+  erklaerung: "FindElements liefert eine leere Liste statt einer Exception, wenn nichts gefunden wird."
+  artikel: "#interaktionen"
+  tags: [selenium, interaktionen]
+
+- id: ta-se-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Worauf wartet implizites Warten (ImplicitWait)?"
+  optionen:
+    - "Bis ein Element sichtbar und klickbar ist"
+    - "Nur bis ein Element im DOM vorhanden ist"
+    - "Bis die Seite vollständig geladen ist, inklusive aller AJAX-Aufrufe"
+    - "Eine feste Zeit, egal ob das Element da ist"
+  richtig: [1]
+  erklaerung: "Implizites Warten wirkt nur bei der Suche nach Elementen und wartet auf deren Vorhandensein im DOM – nicht darauf, dass sie sichtbar oder klickbar sind."
+  artikel: "#warten"
+  tags: [selenium, warten]
+
+- id: ta-se-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum sollte man implizites und explizites Warten nicht kombinieren?"
+  optionen:
+    - "Weil das zu einem Kompilierfehler führt"
+    - "Weil sich die Wartezeiten unvorhersehbar addieren können"
+    - "Weil explizites Warten dann ignoriert wird"
+    - "Weil Chrome das nicht unterstützt"
+  richtig: [1]
+  erklaerung: "Bei Kombination können Tests deutlich länger hängen als erwartet. Die Selenium-Dokumentation rät davon ab – am besten nur explizit warten."
+  artikel: "#warten"
+  tags: [selenium, warten]
+
+- id: ta-se-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher Java-Aufruf wartet bis zu 10 Sekunden darauf, dass das Element mit der ID 'erfolg' sichtbar ist?"
+  optionen:
+    - "Thread.sleep(10000);"
+    - "new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.id(\"erfolg\")));"
+    - "driver.findElement(By.id(\"erfolg\")).wait(10);"
+    - "driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));"
+  richtig: [1]
+  erklaerung: "WebDriverWait prüft die Bedingung wiederholt und kehrt zurück, sobald sie erfüllt ist – höchstens nach 10 Sekunden gibt es eine TimeoutException."
+  artikel: "#warten"
+  tags: [selenium, warten, java]
+
+- id: ta-se-009
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Test findet eine Tabellenzeile, die Seite lädt die Tabelle neu, und beim Klick kommt StaleElementReferenceException. Was hilft?"
+  optionen:
+    - "Ein längeres Thread.Sleep vor dem Klick"
+    - "Das Element nach dem Neuladen erneut suchen, statt die alte Referenz zu verwenden"
+    - "Den Browser neu starten"
+    - "Auf Firefox wechseln"
+  richtig: [1]
+  erklaerung: "Die alte Referenz zeigt auf ein Element, das es im DOM nicht mehr gibt. Nach dem Neurendern muss das Element neu gesucht werden."
+  artikel: "#typische-fehler"
+  tags: [selenium, exceptions]
+
+- id: ta-se-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Beim Klick auf 'Weiter' kommt ElementClickInterceptedException. Was ist die wahrscheinlichste Ursache?"
+  optionen:
+    - "Der Button existiert nicht"
+    - "Ein anderes Element, z. B. ein Cookie-Banner oder Overlay, liegt darüber"
+    - "Der Treiber ist veraltet"
+    - "Der Locator ist ein XPath"
+  richtig: [1]
+  erklaerung: "Der Klick würde auf einem anderen Element landen. Lösung: Banner schließen oder warten, bis das Overlay verschwunden ist."
+  artikel: "#typische-fehler"
+  tags: [selenium, exceptions]
+
+- id: ta-se-011
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zum Vergleich Selenium und Playwright stimmen?"
+  optionen:
+    - "Playwright wartet automatisch, bei Selenium wartet man explizit"
+    - "Selenium basiert auf dem W3C-WebDriver-Standard"
+    - "Selenium unterstützt nur Java"
+    - "Playwright bringt einen Trace Viewer zur Fehleranalyse mit"
+  richtig: [0, 1, 3]
+  erklaerung: "Selenium gibt es für viele Sprachen, darunter C# und Java. Playwright punktet mit Auto-Waiting und Werkzeugen wie dem Trace Viewer."
+  artikel: "#vergleich"
+  tags: [selenium, playwright]

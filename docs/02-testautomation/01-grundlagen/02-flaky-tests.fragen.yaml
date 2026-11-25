@@ -1,0 +1,136 @@
+# Fragen zur Lektion "Flaky Tests"
+
+- id: ta-fl-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist ein Flaky Test?"
+  optionen:
+    - "Ein Test, der immer fehlschlägt"
+    - "Ein Test, der bei unverändertem Code mal grün und mal rot ist"
+    - "Ein Test, der sehr langsam ist"
+    - "Ein Test ohne Assert"
+  richtig: [1]
+  erklaerung: "Flaky bedeutet: gleiches Programm, unterschiedliches Ergebnis. Der Test ist nicht zuverlässig."
+  artikel: "#was-ist-flaky"
+  tags: [flaky]
+
+- id: ta-fl-002
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Warum sind Flaky Tests schädlich?"
+  optionen:
+    - "Das Team gewöhnt sich an rote Builds und übersieht echte Fehler"
+    - "Neustarts kosten Zeit in der CI"
+    - "Sie können auf eine echte Race Condition im Produkt hinweisen, die dann ignoriert wird"
+    - "Sie verbrauchen Lizenzen des Test-Frameworks"
+  richtig: [0, 1, 2]
+  erklaerung: "Flaky Tests zerstören das Vertrauen in die Suite, kosten Zeit und verdecken manchmal echte Fehler. Lizenzen spielen keine Rolle."
+  artikel: "#was-ist-flaky"
+  tags: [flaky]
+
+- id: ta-fl-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Browser-Test nutzt Thread.Sleep(2000) und schlägt in der CI gelegentlich fehl. Was ist die beste Lösung?"
+  optionen:
+    - "Sleep auf 5000 ms erhöhen"
+    - "Den Test löschen"
+    - "Bedingt warten, bis das erwartete Element bzw. der Zustand da ist"
+    - "Den Test nur lokal ausführen"
+  richtig: [2]
+  erklaerung: "Warte auf einen Zustand, nicht eine Zeit. Ein bedingtes Warten (WebDriverWait, Playwright Auto-Waiting) ist schnell, wenn es schnell geht, und geduldig, wenn es dauert."
+  artikel: "#timing"
+  tags: [flaky, warten]
+
+- id: ta-fl-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Parallel laufende Tests verwenden alle den Nutzer 'max@test.de' und stören sich gegenseitig. Was hilft?"
+  optionen:
+    - "Tests nie parallel ausführen"
+    - "Jeder Test erzeugt eigene, eindeutige Testdaten, z. B. mit einer GUID/UUID"
+    - "Einen zweiten festen Nutzer anlegen"
+    - "Retries aktivieren"
+  richtig: [1]
+  erklaerung: "Eindeutige Testdaten pro Test beseitigen den gemeinsamen Zustand. Nicht-parallel wäre nur ein Umweg, der die Suite verlangsamt."
+  artikel: "#gemeinsamer-zustand"
+  tags: [flaky, testdaten]
+
+- id: ta-fl-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie findest du am einfachsten heraus, ob ein Test von einem anderen Test abhängt?"
+  optionen:
+    - "Den Test einzeln und in zufälliger Reihenfolge ausführen"
+    - "Den Rechner neu starten"
+    - "Die Log-Ausgabe erhöhen"
+    - "Den Test in eine andere Datei verschieben"
+  richtig: [0]
+  erklaerung: "Läuft ein Test allein oder in anderer Reihenfolge nicht mehr, hängt er von einem Zustand ab, den andere Tests hinterlassen."
+  artikel: "#reihenfolge"
+  tags: [flaky, reihenfolge]
+
+- id: ta-fl-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Test zu Gutscheinen schlägt nur kurz vor Mitternacht fehl. Welche Lösung ist am saubersten?"
+  optionen:
+    - "Den Test nur tagsüber laufen lassen"
+    - "Die aktuelle Zeit als Abhängigkeit injizieren (TimeProvider/Clock) und im Test fest setzen"
+    - "DateTime.Now durch DateTime.UtcNow ersetzen"
+    - "Ein Retry hinzufügen"
+  richtig: [1]
+  erklaerung: "Wird die Uhr injiziert, kann der Test eine feste Zeit verwenden und ist immer reproduzierbar. UtcNow verschiebt das Problem nur auf eine andere Uhrzeit."
+  artikel: "#umgebung"
+  tags: [flaky, zeit]
+
+- id: ta-fl-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Auf dem CI-Server wird ein Datum als '11/25/2026' statt '25.11.2026' formatiert. Was ist die Ursache?"
+  optionen:
+    - "Ein Fehler im Test-Framework"
+    - "Die Kultur bzw. Locale des Servers unterscheidet sich von der lokalen"
+    - "Der Server hat eine falsche Uhrzeit"
+    - "Das Datum wurde zufällig erzeugt"
+  richtig: [1]
+  erklaerung: "Formatierungen hängen von der Kultur (.NET) bzw. Locale (Java) ab. Setze sie im Test explizit, statt dich auf die Einstellung der Maschine zu verlassen."
+  artikel: "#umgebung"
+  tags: [flaky, umgebung]
+
+- id: ta-fl-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der erste Schritt, wenn ein Test als flaky gemeldet wird?"
+  optionen:
+    - "Ihn mit [Ignore] deaktivieren"
+    - "Ihn reproduzieren, z. B. indem man ihn oft hintereinander ausführt"
+    - "Sofort alle Timeouts verdoppeln"
+    - "Den Entwickler des Tests beschuldigen"
+  richtig: [1]
+  erklaerung: "Erst reproduzieren, dann Beweise (Logs, Screenshots, Traces) sammeln, die Ursache beheben und die Gegenprobe machen."
+  artikel: "#vorgehen"
+  tags: [flaky, vorgehen]
+
+- id: ta-fl-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu Retries sind richtig?"
+  optionen:
+    - "Tests, die erst beim Retry grün werden, sollten als flaky gemeldet und behoben werden"
+    - "Retries heilen die Ursache eines Flaky Tests"
+    - "Retries sind vor allem in der CI als vorübergehendes Pflaster sinnvoll"
+    - "Mit genug Retries braucht man keine Ursachenanalyse"
+  richtig: [0, 2]
+  erklaerung: "Retries sind ein Pflaster: Sie halten die Pipeline am Laufen, verstecken aber das Problem, wenn niemand die Flaky-Meldungen auswertet."
+  artikel: "#retries"
+  tags: [flaky, retries]
+
+- id: ta-fl-010
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Quarantäne bedeutet, einen Flaky Test dauerhaft mit [Ignore] abzuschalten."
+  richtig: [1]
+  erklaerung: "Falsch. In Quarantäne läuft der Test weiter separat und blockiert nur die Pflicht-Pipeline nicht mehr – mit Ticket, bis er repariert ist."
+  artikel: "#retries"
+  tags: [flaky, quarantaene]
