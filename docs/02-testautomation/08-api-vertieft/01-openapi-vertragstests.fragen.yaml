@@ -1,0 +1,154 @@
+# Fragen zur Lektion "OpenAPI und Vertragstests"
+
+- id: ta-oa-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was beschreibt eine OpenAPI-Datei?"
+  optionen:
+    - "Das Design der Weboberfläche"
+    - "Pfade, Methoden, Parameter, Bodies und Antworten einer REST-API – maschinenlesbar"
+    - "Die Datenbanktabellen"
+    - "Die Testfälle"
+  richtig: [1]
+  erklaerung: "Daraus entstehen Dokumentation, Client-Code, Tests und Mocks."
+  artikel: "#openapi"
+  tags: [api, openapi]
+
+- id: ta-oa-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum standen sechs Endpunkte des Mini-Shops als '200 ohne Inhalt' in der OpenAPI-Beschreibung?"
+  optionen:
+    - "Weil die API fehlerhaft war"
+    - "Weil sie Results.Ok(...) bzw. Results.Created(...) zurückgeben – aus IResult kann ASP.NET Core den Body-Typ nicht ableiten"
+    - "Weil OpenAPI keine POST-Anfragen kennt"
+    - "Weil die Tests falsch waren"
+  richtig: [1]
+  erklaerung: "Abhilfe: .Produces<T>() und .ProducesProblem(...) angeben oder TypedResults verwenden."
+  artikel: "#befund"
+  tags: [api, openapi]
+
+- id: ta-oa-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Die API-Tests des Mini-Shops waren alle grün, trotzdem war die OpenAPI-Beschreibung unbrauchbar. Was zeigt das?"
+  optionen:
+    - "Dass API-Tests überflüssig sind"
+    - "Verhaltenstests und Vertragstests prüfen Verschiedenes – eine API kann richtig funktionieren und trotzdem falsch beschrieben sein"
+    - "Dass OpenAPI unwichtig ist"
+    - "Dass man nur UI-Tests braucht"
+  richtig: [1]
+  erklaerung: "Clients verlassen sich auf die Beschreibung – sie verdient eigene Tests."
+  artikel: "#befund"
+  tags: [api, vertrag]
+
+- id: ta-oa-004
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Änderungen an einer API sind inkompatibel (Breaking Changes)?"
+  optionen:
+    - "Ein Feld der Antwort umbenennen"
+    - "Ein neues Pflichtfeld in der Anfrage verlangen"
+    - "Den Typ eines Feldes von Zahl auf Text ändern"
+    - "Ein neues, optionales Feld in der Antwort ergänzen"
+  richtig: [0, 1, 2]
+  erklaerung: "Zusätzliche optionale Felder können bestehende Clients ignorieren."
+  artikel: "#breaking"
+  tags: [api, versionierung]
+
+- id: ta-oa-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum nutzen die API-Tests des Mini-Shops eigene Antwortklassen statt der Klassen aus dem Produktivcode?"
+  optionen:
+    - "Aus Gewohnheit"
+    - "Damit eine Umbenennung im Produktivcode die Tests scheitern lässt, statt still mitzuwandern"
+    - "Weil die Produktivklassen nicht serialisierbar sind"
+    - "Damit die Tests schneller laufen"
+  richtig: [1]
+  erklaerung: "So bemerken die Tests einen Vertragsbruch, den ein Client ebenfalls bemerken würde."
+  artikel: "#breaking"
+  tags: [api, vertrag]
+
+- id: ta-oa-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was macht ein Werkzeug wie Schemathesis?"
+  optionen:
+    - "Es zeichnet Diagramme"
+    - "Es erzeugt aus der OpenAPI-Beschreibung automatisch viele Anfragen und prüft jede Antwort gegen das Schema"
+    - "Es ersetzt die Datenbank"
+    - "Es verschlüsselt die API"
+  richtig: [1]
+  erklaerung: "Das ist eine Form von Fuzzing – auch mit Grenz- und Unsinnswerten."
+  artikel: "#schema"
+  tags: [api, fuzzing]
+
+- id: ta-oa-007
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Beim Hinzufügen eines NuGet-Pakets wird automatisch immer die zum Projekt passende Version gewählt."
+  richtig: [1]
+  erklaerung: "Falsch. Für Microsoft.AspNetCore.OpenApi wurde zunächst Version 11 vorgeschlagen, das Projekt läuft aber auf .NET 10."
+  artikel: "#erzeugen"
+  tags: [api, nuget]
+
+- id: ta-oa-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Verfahren der API-Versionierung ein Beispiel zu."
+  paare:
+    - ["Im Pfad", "/api/v2/warenkoerbe"]
+    - ["Als Parameter", "/api/warenkoerbe?api-version=2.0"]
+    - ["Im Header", "Accept: application/vnd.shop.v2+json"]
+  erklaerung: "Die Version im Pfad ist am verbreitetsten und am besten sichtbar."
+  artikel: "#versionierung"
+  tags: [api, versionierung]
+
+- id: ta-oa-009
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Angaben, damit die OpenAPI-Beschreibung Antworttyp und Fehler kennt."
+  sprache: csharp
+  text: |
+    api.MapGet("/warenkoerbe/{id:guid}", ...)
+        .___<WarenkorbAntwort>()
+        .___(StatusCodes.Status404NotFound);
+  luecken:
+    - ["Produces"]
+    - ["ProducesProblem"]
+  exakt: true
+  erklaerung: "Damit erscheinen das Schema WarenkorbAntwort und die 404-Antwort in /openapi/v1.json."
+  artikel: "#befund"
+  tags: [api, openapi, csharp]
+
+- id: ta-oa-010
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Schritte, mit denen der Befund im Mini-Shop gefunden und behoben wurde, in die richtige Reihenfolge."
+  elemente:
+    - "OpenAPI-Beschreibung erzeugen lassen"
+    - "Vertragstest schreiben, der Endpunkte und Felder prüft"
+    - "Test scheitert: Schema WarenkorbAntwort fehlt"
+    - "Erzeugte Beschreibung untersuchen: sechs Endpunkte '200 ohne Inhalt'"
+    - "Produces-Angaben ergänzen, alle Tests laufen lassen"
+  erklaerung: "Der Test hat den Befund gefunden – und sichert ihn jetzt dauerhaft ab."
+  artikel: "#befund"
+  tags: [api, vertrag]
+
+- id: ta-oa-011
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Diese API-Änderung bricht bestehende Clients. Welche Zeile ist das Problem?"
+  sprache: csharp
+  code: |
+    public sealed record WarenkorbAntwort(
+        Guid Id,
+        IReadOnlyList<PositionAntwort> Positionen,
+        decimal Zwischensumme,
+        decimal Rabatt,
+        decimal Endpreis);
+  richtig: [4]
+  erklaerung: "RabattSatz wurde zu Rabatt umbenannt – im JSON heißt das Feld jetzt 'rabatt' statt 'rabattSatz'. Der Vertragstest und die eigenen DTOs der Tests würden das sofort melden."
+  artikel: "#breaking"
+  tags: [api, breaking-change]

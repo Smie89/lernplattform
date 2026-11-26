@@ -22,8 +22,9 @@ Shop.slnx
 │   └── Shop.Web/             REST-API (Api/ShopApi.cs) und Oberfläche (wwwroot/)
 └── tests/
     ├── Shop.Core.Tests/      Unit-Tests: NUnit + NSubstitute, Test Data Builder
-    ├── Shop.Api.Tests/       API-Tests: Anwendung im Speicher (WebApplicationFactory)
-    └── Shop.UiTests/         UI-Tests: Playwright, Page Object + Komponente
+    ├── Shop.Api.Tests/       API-Tests: Anwendung im Speicher (WebApplicationFactory), OpenAPI-Vertrag,
+    │                         Sicherheits-Header, Zahlungsanbieter mit WireMock simuliert
+    └── Shop.UiTests/         UI-Tests: Playwright, Page Object + Komponente, Barrierefreiheit (axe)
 ```
 
 ## Voraussetzungen

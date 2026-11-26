@@ -93,6 +93,7 @@ function pruefeTyp(f) {
       else {
         if (!eindeutig(p.map((x) => x[0]))) m.push('linke Seiten doppelt');
         if (!eindeutig(p.map((x) => x[1]))) m.push('rechte Seiten doppelt – Zuordnung wäre nicht eindeutig');
+        if (p.flat().some((x) => String(x) !== String(x).trim())) m.push('Leerzeichen am Anfang/Ende eines Paares');
       }
       return m;
     }

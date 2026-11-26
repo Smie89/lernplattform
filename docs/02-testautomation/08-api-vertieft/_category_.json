@@ -3,7 +3,7 @@
   "position": 8,
   "link": {
     "type": "generated-index",
-    "slug": "/testautomation/api",
+    "slug": "/testautomation/api-vertieft",
     "description": "OpenAPI und Schemas, externe Dienste simulieren mit WireMock, Contract-Tests, Authentifizierung und GraphQL."
   }
 }

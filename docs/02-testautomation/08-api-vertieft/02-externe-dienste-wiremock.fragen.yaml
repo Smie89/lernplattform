@@ -1,0 +1,159 @@
+# Fragen zur Lektion "Externe Dienste simulieren mit WireMock"
+
+- id: ta-wm-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Warum simuliert man einen externen Zahlungsanbieter im Test?"
+  optionen:
+    - "Weil echte Anbieter keine APIs haben"
+    - "Weil Tests sonst Geld kosten, unzuverlässig sind und sich Fehlerfälle wie 503 oder Zeitüberschreitung kaum gezielt auslösen lassen"
+    - "Weil Simulationen immer genauer sind"
+    - "Aus Datenschutzgründen ausschließlich"
+  richtig: [1]
+  erklaerung: "Gerade die Fehlerfälle sind die wertvollsten Tests – und die lassen sich nur mit einer Simulation zuverlässig herstellen."
+  artikel: "#warum"
+  tags: [api, wiremock]
+
+- id: ta-wm-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Was testet WireMock zusätzlich zu einem NSubstitute-Mock des Interfaces IZahlungsdienst?"
+  optionen:
+    - "Nichts"
+    - "Den HTTP-Code selbst: Serialisierung, Statuscodes, Header und Timeouts"
+    - "Die Datenbank"
+    - "Die Oberfläche"
+  richtig: [1]
+  erklaerung: "Ein Mock des Interfaces ersetzt die ganze Klasse – deren HTTP-Logik bliebe ungetestet."
+  artikel: "#warum"
+  tags: [api, wiremock, testdoubles]
+
+- id: ta-wm-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Zahlungsanbieter antwortet mit 503. Was muss HttpZahlungsdienst.Abbuchen liefern?"
+  optionen:
+    - "true, weil der Anbieter ja geantwortet hat"
+    - "false – bei jedem unklaren Zustand gilt die Zahlung als nicht erfolgt (Fail Secure)"
+    - "Eine Exception an den Kunden"
+    - "Es wird endlos wiederholt"
+  richtig: [1]
+  erklaerung: "Im Zweifel nicht als bezahlt werten – sonst gäbe es Ware ohne Zahlung."
+  artikel: "#beispiel"
+  tags: [api, fail-secure]
+
+- id: ta-wm-004
+  typ: single
+  schwierigkeit: 3
+  frage: "Die WireMock-Tests waren anfangs extrem langsam (teils ~10 Sekunden pro Test) und scheiterten. Was war die Ursache?"
+  optionen:
+    - "WireMock ist langsam"
+    - "localhost wurde zuerst zu ::1 (IPv6) aufgelöst; Windows meldete die Ablehnung erst nach ~2 Sekunden – länger als das Zeitlimit von 1 Sekunde"
+    - "Der Zahlungsdienst hatte einen Fehler"
+    - "Die Tests liefen parallel"
+  richtig: [1]
+  erklaerung: "Mit 127.0.0.1 als Basisadresse liefen alle Tests in Millisekunden."
+  artikel: "#ipv6"
+  tags: [api, netzwerk]
+
+- id: ta-wm-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was prüft der Zeitüberschreitungstest zusätzlich zum Ergebnis 'nicht bezahlt'?"
+  optionen:
+    - "Die Farbe der Oberfläche"
+    - "Dass der Aufruf nach dem Zeitlimit abbricht und der Shop nicht hängt"
+    - "Den Preis"
+    - "Die Anzahl der Produkte"
+  richtig: [1]
+  erklaerung: "Ohne Zeitlimit würde jede Bestellung so lange warten, wie der Anbieter braucht."
+  artikel: "#fehlerfaelle"
+  tags: [api, timeout]
+
+- id: ta-wm-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Fälle sollten Tests eines externen Dienstes abdecken?"
+  optionen:
+    - "Erfolg und fachliche Ablehnung"
+    - "Serverfehler wie 500 und 503"
+    - "Kaputte Antwort und Zeitüberschreitung"
+    - "Nur den Erfolgsfall, der Rest kommt nie vor"
+  richtig: [0, 1, 2]
+  erklaerung: "Dazu der komplette Ausfall des Dienstes."
+  artikel: "#fehlerfaelle"
+  tags: [api, wiremock]
+
+- id: ta-wm-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie prüfst du mit WireMock, welche Daten die Anwendung an den Anbieter geschickt hat?"
+  optionen:
+    - "Gar nicht"
+    - "Über die aufgezeichneten Anfragen in LogEntries"
+    - "Über die Datenbank"
+    - "Mit einem Screenshot"
+  richtig: [1]
+  erklaerung: "Das ist das Gegenstück zu Received() bei einem Mock."
+  artikel: "#anfragen"
+  tags: [api, wiremock]
+
+- id: ta-wm-008
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Wenn alle Tests gegen die WireMock-Simulation grün sind, funktioniert die Anbindung an den echten Anbieter sicher."
+  richtig: [1]
+  erklaerung: "Falsch. Die Simulation antwortet so, wie wir glauben, dass der Anbieter antwortet. Abgleich über OpenAPI, Contract-Tests, Sandbox und Überwachung."
+  artikel: "#grenzen"
+  tags: [api, grenzen]
+
+- id: ta-wm-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder WireMock-Antwort das erwartete Ergebnis von Abbuchen zu."
+  paare:
+    - ["200 mit status genehmigt", "true"]
+    - ["200 mit status abgelehnt", "false (fachlich abgelehnt)"]
+    - ["503 Service Unavailable", "false (Anbieterfehler)"]
+    - ["200 mit HTML statt JSON", "false (kaputte Antwort)"]
+    - ["Antwort erst nach 5 Sekunden", "false (Zeitüberschreitung)"]
+  erklaerung: "Nur eine eindeutige Genehmigung zählt als Zahlung."
+  artikel: "#fehlerfaelle"
+  tags: [api, fail-secure]
+
+- id: ta-wm-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die WireMock-Regel: POST /zahlungen antwortet mit 503."
+  sprache: csharp
+  text: |
+    _anbieter
+        .___(Request.Create().WithPath("/zahlungen").UsingPost())
+        .___(Response.Create().WithStatusCode(503));
+  luecken:
+    - ["Given"]
+    - ["RespondWith"]
+  exakt: true
+  erklaerung: "Given beschreibt die passende Anfrage, RespondWith die Antwort."
+  artikel: "#einrichten"
+  tags: [api, wiremock, csharp]
+
+- id: ta-wm-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile verletzt das Prinzip Fail Secure?"
+  sprache: csharp
+  code: |
+    try
+    {
+        using var antwort = http.Send(anfrage);
+        return antwort.IsSuccessStatusCode;
+    }
+    catch (HttpRequestException)
+    {
+        return true;   // Anbieter nicht erreichbar – Bestellung trotzdem annehmen
+    }
+  richtig: [7]
+  erklaerung: "Bei einem Ausfall würde jede Bestellung als bezahlt gelten. Richtig: return false."
+  artikel: "#beispiel"
+  tags: [api, fail-secure]

@@ -5,12 +5,15 @@ import styles from './index.module.css';
 
 const bereiche = [
   {icon: '🧪', titel: 'Softwaretest', text: 'Teststufen, Testarten, Testentwurfsverfahren', pfad: '/lernen/softwaretest'},
-  {icon: '🤖', titel: 'Testautomation', text: 'C#, Java und Browser – NUnit, JUnit, Playwright, Selenium', pfad: '/lernen/testautomation'},
+  {icon: '🤖', titel: 'Testautomation', text: 'C#, Java, Browser, Desktop, Performance, Barrierefreiheit, API', pfad: '/lernen/testautomation'},
   {icon: '💻', titel: 'Softwareentwicklung', text: 'OOP, Clean Code, Design Patterns, Git', pfad: '/lernen/softwareentwicklung'},
   {icon: '🐧', titel: 'Linux', text: 'Shell, Rechte, Prozesse, Bash-Skripte', pfad: '/lernen/linux'},
   {icon: '🐳', titel: 'Docker', text: 'Images, Container, Compose, Testcontainers', pfad: '/lernen/docker'},
   {icon: '🧠', titel: 'Künstliche Intelligenz', text: 'ML-Grundlagen, LLMs, KI im Testen', pfad: '/lernen/ki'},
   {icon: '🔐', titel: 'Cybersecurity', text: 'OWASP Top 10, Sicherheitstests, Härtung, Angriffserkennung', pfad: '/lernen/cybersecurity'},
+  {icon: '🗄️', titel: 'Datenbanken und SQL', text: 'SELECT bis JOIN, Transaktionen, Datenbanken im Test', pfad: '/lernen/datenbanken'},
+  {icon: '🌐', titel: 'Netzwerke', text: 'IP und Subnetze, TCP/UDP, DNS, HTTP und TLS, Wireshark', pfad: '/lernen/netzwerke'},
+  {icon: '☁️', titel: 'Cloud', text: 'Geteilte Verantwortung, IAM, Infrastructure as Code', pfad: '/lernen/cloud'},
   {icon: '🔁', titel: 'Wiederholen', text: 'Fällige Fragen aus allen Lektionen – mit Wiederholungsplan', pfad: '/wiederholen'},
 ];
 

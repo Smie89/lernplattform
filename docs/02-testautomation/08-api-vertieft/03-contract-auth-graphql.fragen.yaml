@@ -1,0 +1,149 @@
+# Fragen zur Lektion "Contract-Tests, Authentifizierung und GraphQL"
+
+- id: ta-cg-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Wer legt bei Consumer-Driven Contract Tests (Pact) den Vertrag fest?"
+  optionen:
+    - "Der Provider"
+    - "Die Consumer – sie halten fest, welche Anfragen sie stellen und welche Antworten sie erwarten"
+    - "Ein externer Prüfer"
+    - "Der Pact Broker"
+  richtig: [1]
+  erklaerung: "Der Provider spielt die Verträge aller Consumer gegen seine echte Implementierung ab."
+  artikel: "#contract"
+  tags: [api, pact]
+
+- id: ta-cg-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Welchen Vorteil hat ein Consumer-Driven Contract gegenüber einer reinen OpenAPI-Beschreibung?"
+  optionen:
+    - "Er ist kürzer"
+    - "Der Provider erfährt, welche Felder wirklich genutzt werden – ungenutzte kann er gefahrlos ändern, genutzte nicht"
+    - "Er braucht keine Tests"
+    - "Er funktioniert nur mit GraphQL"
+  richtig: [1]
+  erklaerung: "Für öffentliche APIs mit unbekannten Nutzern ist dagegen der OpenAPI-Vertrag die passende Wahl."
+  artikel: "#contract"
+  tags: [api, pact, openapi]
+
+- id: ta-cg-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher OAuth-2.0-Ablauf passt für einen API-Test, in dem ein Dienst ohne Benutzer einen anderen aufruft?"
+  optionen:
+    - "Authorization Code + PKCE"
+    - "Client Credentials"
+    - "Password Grant"
+    - "Gar keiner"
+  richtig: [1]
+  erklaerung: "Client-ID und Secret aus CI-Secrets; der Password Grant ist veraltet."
+  artikel: "#auth"
+  tags: [api, oauth]
+
+- id: ta-cg-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum holt man in API-Tests Tokens einmal und speichert sie zwischen?"
+  optionen:
+    - "Weil Tokens nie ablaufen"
+    - "Weil das Holen Zeit kostet und der Identitätsanbieter die Anzahl der Anfragen begrenzen kann"
+    - "Weil man sonst keine Secrets braucht"
+    - "Das ist nicht sinnvoll"
+  richtig: [1]
+  erklaerung: "Ein Token pro Rolle für den ganzen Testlauf reicht in der Regel."
+  artikel: "#auth"
+  tags: [api, oauth]
+
+- id: ta-cg-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Tests gehören zur Zugriffskontrolle einer API?"
+  optionen:
+    - "Eigene Ressource mit eigenem Token → 200"
+    - "Fremde Ressource → 404 oder 403"
+    - "Ohne Anmeldung → 401"
+    - "Nur der Test mit eigenem Token"
+  richtig: [0, 1, 2]
+  erklaerung: "Dazu manipulierte Tokens: abgelaufen, falsche Signatur, veränderte Rolle – alle 401."
+  artikel: "#rechte"
+  tags: [api, sicherheit]
+
+- id: ta-cg-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt ein Idempotenzschlüssel bei 'Bestellung anlegen'?"
+  optionen:
+    - "Er verschlüsselt die Bestellung"
+    - "Wiederholt der Client dieselbe Anfrage mit demselben Schlüssel, liefert der Server das erste Ergebnis statt einer zweiten Bestellung"
+    - "Er beschleunigt die Anfrage"
+    - "Er ersetzt die Anmeldung"
+  richtig: [1]
+  erklaerung: "So werden Wiederholungen nach Netzwerkfehlern ungefährlich."
+  artikel: "#idempotenz"
+  tags: [api, idempotenz]
+
+- id: ta-cg-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine GraphQL-Abfrage scheitert fachlich. Welchen Statuscode bekommt der Test meist?"
+  optionen:
+    - "404"
+    - "200 – der Fehler steht im Feld errors der Antwort"
+    - "500"
+    - "301"
+  richtig: [1]
+  erklaerung: "Deshalb bei GraphQL immer das Feld errors prüfen, nicht nur den Statuscode."
+  artikel: "#graphql"
+  tags: [api, graphql]
+
+- id: ta-cg-008
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Bei GraphQL reicht es, die Zugriffsrechte pro Endpunkt zu prüfen."
+  richtig: [1]
+  erklaerung: "Falsch. Es gibt meist nur einen Endpunkt – Clients wählen Felder frei, also müssen Rechte pro Feld geprüft werden."
+  artikel: "#graphql"
+  tags: [api, graphql, sicherheit]
+
+- id: ta-cg-009
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe den Ablauf von Consumer-Driven Contract Testing in die richtige Reihenfolge."
+  elemente:
+    - "Consumer testet gegen eine Simulation und erzeugt den Vertrag"
+    - "Vertrag wird im Broker abgelegt"
+    - "Provider spielt den Vertrag gegen seine echte Implementierung ab"
+    - "Pipeline fragt vor dem Release: Ist diese Version mit allen Consumern verträglich?"
+  erklaerung: "Die letzte Frage heißt bei Pact can-i-deploy."
+  artikel: "#contract"
+  tags: [api, pact]
+
+- id: ta-cg-010
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Anfrage den erwarteten Status zu (Bestellung A-1 gehört Kunde A)."
+  paare:
+    - ["Kunde A ruft Bestellung A-1 ab", "200 OK"]
+    - ["Kunde B ruft Bestellung A-1 ab", "404 Not Found"]
+    - ["Anfrage ohne Token", "401 Unauthorized"]
+    - ["Kunde A ruft einen Admin-Endpunkt auf", "403 Forbidden"]
+  erklaerung: "Fremde Ressourcen sehen aus wie nicht vorhandene; fehlende Anmeldung ist 401, fehlende Rolle 403."
+  artikel: "#rechte"
+  tags: [api, sicherheit]
+
+- id: ta-cg-011
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Header für ein Zugriffstoken."
+  sprache: csharp
+  text: |
+    http.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("___", token);
+  luecken:
+    - ["Bearer"]
+  exakt: true
+  erklaerung: "Daraus wird der Header Authorization: Bearer <token>."
+  artikel: "#auth"
+  tags: [api, oauth, csharp]

@@ -1,0 +1,212 @@
+---
+title: Externe Dienste simulieren mit WireMock
+description: Warum man externe APIs im Test simuliert, wie WireMock.Net einen echten HTTP-Server mit vorgegebenen Antworten startet, Erfolg, Ablehnung, Serverfehler, kaputte Antworten, Zeitüberschreitung und Ausfall eines Zahlungsanbieters testen, gesendete Anfragen prüfen – mit einem echten IPv6-Befund – und die Grenzen von Mocks.
+tags: [api, wiremock, mock, testdoubles]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-externe-dienste-wiremock.fragen.yaml';
+
+# Externe Dienste simulieren mit WireMock
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- begründen, wann man **externe Dienste** im Test simuliert,
+- mit **WireMock.Net** einen simulierten HTTP-Dienst aufsetzen,
+- **Fehlerfälle** gezielt testen: Ablehnung, Serverfehler, kaputte Antwort, Zeitüberschreitung, Ausfall,
+- **gesendete Anfragen** prüfen,
+- die **Grenzen** simulierter Dienste einschätzen.
+:::
+
+## Warum simulieren? \{#warum}
+
+Viele Anwendungen hängen von fremden APIs ab: Zahlungsanbieter, Versanddienstleister, Adressprüfung. Gegen den echten
+Dienst zu testen ist oft **unmöglich oder unklug**:
+
+- Er kostet Geld pro Aufruf oder bucht echte Beträge ab.
+- Er ist in der Testumgebung nicht erreichbar oder hat keine Testkonten.
+- Er ist langsam oder unzuverlässig – Tests werden [flaky](../01-grundlagen/02-flaky-tests.mdx#umgebung).
+- **Fehlerfälle lassen sich nicht auslösen**: Wie bringt man einen echten Zahlungsanbieter dazu, genau jetzt einen 503 zu
+  liefern oder 5 Sekunden zu brauchen?
+
+Auf Unit-Ebene ersetzt man die Abhängigkeit durch ein [Testdouble](../02-csharp/02-testdoubles-nsubstitute.mdx). Damit testet
+man aber nicht den **HTTP-Code** selbst: Serialisierung, Statuscodes, Header, Timeouts. Dafür gibt es **API-Simulatoren** wie
+**WireMock** (Java, mit .NET-Variante WireMock.Net), MockServer oder Mountebank. Sie starten einen **echten HTTP-Server** auf
+einem freien Port, der genau die Antworten liefert, die der Test vorgibt.
+
+## Das Beispiel: ein Zahlungsdienst über HTTP \{#beispiel}
+
+Der Mini-Shop nutzt standardmäßig einen simulierten Zahlungsdienst. Zum Lernen gibt es zusätzlich
+[HttpZahlungsdienst.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/src/Shop.Core/Zahlung/HttpZahlungsdienst.cs),
+der einen externen Anbieter per HTTP aufruft – `POST /zahlungen` mit `{ kunde, betrag }`, Antwort
+`{ status: "genehmigt" | "abgelehnt" }`:
+
+```csharp title="HttpZahlungsdienst.cs"
+public bool Abbuchen(string kundenName, decimal betrag)
+{
+    try
+    {
+        using var antwort = http.Send(new HttpRequestMessage(HttpMethod.Post, "zahlungen")
+        {
+            Content = JsonContent.Create(new ZahlungsAnfrage(kundenName, betrag)),
+        });
+        if (!antwort.IsSuccessStatusCode) return false;   // 4xx/5xx: im Zweifel nicht als bezahlt werten
+
+        var ergebnis = antwort.Content.ReadFromJsonAsync<ZahlungsAntwort>().GetAwaiter().GetResult();
+        return ergebnis?.Status == "genehmigt";
+    }
+    catch (Exception fehler) when (fehler is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+    {
+        return false;   // nicht erreichbar, Zeitüberschreitung oder kaputte Antwort: Fail Secure
+    }
+}
+```
+
+Die wichtigste Regel steckt in den `return false`: Bei **jedem** unklaren Zustand gilt die Zahlung als **nicht** erfolgt
+([Fail Secure](../../07-cybersecurity/01-security-grundlagen.mdx#prinzipien)). Genau das müssen die Tests beweisen.
+
+## WireMock.Net einrichten \{#einrichten}
+
+```csharp title="HttpZahlungsdienstTests.cs"
+[SetUp]
+public void Starten()
+{
+    _anbieter = WireMockServer.Start();   // echter HTTP-Server auf einem freien Port
+    _http = new HttpClient
+    {
+        BaseAddress = new Uri($"http://127.0.0.1:{_anbieter.Port}/"),
+        Timeout = TimeSpan.FromSeconds(1),
+    };
+    _dienst = new HttpZahlungsdienst(_http);
+}
+
+[TearDown]
+public void Beenden()
+{
+    _http.Dispose();
+    _anbieter.Dispose();   // stoppt den Server und gibt den Port frei
+}
+
+private void AnbieterAntwortet(int status, string? body = null, TimeSpan? verzoegerung = null)
+{
+    var antwort = Response.Create().WithStatusCode(status);
+    if (body is not null) antwort = antwort.WithHeader("Content-Type", "application/json").WithBody(body);
+    if (verzoegerung is not null) antwort = antwort.WithDelay(verzoegerung.Value);
+    _anbieter.Given(Request.Create().WithPath("/zahlungen").UsingPost()).RespondWith(antwort);
+}
+```
+
+`Given(...)` beschreibt, **welche Anfrage** passt (Pfad, Methode, auf Wunsch auch Header oder Body), `RespondWith(...)`,
+**was zurückkommt**.
+
+### Ein echter Befund: localhost und IPv6 \{#ipv6}
+
+In der ersten Fassung lautete die Basisadresse `_anbieter.Url` – also `http://localhost:…`. Die Tests waren **rot und
+quälend langsam**: Die Testklasse brauchte über eine Minute, einzelne Tests rund 10 Sekunden, und selbst „Genehmigte Zahlung“ lieferte `false`. Die Ursache steht in der Lektion
+[TCP, UDP und Ports](../../09-netzwerke/02-tcp-udp-ports.mdx#fehler): `localhost` wird unter Windows zuerst zu `::1` (IPv6)
+aufgelöst. Lauscht der Server dort nicht, meldet Windows die Ablehnung erst nach etwa 2 Sekunden – länger als das Zeitlimit
+von 1 Sekunde. Mit `127.0.0.1` liefen alle Tests in Millisekunden.
+
+## Fehlerfälle testen \{#fehlerfaelle}
+
+Jetzt lässt sich jeder Zustand des Anbieters in einer Zeile herstellen:
+
+```csharp title="HttpZahlungsdienstTests.cs"
+[Test]
+public void Genehmigte_Zahlung()
+{
+    AnbieterAntwortet(200, """{"status":"genehmigt"}""");
+    Assert.That(_dienst.Abbuchen("Anna", 112.05m), Is.True);
+}
+
+[TestCase(400)]
+[TestCase(500)]
+[TestCase(503)]
+public void Fehler_des_Anbieters_gilt_nicht_als_bezahlt(int status)
+{
+    AnbieterAntwortet(status);
+    Assert.That(_dienst.Abbuchen("Anna", 50m), Is.False);
+}
+
+[Test]
+public void Kaputte_Antwort_gilt_nicht_als_bezahlt()
+{
+    AnbieterAntwortet(200, "<html>Wartungsarbeiten</html>");
+    Assert.That(_dienst.Abbuchen("Anna", 50m), Is.False);
+}
+
+[Test]
+public void Zeitueberschreitung_gilt_nicht_als_bezahlt_und_haengt_nicht()
+{
+    AnbieterAntwortet(200, """{"status":"genehmigt"}""", verzoegerung: TimeSpan.FromSeconds(5));
+    var uhr = Stopwatch.StartNew();
+
+    var ergebnis = _dienst.Abbuchen("Anna", 50m);
+
+    Assert.That(ergebnis, Is.False);
+    Assert.That(uhr.Elapsed, Is.LessThan(TimeSpan.FromSeconds(3)), "Timeout von 1 s muss greifen");
+}
+
+[Test]
+public void Anbieter_nicht_erreichbar_gilt_nicht_als_bezahlt()
+{
+    _anbieter.Stop();
+    Assert.That(_dienst.Abbuchen("Anna", 50m), Is.False);
+}
+```
+
+Der Zeitüberschreitungstest prüft zweierlei: das **Ergebnis** (nicht bezahlt) und dass der Shop **nicht hängt** – ohne
+Zeitlimit würde jede Bestellung so lange warten, wie der Anbieter braucht.
+
+## Gesendete Anfragen prüfen \{#anfragen}
+
+WireMock merkt sich jede Anfrage. So lässt sich prüfen, **was** die Anwendung schickt – das Gegenstück zu `Received()` bei
+einem Mock:
+
+```csharp title="HttpZahlungsdienstTests.cs"
+[Test]
+public void Sendet_Kunde_und_Betrag_als_JSON()
+{
+    AnbieterAntwortet(200, """{"status":"genehmigt"}""");
+
+    _dienst.Abbuchen("Anna", 112.05m);
+
+    var anfrage = _anbieter.LogEntries.Single().RequestMessage!;
+    Assert.Multiple(() =>
+    {
+        Assert.That(anfrage.Method, Is.EqualTo("POST"));
+        Assert.That(anfrage.Body ?? "", Does.Contain("\"kunde\":\"Anna\"").And.Contain("\"betrag\":112.05"));
+    });
+}
+```
+
+## Grenzen simulierter Dienste \{#grenzen}
+
+Ein Simulator antwortet so, wie **wir glauben**, dass der echte Dienst antwortet. Ändert der Anbieter sein Format, bleiben
+unsere Tests grün – und die Produktion bricht. Dagegen hilft:
+
+- Simulationen aus der **offiziellen OpenAPI-Beschreibung** des Anbieters ableiten bzw. echte Antworten **aufzeichnen**
+  (WireMock kann als Proxy mitschneiden).
+- **Contract-Tests** gegen den echten Dienst (siehe [nächste Lektion](./03-contract-auth-graphql.mdx#contract)).
+- Einige wenige **Tests gegen die Sandbox** des Anbieters, z. B. nächtlich.
+- **Überwachung** in Produktion: Fehlerraten der Aufrufe beobachten.
+
+## Typische Fehler \{#typische-fehler}
+
+- Nur den **Erfolgsfall** simulieren – Fehler, Zeitüberschreitung und Ausfall sind die eigentlich wertvollen Tests.
+- **Kein Zeitlimit** im Client – der eigene Dienst hängt, wenn der fremde langsam ist.
+- Bei Fehlern **„im Zweifel bezahlt“** annehmen.
+- Feste Ports statt freier Ports – parallele Tests kollidieren.
+- `localhost` statt `127.0.0.1`, wenn der Simulator nur auf IPv4 lauscht.
+- Simulation **nie** mit dem echten Dienst abgleichen.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Externe Dienste im Test **simulieren**: kostenlos, zuverlässig und mit **jedem Fehlerfall** auf Knopfdruck.
+- **WireMock.Net** startet einen echten HTTP-Server; `Given(...)` beschreibt die Anfrage, `RespondWith(...)` die Antwort.
+- Testen: Erfolg, Ablehnung, 4xx/5xx, kaputte Antwort, **Zeitüberschreitung**, Ausfall – überall gilt **Fail Secure**.
+- `LogEntries` zeigen, **was** gesendet wurde.
+- Echter Befund: `localhost` → IPv6 → 2 Sekunden Verzögerung unter Windows; `127.0.0.1` löst es.
+- Simulationen regelmäßig mit dem echten Dienst abgleichen.
+
+<Quiz fragen={fragen} titel="Quiz: Externe Dienste simulieren mit WireMock" />

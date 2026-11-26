@@ -17,6 +17,7 @@ builder.Services.AddSingleton<IZahlungsdienst, DemoZahlungsdienst>();
 builder.Services.AddSingleton<Rabattrechner>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<BestellService>();
+builder.Services.AddOpenApi();   // beschreibt die API maschinenlesbar unter /openapi/v1.json
 
 var app = builder.Build();
 
@@ -34,6 +35,7 @@ app.Use(async (kontext, weiter) =>
 
 app.UseDefaultFiles();   // liefert wwwroot/index.html für "/"
 app.UseStaticFiles();
+app.MapOpenApi();
 app.MapShopApi();        // alle Endpunkte unter /api, siehe Api/ShopApi.cs
 
 app.Run();

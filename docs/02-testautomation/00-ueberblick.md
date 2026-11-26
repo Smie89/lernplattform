@@ -43,6 +43,12 @@ Empfohlene Reihenfolge:
 15. [Barrierefreiheit – Grundlagen](./07-barrierefreiheit/01-barrierefreiheit-grundlagen.mdx) – BFSG, WCAG, Screenreader, semantisches HTML
 16. [Barrierefreiheit testen](./07-barrierefreiheit/02-barrierefreiheit-testen.mdx) – axe-core mit Playwright, manuelle Prüfungen, Strategie
 
+**API-Testing vertieft**
+
+17. [OpenAPI und Vertragstests](./08-api-vertieft/01-openapi-vertragstests.mdx) – Beschreibung erzeugen, Vertrag testen, ein echter Befund im Mini-Shop
+18. [Externe Dienste simulieren mit WireMock](./08-api-vertieft/02-externe-dienste-wiremock.mdx) – Zahlungsanbieter mit Fehlern, Zeitüberschreitung und Ausfall
+19. [Contract-Tests, Authentifizierung und GraphQL](./08-api-vertieft/03-contract-auth-graphql.mdx) – Pact, OAuth 2.0 und JWT, Idempotenz, GraphQL
+
 Die C#-, Java- und Desktop-Module kannst du auch in beliebiger Reihenfolge oder nur eines davon bearbeiten.
 
 Querverbindungen: Selenium Grid, Playwright im Container und Testcontainers im Bereich 🐳 [Docker](../05-docker/05-docker-testautomation.mdx).

@@ -1,0 +1,186 @@
+---
+title: OpenAPI und Vertragstests
+description: APIs mit OpenAPI beschreiben, die Beschreibung des Mini-Shops automatisch erzeugen und mit Vertragstests absichern – inklusive eines echten Befunds (alle Antworten als 200 ohne Inhalt dokumentiert) –, Antworten gegen Schemas prüfen, Breaking Changes erkennen und Versionierung von APIs.
+tags: [api, openapi, vertrag, schema]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-openapi-vertragstests.fragen.yaml';
+
+# OpenAPI und Vertragstests
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- eine **OpenAPI-Beschreibung** lesen und ihre Teile erklären,
+- die Beschreibung einer ASP.NET-Core-API **erzeugen** und mit **Vertragstests** absichern,
+- Antworten gegen ein **Schema** prüfen,
+- **Breaking Changes** erkennen und Strategien zur **Versionierung** einordnen.
+:::
+
+## Was ist OpenAPI? \{#openapi}
+
+**OpenAPI** (früher Swagger) beschreibt eine REST-API maschinenlesbar in JSON oder YAML: welche **Pfade** es gibt, welche
+**Methoden**, **Parameter** und **Bodies** sie erwarten und welche **Antworten** mit welchen **Statuscodes** und **Schemas**
+zurückkommen. Daraus entstehen:
+
+- **Dokumentation** zum Durchklicken (Swagger UI, Scalar, Redoc),
+- **Client-Code** in vielen Sprachen (z. B. mit NSwag, Kiota oder OpenAPI Generator),
+- **Tests**: Antworten gegen die Beschreibung prüfen, Werkzeuge erzeugen sogar Testanfragen daraus,
+- **Mocks** für Teams, die die API nutzen, bevor sie fertig ist.
+
+```yaml title="Auszug einer OpenAPI-Beschreibung"
+paths:
+  /api/warenkoerbe/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WarenkorbAntwort" }
+        "404":
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/ProblemDetails" }
+```
+
+## Die Beschreibung des Mini-Shops \{#erzeugen}
+
+ASP.NET Core erzeugt die Beschreibung aus dem Code. Zwei Zeilen in
+[Program.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/src/Shop.Web/Program.cs) genügen:
+
+```csharp title="Program.cs"
+builder.Services.AddOpenApi();   // beschreibt die API maschinenlesbar unter /openapi/v1.json
+...
+app.MapOpenApi();
+```
+
+(NuGet-Paket `Microsoft.AspNetCore.OpenApi` – in der Version passend zum Framework: Die Paketverwaltung schlug zunächst
+Version 11 vor, das Projekt läuft aber auf .NET 10. Auch das ist ein typischer Stolperstein.)
+
+## Vertragstests \{#vertragstests}
+
+Ein **Vertragstest** prüft, ob die API die Zusagen einhält, auf die sich ihre Nutzer verlassen. Die Tests in
+[OpenApiVertragsTests.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Api.Tests/Vertrag/OpenApiVertragsTests.cs)
+laden die Beschreibung und prüfen Endpunkte und Felder:
+
+```csharp title="OpenApiVertragsTests.cs"
+[TestCase("/api/warenkoerbe/{id}", "get")]
+[TestCase("/api/warenkoerbe/{id}/bestellung", "post")]
+// ... alle sieben Endpunkte
+public void Endpunkt_ist_beschrieben(string pfad, string methode)
+{
+    var pfade = _dokument.GetProperty("paths");
+
+    Assert.That(pfade.TryGetProperty(pfad, out var eintrag), Is.True, $"Pfad {pfad} fehlt");
+    Assert.That(eintrag.TryGetProperty(methode, out _), Is.True, $"{methode.ToUpper()} {pfad} fehlt");
+}
+
+[Test]
+public void Warenkorb_Antwort_hat_die_vereinbarten_Felder()
+{
+    var felder = Felder("WarenkorbAntwort");
+
+    Assert.That(felder, Is.SupersetOf(new[] { "id", "positionen", "zwischensumme", "rabattSatz", "endpreis" }));
+}
+```
+
+### Ein echter Befund \{#befund}
+
+Beim ersten Lauf waren alle Endpunkte vorhanden – aber der Feldtest scheiterte: Das Schema `WarenkorbAntwort` existierte
+gar nicht. Ein Blick in die erzeugte Beschreibung zeigte das Ausmaß:
+
+```text
+Schemas: BestellAnfrage, PositionAnfrage, Produkt
+GET    /api/produkte                               -> 200: mit Schema
+POST   /api/warenkoerbe                            -> 200: ohne Inhalt
+GET    /api/warenkoerbe/{id}                       -> 200: ohne Inhalt
+POST   /api/warenkoerbe/{id}/positionen            -> 200: ohne Inhalt
+DELETE /api/warenkoerbe/{id}/positionen/{produktId} -> 200: ohne Inhalt
+POST   /api/warenkoerbe/{id}/bestellung            -> 200: ohne Inhalt
+GET    /api/bestellungen/{nummer}                  -> 200: ohne Inhalt
+```
+
+Sechs von sieben Endpunkten waren als **„200 ohne Inhalt“** beschrieben – auch die, die in Wahrheit `201 Created` liefern,
+und keiner nannte seine Fehlerantworten (400, 404, 422). Die Ursache: Die Endpunkte geben `Results.Ok(...)` bzw.
+`Results.Created(...)` zurück. Der Rückgabetyp ist dann nur `IResult` – daraus kann ASP.NET Core nicht ableiten, was im Body
+steht. Ein Team, das sich aus dieser Beschreibung einen Client erzeugt, hätte keine einzige Antwortklasse bekommen.
+
+Die Behebung: Die Antworten ausdrücklich angeben.
+
+```csharp title="ShopApi.cs"
+api.MapGet("/warenkoerbe/{id:guid}", (...) => ...)
+    .Produces<WarenkorbAntwort>()
+    .ProducesProblem(StatusCodes.Status404NotFound);
+
+api.MapPost("/warenkoerbe/{id:guid}/bestellung", (...) => ...)
+    .Produces<BestellAntwort>(StatusCodes.Status201Created)
+    .ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status404NotFound)
+    .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+```
+
+Alternativ beschreibt `TypedResults` statt `Results` die Typen automatisch. Danach waren alle 36 API-Tests grün.
+
+:::tip[Die Lehre]
+Die bestehenden API-Tests prüften das **Verhalten** – und das war korrekt. Erst der Vertragstest prüfte die **Beschreibung**,
+auf die sich andere verlassen. Beides ist nötig: Eine API kann richtig funktionieren und trotzdem falsch dokumentiert sein.
+:::
+
+## Antworten gegen ein Schema prüfen \{#schema}
+
+Die Gegenrichtung: Passt die **tatsächliche Antwort** zur Beschreibung? REST Assured kann das mit einem JSON-Schema
+(siehe [Schema-Validierung](../03-java/02-rest-assured.mdx#schema)); in .NET gibt es dafür z. B. JsonSchema.Net. Werkzeuge wie
+**Schemathesis** gehen weiter: Sie lesen die OpenAPI-Beschreibung und erzeugen automatisch viele Anfragen – auch mit
+Grenz- und Unsinnswerten – und prüfen jede Antwort gegen das Schema. Das ist eine Form von **Fuzzing**.
+
+## Breaking Changes \{#breaking}
+
+Eine Änderung ist **inkompatibel** (breaking), wenn bestehende Clients danach nicht mehr funktionieren:
+
+| inkompatibel | kompatibel |
+|---|---|
+| Feld umbenennen oder entfernen | neues, optionales Feld in der Antwort |
+| Pflichtfeld in der Anfrage hinzufügen | neues, optionales Feld in der Anfrage |
+| Typ ändern (Zahl → Text) | neuer Endpunkt |
+| Statuscode ändern (200 → 201) | zusätzlicher Wert, den Clients ignorieren können |
+| Endpunkt entfernen | |
+
+Die API-Tests des Mini-Shops nutzen deshalb **eigene** Antwortklassen statt der Klassen aus dem Produktivcode
+([Antworten.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Api.Tests/Infrastruktur/Antworten.cs)): Benennt jemand ein Feld im Produktivcode um, scheitern die
+Tests, statt still mitzuwandern. Zusätzlich lassen sich zwei Versionen der OpenAPI-Beschreibung automatisch vergleichen
+(z. B. mit oasdiff) – ein Breaking Change macht dann die Pipeline rot.
+
+## Versionierung \{#versionierung}
+
+| Verfahren | Beispiel |
+|---|---|
+| im Pfad | `/api/v2/warenkoerbe` – am verbreitetsten, gut sichtbar |
+| als Parameter | `/api/warenkoerbe?api-version=2.0` |
+| im Header | `Accept: application/vnd.shop.v2+json` |
+
+Unabhängig vom Verfahren gilt: Alte Versionen eine Weile **parallel** betreiben, Abschaltung ankündigen und bis dahin
+**beide** Versionen testen.
+
+## Typische Fehler \{#typische-fehler}
+
+- Beschreibung **von Hand** pflegen – sie weicht schnell vom Code ab.
+- Nur das **Verhalten** testen, nie die **Beschreibung**.
+- `Results.Ok(...)` ohne Typangabe – die Beschreibung bleibt leer.
+- Fehlerantworten **nicht beschreiben** – Clients wissen nicht, was bei 404 oder 422 kommt.
+- Felder **umbenennen**, ohne die Version zu erhöhen.
+- In API-Tests die **Klassen des Produktivcodes** verwenden – Umbenennungen fallen nicht auf.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **OpenAPI** beschreibt Pfade, Methoden, Parameter, Bodies und Antworten – Grundlage für Doku, Clients, Tests und Mocks.
+- ASP.NET Core erzeugt die Beschreibung mit `AddOpenApi()` und `MapOpenApi()`.
+- **Vertragstests** prüfen die Beschreibung; im Mini-Shop fanden sie sechs Endpunkte, die als „200 ohne Inhalt“ beschrieben waren.
+- Antworttypen mit `.Produces<T>()` bzw. `TypedResults` angeben, Fehler mit `.ProducesProblem(...)`.
+- **Breaking Changes** erkennen (eigene DTOs in Tests, Vergleich der Beschreibungen) und APIs **versionieren**.
+
+<Quiz fragen={fragen} titel="Quiz: OpenAPI und Vertragstests" />
