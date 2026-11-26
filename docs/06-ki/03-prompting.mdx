@@ -1,0 +1,184 @@
+---
+title: Prompting für Entwickler und Tester
+description: Gute Anweisungen an Sprachmodelle schreiben – klare Aufgabe, Kontext, Beispiele, Ausgabeformat, Einschränkungen und Iteration – mit Vorlagen für Testfälle, Testdaten, Fehlerberichte, Code-Reviews und Log-Analyse.
+tags: [ki, prompting, llm, testen]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './03-prompting.fragen.yaml';
+
+# Prompting für Entwickler und Tester
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die **Bausteine** eines guten Prompts benennen,
+- schwache Prompts **systematisch verbessern**,
+- **Beispiele** (Few-Shot) und **Ausgabeformate** gezielt einsetzen,
+- Vorlagen für typische **Testaufgaben** nutzen,
+- Ergebnisse **iterativ** verbessern und **kritisch prüfen**.
+:::
+
+## Warum Prompts so viel ausmachen \{#warum}
+
+Ein Sprachmodell kennt nur, was im **Kontext** steht (siehe [Kontextfenster](./02-large-language-models.mdx#kontextfenster)). Es weiß nichts über dein Projekt, deine Konventionen oder was du eigentlich willst – es sei denn, du sagst es ihm. Ein guter Prompt ist deshalb wie eine gute **Aufgabenbeschreibung für einen neuen Kollegen**: klar, mit Hintergrund, mit Beispielen und mit einem klaren Ergebnis.
+
+## Ein schwacher und ein guter Prompt \{#vergleich}
+
+Schwach:
+
+```text
+Schreib Testfälle für den Rabatt.
+```
+
+Das Modell muss raten: Welche Regel? Welche Art Testfälle? Welches Format? Ergebnis: allgemeine, oft unpassende Vorschläge.
+
+Besser:
+
+```text
+Du unterstützt mich beim Testentwurf für einen Webshop.
+
+Regel (Testbasis):
+- Ab einer Zwischensumme von 100,00 € (einschließlich) gibt es 10 % Rabatt.
+- Stammkunden erhalten zusätzlich 5 %, auch unter 100 €.
+- Der Endpreis wird kaufmännisch auf Cent gerundet.
+
+Aufgabe:
+Leite Testfälle mit Äquivalenzklassen, Grenzwertanalyse (2-Wert) und einer
+Entscheidungstabelle ab. Nenne für jeden Testfall das Verfahren, aus dem er stammt.
+
+Format:
+Eine Markdown-Tabelle mit den Spalten: ID | Zwischensumme | Stammkunde | erwarteter Endpreis | Verfahren.
+Berechne die erwarteten Endpreise genau.
+
+Wenn die Regel an einer Stelle mehrdeutig ist, stelle eine Rückfrage, statt etwas anzunehmen.
+```
+
+Dieser Prompt enthält alle wichtigen Bausteine.
+
+## Die Bausteine \{#bausteine}
+
+| Baustein | Frage | Beispiel |
+|---|---|---|
+| **Rolle / Situation** | In welchem Zusammenhang? | „Du unterstützt mich beim Testentwurf für einen Webshop.“ |
+| **Kontext** | Was muss das Modell wissen? | die Regel, relevanter Code, die Fehlermeldung, Konventionen |
+| **Aufgabe** | Was genau soll passieren? | „Leite Testfälle mit Äquivalenzklassen … ab.“ |
+| **Beispiele** | Wie sieht ein gutes Ergebnis aus? | ein bis drei Beispiel-Testfälle (Few-Shot) |
+| **Ausgabeformat** | In welcher Form? | Tabelle, JSON, NUnit-Code, maximal 10 Zeilen |
+| **Einschränkungen** | Was gilt nicht / was ist wichtig? | „nur .NET 10 und NUnit 4“, „keine neuen Pakete“ |
+| **Umgang mit Unsicherheit** | Was, wenn etwas unklar ist? | „Stelle eine Rückfrage, statt anzunehmen.“ |
+
+:::tip[Struktur hilft]
+Längere Prompts lassen sich mit Überschriften, Aufzählungen oder Abschnitten wie `<regel>…</regel>` gliedern. So kann das Modell Kontext, Aufgabe und Daten klar unterscheiden.
+:::
+
+## Beispiele geben (Few-Shot) \{#few-shot}
+
+Ein oder mehrere Beispiele zeigen oft besser als jede Beschreibung, was gewünscht ist:
+
+```text
+Formuliere die folgenden Testnamen nach unserer Konvention um.
+
+Beispiele:
+- "test1 rabatt"        -> Berechne_ab_100_Euro_gibt_10_Prozent_Rabatt
+- "leerer korb bestell" -> Bestellen_mit_leerem_Warenkorb_wirft_Exception
+
+Umzuformulieren:
+- "stammkunde unter 100"
+- "menge zu groß"
+```
+
+**Zero-Shot** = ohne Beispiele, **One-/Few-Shot** = mit einem oder wenigen Beispielen. Achtung: Das Modell übernimmt auch **Eigenheiten** der Beispiele – sie sollten vielfältig und fehlerfrei sein.
+
+## Schrittweise denken lassen \{#schrittweise}
+
+Bei Aufgaben mit mehreren Schritten (Fehleranalyse, Berechnungen, Testentwurf) hilft es, um ein **schrittweises Vorgehen** zu bitten:
+
+```text
+Analysiere zuerst, welche Bedingungen die Regel hat. Bilde dann die Äquivalenzklassen,
+bestimme danach die Grenzwerte und erstelle erst zum Schluss die Tabelle.
+```
+
+So werden Zwischenschritte sichtbar – und Fehler darin lassen sich leichter erkennen.
+
+## Iterieren \{#iterieren}
+
+Selten ist die erste Antwort perfekt. Statt neu anzufangen, **gezielt nachsteuern**:
+
+- „Der Testfall T4 ist falsch berechnet: 100 € × 0,85 = 85,00 €. Prüfe alle Endpreise noch einmal.“
+- „Ergänze Testfälle für ungültige Eingaben (negative Zwischensumme).“
+- „Gib das Ergebnis jetzt als NUnit-`[TestCase]`-Attribute aus.“
+
+Konkretes Feedback („T4 ist falsch, weil …“) wirkt besser als „Das ist falsch, mach es besser.“
+
+## Vorlagen für Testaufgaben \{#vorlagen}
+
+**Testideen aus einer User Story**
+```text
+Hier ist eine User Story mit Akzeptanzkriterien: [...]
+Liste Testideen auf, gruppiert nach: Normalfall, Grenzwerte, ungültige Eingaben,
+Fehlerfälle der Umgebung, Sicherheit. Markiere Ideen, die über die Akzeptanzkriterien hinausgehen.
+```
+
+**Testdaten erzeugen**
+```text
+Erzeuge 20 Testkunden als JSON-Array mit name, email, plz, stammkunde (bool).
+Mische gültige und ungültige Werte (leere Namen, E-Mails ohne @, Umlaute, sehr lange Namen)
+und kennzeichne jeden Datensatz mit "gueltig": true/false und einem Grund.
+Verwende keine echten Personen oder echten E-Mail-Domains – nur example.test.
+```
+
+**Fehlerbericht verbessern**
+```text
+Verbessere diesen Fehlerbericht nach den üblichen Kriterien (Titel, Schritte, erwartet,
+tatsächlich, Umgebung, Häufigkeit). Erfinde keine Informationen – markiere Fehlendes mit [FEHLT].
+[...]
+```
+
+**Code-Review von Testcode**
+```text
+Prüfe diesen NUnit-Test auf: feste Wartezeiten, fehlende oder schwache Asserts,
+Abhängigkeiten zwischen Tests, unklare Namen, Magic Numbers. Nenne jeweils Zeile und Vorschlag.
+[...]
+```
+
+**Log-Analyse**
+```text
+Hier sind die letzten 200 Zeilen eines fehlgeschlagenen CI-Laufs. Fasse zusammen:
+1. Welcher Test ist zuerst fehlgeschlagen? 2. Was ist die wahrscheinlichste Ursache?
+3. Welche Zeilen belegen das? Unterscheide klar zwischen Belegtem und Vermutetem.
+[...]
+```
+
+:::warning[Keine vertraulichen Daten]
+Echte Kundendaten, Passwörter, API-Schlüssel und vertraulichen Code nicht in öffentliche KI-Dienste kopieren. Logs vorher **bereinigen** (Namen, E-Mails, Tokens entfernen) oder ein vom Unternehmen freigegebenes Werkzeug verwenden – siehe [Recht und Ethik](./07-recht-und-ethik.mdx#datenschutz).
+:::
+
+## Ergebnisse prüfen \{#pruefen}
+
+Ein guter Prompt verbessert die Antwort – er macht sie nicht fehlerfrei. Gerade bei Testfällen gilt:
+
+- **Erwartete Ergebnisse nachrechnen** – ein falsch berechnetes Orakel macht den Test wertlos.
+- **Vollständigkeit prüfen** – fehlen Grenzwerte oder ungültige Klassen?
+- **Erfundenes erkennen** – nicht existierende Methoden, Annahmen über Regeln, die nicht in der Testbasis stehen.
+- **Generierten Code ausführen** – ein Test, den man nie rot gesehen hat, prüft vielleicht nichts.
+
+Die KI liefert einen **Entwurf** – die Verantwortung für die Tests bleibt beim Menschen.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Zu knapp**: „Schreib Tests“ ohne Kontext, Ziel und Format.
+- **Annahmen nicht offenlegen**: Das Modell muss Regeln raten und tut es überzeugend.
+- **Alles in einen Prompt**: zehn Aufgaben auf einmal – besser in Schritten.
+- **Unkonkretes Feedback** beim Nachsteuern.
+- **Vertrauliche Daten** in den Prompt kopieren.
+- **Ungeprüft übernehmen** – besonders berechnete Erwartungswerte.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Ein guter Prompt hat **Rolle, Kontext, Aufgabe, Beispiele, Format, Einschränkungen** und eine Regel für **Unsicherheit**.
+- **Few-Shot**-Beispiele zeigen das gewünschte Ergebnis; **schrittweises Vorgehen** macht Denkfehler sichtbar.
+- **Iterieren** mit konkretem Feedback statt neu anfangen.
+- Vorlagen für **Testideen, Testdaten, Fehlerberichte, Reviews, Log-Analyse**.
+- Ergebnisse immer **prüfen** – Orakel nachrechnen, Code ausführen; keine vertraulichen Daten in öffentliche Dienste.
+
+<Quiz fragen={fragen} titel="Quiz: Prompting für Entwickler und Tester" />

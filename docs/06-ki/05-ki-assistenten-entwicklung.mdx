@@ -1,0 +1,124 @@
+---
+title: KI-Assistenten in Entwicklung und Testautomation
+description: Code-Assistenten und Agenten sinnvoll einsetzen – Einsatzfelder, Risiken wie erfundene APIs, veraltetes Wissen und Sicherheitslücken, gute Arbeitsweisen – und eine ehrliche Liste der Fehler, die ein KI-Assistent beim Bau dieser Lernplattform gemacht hat.
+tags: [ki, code-assistent, agenten, entwicklung, qualitaet]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './05-ki-assistenten-entwicklung.fragen.yaml';
+
+# KI-Assistenten in Entwicklung und Testautomation
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die Arten von **Code-Assistenten** unterscheiden,
+- einschätzen, wofür sie **gut** geeignet sind,
+- typische **Risiken** erkennen: erfundene APIs, veraltetes Wissen, Sicherheitslücken, erfundene Pakete,
+- eine **Arbeitsweise** anwenden, bei der Tests und Werkzeuge die Qualität sichern,
+- aus **echten Fehlern** eines KI-Assistenten lernen.
+:::
+
+## Arten von Code-Assistenten \{#arten}
+
+| Art | Wie | Beispiele |
+|---|---|---|
+| **Autovervollständigung** | schlägt beim Tippen die nächsten Zeilen vor | Inline-Vorschläge in der IDE |
+| **Chat** | Fragen stellen, Code erklären lassen, Snippets erzeugen | Chat-Fenster in IDE oder Browser |
+| **Agent** | arbeitet **mehrschrittig und selbstständig**: liest Dateien, ändert Code, führt Befehle und Tests aus, reagiert auf Fehler | Agenten in IDE oder Terminal |
+
+Agenten sind am mächtigsten – und brauchen die besten **Leitplanken**: Sie können in kurzer Zeit viel Code ändern.
+
+## Wofür sie gut sind \{#gut}
+
+- **Grundgerüste und Routinearbeit**: Projekte anlegen, Page Objects, DTOs, Builder.
+- **Tests schreiben**: parametrisierte Tests, Negativtests, Testdaten – als Entwurf.
+- **Code erklären**: fremden oder alten Code verstehen, Fehlermeldungen deuten.
+- **Refactoring-Vorschläge** – mit Tests als Sicherheitsnetz (siehe [Refactoring](../03-softwareentwicklung/06-refactoring.mdx)).
+- **Übersetzen** zwischen Sprachen und Frameworks (C# ↔ Java, Selenium ↔ Playwright).
+- **Dokumentation**, Commit-Nachrichten, PR-Beschreibungen.
+
+## Risiken \{#risiken}
+
+| Risiko | Beispiel | Gegenmittel |
+|---|---|---|
+| **Erfundene APIs** | eine Methode, die es in der Bibliothek nicht gibt | kompilieren, Dokumentation prüfen |
+| **Veraltetes Wissen** | alte Paketversionen, geänderte Standardwerte, abgekündigte Methoden | Build, aktuelle Doku als Kontext |
+| **Plausibel, aber falsch** | Code läuft, rechnet aber an einer Grenze falsch | **Tests**, besonders Grenzwerte |
+| **Sicherheitslücken** | SQL per String-Verkettung, fehlende Eingabeprüfung, Secrets im Code | Review, statische Analyse, Sicherheits-Checks |
+| **Erfundene Pakete** | ein vorgeschlagenes Paket existiert nicht – Angreifer registrieren solche Namen gezielt („Slopsquatting“) | jedes neue Paket prüfen: existiert es, wer pflegt es, wie verbreitet ist es? |
+| **Lizenzen** | übernommener Code mit unklarer Lizenz | Unternehmensrichtlinien beachten |
+| **Vertraulichkeit** | Firmencode in nicht freigegebene Dienste | nur freigegebene Werkzeuge |
+| **Kompetenzverlust** | man versteht den eigenen Code nicht mehr | jede Änderung nachvollziehen können |
+
+## Echte Fehler beim Bau dieser Plattform \{#echte-fehler}
+
+Diese Lernplattform – Lektionen, Quizfragen, Beispielprojekte, Pipelines – wurde mit einem **KI-Agenten** erstellt. Dabei sind Fehler passiert. Die folgende Liste ist **ehrlich und vollständig für die wichtigsten Fälle** – und zeigt vor allem, **was** sie gefunden hat:
+
+| # | Fehler des KI-Assistenten | Gefunden durch |
+|---|---|---|
+| 1 | Überschriften-Anker in einer Syntax, die das Seitenformat (MDX) nicht verarbeitet | **Build** schlug fehl |
+| 2 | Quizfragen wurden schon auf dem Server gemischt → Darstellungsfehler im Browser | **Konsolenprüfung** im Browser |
+| 3 | Hinweiskästen mit Code im Titel wurden nicht dargestellt | **Sichtprüfung** in der Handy-Ansicht |
+| 4 | Prüfskript für Quiz-Anker erwartete Anführungszeichen, die im fertigen HTML fehlen – alle Anker galten als fehlend | **Ausführen** des Skripts |
+| 5 | Aussage über `async void` in NUnit zu ungenau formuliert | **Selbst-Review** vor dem Veröffentlichen |
+| 6 | Der Shop-Code hatte eine **Race Condition**: Doppelklick erzeugte doppelte Bestellungen (SHOP-1) | **exploratives Testen** mit einer Fehlerhypothese |
+| 7 | Ein Fehlerzweig im `BestellService` war ungetestet | **Abdeckungsmessung** |
+| 8 | Annahme, Spring Boot verwalte die REST-Assured-Version – in der aktuellen Version nicht mehr | **Maven-Build** |
+| 9 | Startskript übergab einen relativen Pfad, wo ein absoluter nötig war → Anwendung startete nicht | **Ausführen** des Skripts |
+| 10 | Zwei Schwachstellen in einem Bash-Skript | **ShellCheck** in der CI |
+| 11 | Falsche Testerwartung: Reihenfolge `Monitor, Kabel, Buch` statt `Monitor, Buch, Kabel` | **Tests** in C# **und** Java |
+
+Alle Fehler wurden behoben. Mehrere davon stehen als Lehrbeispiele in den Lektionen – etwa [SHOP-1](../01-softwaretest/07-fehlermanagement-agil.mdx#fehlerbericht) oder die [falsche Testerwartung](../03-softwareentwicklung/02-csharp-und-java.mdx#linq-streams).
+
+:::tip[Die Lehre daraus]
+Kein einziger dieser Fehler wurde gefunden, weil die KI „noch einmal nachgedacht“ hat. Gefunden wurden sie durch **Builds, Tests, Analysewerkzeuge, das Ausführen in der echten Umgebung und gezieltes Testen**. Genau dieselben Werkzeuge, die auch menschliche Fehler finden. **Je mehr KI-Code entsteht, desto wichtiger wird gute Testautomatisierung.**
+:::
+
+Bemerkenswert ist Fehler 6: Der Code war **gut strukturiert**, hatte **43 grüne Tests** und **100 % Zweigabdeckung** – und trotzdem einen schweren Fehler. Ein Assistent erzeugt Code, der **plausibel** und **sauber** aussieht; ob er unter echten Bedingungen **richtig** ist, zeigt erst das Testen.
+
+## Eine gute Arbeitsweise \{#arbeitsweise}
+
+1. **Ziel und Kontext klar beschreiben** – Anforderung, betroffene Dateien, Konventionen, Versionen (siehe [Prompting](./03-prompting.mdx)).
+2. **In kleinen Schritten** arbeiten – eine Änderung, dann prüfen.
+3. **Tests zuerst oder mit** – vom Assistenten Tests mitschreiben lassen und sie **einmal rot** sehen.
+4. **Alles ausführen**: Build, Tests, Linter, die Anwendung selbst. Nicht auf „sollte funktionieren“ vertrauen.
+5. **Reviewen wie den PR einer Kollegin** – mit derselben [Checkliste](../03-softwareentwicklung/08-zusammenarbeit-ci-cd.mdx#code-review). Verstehe ich jede Zeile?
+6. **CI als Leitplanke**: Branch-Schutz, Pflicht-Checks, statische Analyse – sie gelten für KI-Code genauso.
+7. **Projektregeln festhalten**: Viele Assistenten lesen eine Datei mit Projektkonventionen (z. B. Namensregeln, Testframework, verbotene Muster). Das spart Wiederholungen und verhindert typische Fehler.
+
+:::warning[Verantwortung bleibt beim Menschen]
+„Das hat die KI geschrieben“ ist keine Entschuldigung für einen Fehler in Produktion. Wer Code committet oder einen PR freigibt, ist dafür verantwortlich – unabhängig davon, wer ihn getippt hat.
+:::
+
+## Testautomation mit Assistenten \{#testautomation}
+
+Besonders gut eignen sich Assistenten für:
+- **Page Objects und API-Clients** aus HTML bzw. API-Beschreibungen (OpenAPI),
+- **Umstellungen** wie Selenium → Playwright oder NUnit-3- → NUnit-4-Asserts,
+- **Testdaten-Builder** und parametrisierte Tests aus Beispieltabellen,
+- **Erklärungen** von roten CI-Läufen.
+
+Achten musst du auf:
+- **feste Wartezeiten** (`Thread.Sleep`) in generiertem UI-Code,
+- **fragile Locators** (lange XPath-Ausdrücke statt `data-testid` oder Rollen),
+- **Tests ohne echte Prüfung** (Assert fehlt oder prüft nur „nicht null“),
+- **falsch berechnete Erwartungswerte**.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Großen generierten Code ungelesen übernehmen**.
+- **Vorgeschlagene Pakete ungeprüft installieren**.
+- **Tests vom Assistenten schreiben lassen, die nie rot waren** – sie prüfen vielleicht nichts.
+- **Fehlermeldungen nur zurückkopieren**, ohne selbst zu verstehen, was passiert.
+- **Leitplanken abschalten**, weil „die KI es ja richtig macht“.
+- **Vertraulichen Code** in nicht freigegebene Dienste geben.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Autovervollständigung, Chat, Agenten** – je selbstständiger, desto wichtiger die Leitplanken.
+- Stark bei **Routine, Tests, Erklärungen, Übersetzungen**; riskant bei **APIs, Versionen, Sicherheit, Paketen**.
+- Beim Bau dieser Plattform hat ein KI-Assistent **echte Fehler** gemacht – gefunden haben sie **Builds, Tests, Analysewerkzeuge und exploratives Testen**.
+- Arbeitsweise: **Kontext, kleine Schritte, Tests, alles ausführen, reviewen, CI-Leitplanken, Projektregeln**.
+- Die **Verantwortung** bleibt beim Menschen.
+
+<Quiz fragen={fragen} titel="Quiz: KI-Assistenten in Entwicklung und Testautomation" />

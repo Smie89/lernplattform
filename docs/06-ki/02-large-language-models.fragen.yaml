@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Wie Large Language Models funktionieren"
+
+- id: ki-llm-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was macht ein LLM im Kern, wenn es eine Antwort erzeugt?"
+  optionen:
+    - "Es sucht die Antwort in einer Datenbank"
+    - "Es sagt wiederholt das wahrscheinlich nächste Token vorher"
+    - "Es führt ein festes Regelwerk aus"
+    - "Es kopiert Texte aus dem Internet"
+  richtig: [1]
+  erklaerung: "Ein LLM erzeugt Text Token für Token auf Basis von Wahrscheinlichkeiten – daher plausibel, aber nicht zwingend wahr."
+  artikel: "#naechstes-token"
+  tags: [ki, llm]
+
+- id: ki-llm-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum fällt es LLMs schwer, die Buchstaben in einem Wort zu zählen?"
+  optionen:
+    - "Weil sie nicht rechnen dürfen"
+    - "Weil sie Text als Tokens (Wortteile) verarbeiten, nicht als einzelne Buchstaben"
+    - "Weil sie nur Englisch verstehen"
+    - "Weil das Kontextfenster zu klein ist"
+  richtig: [1]
+  erklaerung: "Ein Token umfasst oft mehrere Buchstaben; das Modell 'sieht' die einzelnen Zeichen nicht direkt."
+  artikel: "#tokens"
+  tags: [ki, tokens]
+
+- id: ki-llm-003
+  typ: single
+  schwierigkeit: 2
+  frage: "In welcher Trainingsphase lernt ein Modell, Anweisungen zu folgen?"
+  optionen:
+    - "Vortraining"
+    - "Feinabstimmung mit Anweisungs-Antwort-Beispielen (Instruction Tuning)"
+    - "Beim Erzeugen jeder Antwort"
+    - "Gar nicht"
+  richtig: [1]
+  erklaerung: "Das Vortraining liefert Sprach- und Weltwissen; erst die Feinabstimmung und Ausrichtung machen daraus einen hilfreichen Assistenten."
+  artikel: "#training"
+  tags: [ki, training]
+
+- id: ki-llm-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist das Kontextfenster?"
+  optionen:
+    - "Das Fenster der Chat-Anwendung"
+    - "Die maximale Textmenge in Tokens, die das Modell bei einer Anfrage berücksichtigen kann"
+    - "Der Zeitraum der Trainingsdaten"
+    - "Die Anzahl gleichzeitiger Nutzer"
+  richtig: [1]
+  erklaerung: "Eingabe, Verlauf und Antwort zusammen müssen ins Kontextfenster passen. Was nicht darin steht, kennt das Modell für diese Anfrage nicht."
+  artikel: "#kontextfenster"
+  tags: [ki, kontext]
+
+- id: ki-llm-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Für die automatische Extraktion von Daten aus Fehlerberichten soll ein LLM möglichst vorhersehbar antworten. Welche Temperatur ist sinnvoll?"
+  optionen:
+    - "Eine hohe Temperatur"
+    - "Eine niedrige Temperatur"
+    - "Die Temperatur spielt keine Rolle"
+    - "Abwechselnd hoch und niedrig"
+  richtig: [1]
+  erklaerung: "Niedrige Temperatur wählt fast immer das wahrscheinlichste Token – gut für Code, Extraktion und Klassifikation."
+  artikel: "#temperatur"
+  tags: [ki, temperatur]
+
+- id: ki-llm-006
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Dieselbe Frage an dasselbe LLM liefert immer exakt dieselbe Antwort."
+  richtig: [1]
+  erklaerung: "Falsch. Durch das Ziehen aus Wahrscheinlichkeiten sind die Antworten nicht deterministisch – wichtig für das Testen von LLM-Anwendungen."
+  artikel: "#temperatur"
+  tags: [ki, llm]
+
+- id: ki-llm-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein KI-Assistent nimmt an, dass ein Framework eine Bibliotheksversion verwaltet – in der neuen Framework-Version stimmt das nicht mehr. Welche Grenze von LLMs zeigt sich?"
+  optionen:
+    - "Das Kontextfenster"
+    - "Der Wissensstand (knowledge cutoff) bzw. veraltetes Wissen"
+    - "Die Temperatur"
+    - "Die Tokenisierung"
+  richtig: [1]
+  erklaerung: "LLMs kennen nur ihre Trainingsdaten bis zu einem Stichtag. Beim Bau dieser Plattform zeigte der fehlschlagende Build den Irrtum sofort."
+  artikel: "#wissensstand"
+  tags: [ki, wissensstand]
+
+- id: ki-llm-008
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist eine Halluzination?"
+  optionen:
+    - "Ein Absturz des Modells"
+    - "Eine überzeugend klingende, aber falsche oder erfundene Ausgabe"
+    - "Eine besonders kreative Antwort"
+    - "Ein Bild, das ein Modell erzeugt"
+  richtig: [1]
+  erklaerung: "Zum Beispiel erfundene Methoden einer Bibliothek oder nicht existierende Quellen."
+  artikel: "#halluzinationen"
+  tags: [ki, halluzinationen]
+
+- id: ki-llm-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was hilft gegen Halluzinationen?"
+  optionen:
+    - "Ausgaben prüfen: Code kompilieren und testen, Quellen öffnen"
+    - "Aktuellen Kontext mitgeben, z. B. Dokumentation oder Fehlermeldungen"
+    - "Dem Modell erlauben, Unsicherheit zu äußern"
+    - "Die Temperatur maximal erhöhen"
+  richtig: [0, 1, 2]
+  erklaerung: "Hohe Temperatur macht Antworten eher kreativer und fehleranfälliger. Prüfen und guter Kontext sind die wirksamsten Mittel."
+  artikel: "#halluzinationen"
+  tags: [ki, halluzinationen]
+
+- id: ki-llm-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Mit welcher Technik findet man Fehlerberichte, die dasselbe Problem mit anderen Worten beschreiben?"
+  optionen:
+    - "Exakte Textsuche"
+    - "Embeddings / semantische Suche"
+    - "Temperatur"
+    - "Tokenisierung"
+  richtig: [1]
+  erklaerung: "Embeddings stellen die Bedeutung als Vektor dar – ähnliche Bedeutungen liegen nahe beieinander, auch bei anderen Wörtern."
+  artikel: "#embeddings"
+  tags: [ki, embeddings]
+
+- id: ki-llm-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Welche zwei Fehlerquellen hat ein RAG-System?"
+  optionen:
+    - "Tokenisierung und Temperatur"
+    - "Die Suche (falsche oder keine Abschnitte) und die Generierung (Abschnitte falsch wiedergegeben)"
+    - "Nur die Generierung"
+    - "Nur die Suche"
+  richtig: [1]
+  erklaerung: "Beide Stufen müssen getrennt getestet werden: Findet die Suche die richtigen Dokumente, und gibt das Modell sie korrekt wieder?"
+  artikel: "#rag"
+  tags: [ki, rag]

@@ -1,0 +1,155 @@
+# Fragen zur Lektion "Grundlagen von KI und Machine Learning"
+
+- id: ki-gl-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was unterscheidet Machine Learning von klassischer Programmierung?"
+  optionen:
+    - "ML-Programme haben keinen Code"
+    - "Beim ML lernt das System Regeln aus Beispieldaten, statt dass Menschen sie programmieren"
+    - "ML ist immer schneller"
+    - "Klassische Programme können keine Zahlen verarbeiten"
+  richtig: [1]
+  erklaerung: "Statt Regeln wie 'ab 100 € Rabatt' zu schreiben, lernt ein ML-Modell aus Beispielen mit erwarteten Ergebnissen."
+  artikel: "#begriffe"
+  tags: [ki, grundlagen]
+
+- id: ki-gl-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie verhalten sich KI, Machine Learning und Deep Learning zueinander?"
+  optionen:
+    - "Es sind drei unabhängige Gebiete"
+    - "Deep Learning ist ein Teil von Machine Learning, Machine Learning ein Teil von KI"
+    - "KI ist ein Teil von Deep Learning"
+    - "Machine Learning ist der Oberbegriff für KI"
+  richtig: [1]
+  erklaerung: "KI ist der Oberbegriff, ML ein Teilgebiet, Deep Learning ML mit großen neuronalen Netzen; generative KI baut darauf auf."
+  artikel: "#begriffe"
+  tags: [ki, grundlagen]
+
+- id: ki-gl-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Kundenbewertungen mit den Labels 'positiv' und 'negativ' werden zum Training genutzt. Welche Lernart ist das?"
+  optionen:
+    - "Unüberwachtes Lernen"
+    - "Überwachtes Lernen (Klassifikation)"
+    - "Bestärkendes Lernen"
+    - "Regression"
+  richtig: [1]
+  erklaerung: "Beispiele mit bekannter richtiger Antwort = überwachtes Lernen; das Vorhersagen einer Klasse = Klassifikation."
+  artikel: "#lernarten"
+  tags: [ki, lernarten]
+
+- id: ki-gl-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Kunden sollen ohne vorgegebene Kategorien automatisch in ähnliche Gruppen eingeteilt werden. Welche Lernart passt?"
+  optionen:
+    - "Überwachtes Lernen"
+    - "Unüberwachtes Lernen (Clustering)"
+    - "Bestärkendes Lernen"
+    - "Klassifikation"
+  richtig: [1]
+  erklaerung: "Ohne Labels sucht unüberwachtes Lernen selbst nach Strukturen in den Daten."
+  artikel: "#lernarten"
+  tags: [ki, lernarten]
+
+- id: ki-gl-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum dürfen Testdaten beim Training nicht verwendet werden?"
+  optionen:
+    - "Weil das Training sonst länger dauert"
+    - "Weil man sonst nicht misst, wie gut das Modell auf neuen, unbekannten Daten funktioniert"
+    - "Weil Testdaten keine Labels haben"
+    - "Das ist erlaubt"
+  richtig: [1]
+  erklaerung: "Ein Datenleck zwischen Training und Test führt zu viel zu optimistischen Ergebnissen."
+  artikel: "#daten"
+  tags: [ki, daten]
+
+- id: ki-gl-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Modell erreicht 100 % Genauigkeit auf den Trainingsdaten, aber nur 60 % auf den Testdaten. Was liegt vor?"
+  optionen:
+    - "Underfitting"
+    - "Overfitting – das Modell hat die Trainingsbeispiele auswendig gelernt"
+    - "Ein perfektes Modell"
+    - "Ein Datenleck"
+  richtig: [1]
+  erklaerung: "Eine große Lücke zwischen Trainings- und Testleistung ist das typische Zeichen für Overfitting."
+  artikel: "#overfitting"
+  tags: [ki, overfitting]
+
+- id: ki-gl-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Ziel ist, negative Bewertungen zu finden. Eine positive Bewertung wird als negativ eingestuft. Was ist das?"
+  optionen:
+    - "True Positive"
+    - "False Positive (Fehlalarm)"
+    - "False Negative"
+    - "True Negative"
+  richtig: [1]
+  erklaerung: "Das Modell meldet 'negativ' (positiv im Sinne der Suche), obwohl es falsch ist – ein falsch positiver Treffer."
+  artikel: "#konfusionsmatrix"
+  tags: [ki, metriken]
+
+- id: ki-gl-008
+  typ: single
+  schwierigkeit: 3
+  frage: "TP = 8, FP = 1, FN = 0, TN = 7. Wie hoch ist die Präzision?"
+  optionen:
+    - "8 / 8 = 1,00"
+    - "8 / 9 ≈ 0,89"
+    - "15 / 16 ≈ 0,94"
+    - "7 / 8 ≈ 0,88"
+  richtig: [1]
+  erklaerung: "Präzision = TP / (TP + FP) = 8 / 9. Die Sensitivität wäre TP / (TP + FN) = 8 / 8, die Genauigkeit 15 / 16."
+  artikel: "#metriken"
+  tags: [ki, metriken]
+
+- id: ki-gl-009
+  typ: single
+  schwierigkeit: 3
+  frage: "99 % aller Zahlungen sind in Ordnung. Ein Modell sagt immer 'kein Betrug'. Welche Aussage stimmt?"
+  optionen:
+    - "Das Modell ist hervorragend, Genauigkeit 99 %"
+    - "Genauigkeit 99 %, aber Sensitivität 0 – es findet keinen einzigen Betrug"
+    - "Präzision und Sensitivität sind beide 99 %"
+    - "Die Genauigkeit ist 1 %"
+  richtig: [1]
+  erklaerung: "Bei unausgewogenen Daten täuscht die Genauigkeit. Erst Konfusionsmatrix und Sensitivität zeigen, dass das Modell nutzlos ist."
+  artikel: "#metriken"
+  tags: [ki, metriken]
+
+- id: ki-gl-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Bei einem Spamfilter ist es besonders schlimm, wenn eine wichtige Mail im Spam landet. Welche Metrik (bezogen auf 'Spam') ist hier besonders wichtig?"
+  optionen:
+    - "Sensitivität"
+    - "Präzision"
+    - "Genauigkeit"
+    - "Keine"
+  richtig: [1]
+  erklaerung: "Hohe Präzision heißt: Wenn der Filter 'Spam' sagt, stimmt das fast immer – wichtige Mails werden selten falsch aussortiert."
+  artikel: "#metriken"
+  tags: [ki, metriken]
+
+- id: ki-gl-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum wurde die Bewertung 'Die Tasse ist hübsch, aber die Lieferung dauerte lange' falsch klassifiziert – und was zeigt das?"
+  optionen:
+    - "Der Code ist fehlerhaft"
+    - "Die gemischte Bewertung ist auch für Menschen mehrdeutig – die Qualität der Labels begrenzt das Modell"
+    - "Das Modell ist zu langsam"
+    - "Die Testdaten waren im Training"
+  richtig: [1]
+  erklaerung: "Mehrdeutige oder fehlerhafte Labels sind eine häufige Grenze für ML-Systeme – Daten zu prüfen gehört zum Testen."
+  artikel: "#konfusionsmatrix"
+  tags: [ki, daten]

@@ -1,0 +1,128 @@
+---
+title: Recht, Ethik und verantwortungsvoller Einsatz
+description: Der EU AI Act mit seinen Risikoklassen und was er für Tests bedeutet, Datenschutz nach DSGVO beim Einsatz von KI-Werkzeugen, Urheberrecht und Vertraulichkeit, ethische Grundsätze sowie eine praktische Checkliste für Teams.
+tags: [ki, recht, ethik, ai-act, dsgvo]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './07-recht-und-ethik.fragen.yaml';
+
+# Recht, Ethik und verantwortungsvoller Einsatz
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die **Risikoklassen der EU-KI-Verordnung** (AI Act) erklären,
+- einschätzen, welche **Anforderungen an Hochrisiko-Systeme** das Testen betreffen,
+- **Datenschutz** beim Einsatz von KI-Werkzeugen beachten,
+- **Vertraulichkeit** und **Urheberrecht** berücksichtigen,
+- **ethische Grundsätze** auf konkrete Situationen anwenden.
+:::
+
+:::note[Keine Rechtsberatung]
+Diese Lektion gibt einen **Überblick** zur Orientierung. Rechtliche Vorgaben ändern sich und hängen vom Einzelfall ab – verbindlich sind die Gesetzestexte, die Richtlinien deines Unternehmens und die Auskunft von Datenschutzbeauftragten und Rechtsabteilung.
+:::
+
+## Die EU-KI-Verordnung (AI Act) \{#ai-act}
+
+Die **Verordnung (EU) 2024/1689** – kurz **AI Act** – ist die erste umfassende KI-Regulierung. Sie ist im **August 2024** in Kraft getreten; ihre Pflichten gelten **gestaffelt**:
+
+| ab | was |
+|---|---|
+| Februar 2025 | **Verbote** unzulässiger KI-Praktiken; Pflicht zu **KI-Kompetenz** der Beschäftigten, die KI einsetzen |
+| August 2025 | Pflichten für Anbieter von **KI-Modellen mit allgemeinem Verwendungszweck** (z. B. große Sprachmodelle) |
+| August 2026 bzw. später | Großteil der übrigen Pflichten, insbesondere für **Hochrisiko-Systeme** |
+
+:::warning[Fristen prüfen]
+Die Termine für Hochrisiko-Systeme wurden politisch diskutiert und Verschiebungen vorgeschlagen. Für konkrete Projekte immer den **aktuellen Stand** prüfen.
+:::
+
+### Die Risikoklassen \{#risikoklassen}
+
+Der AI Act regelt KI-Systeme nach ihrem **Risiko**:
+
+| Klasse | Beispiele | Folge |
+|---|---|---|
+| **Unannehmbares Risiko** | Social Scoring durch Behörden, manipulative Techniken, die Menschen schaden, bestimmte biometrische Echtzeit-Fernidentifizierung | **verboten** |
+| **Hohes Risiko** | KI in der **Personalauswahl**, **Kreditwürdigkeitsprüfung**, Bildung (Prüfungen), kritische Infrastruktur, als Sicherheitskomponente regulierter Produkte (z. B. Medizinprodukte) | **strenge Pflichten** (siehe unten) |
+| **Begrenztes Risiko** (Transparenzpflichten) | **Chatbots**, KI-erzeugte oder -manipulierte Inhalte (Deepfakes) | Nutzer müssen erkennen können, dass sie mit KI interagieren bzw. KI-Inhalte sehen |
+| **Minimales Risiko** | Spamfilter, KI in Spielen, die meisten Alltagsanwendungen | keine besonderen Pflichten |
+
+Der **Bewertungs-Klassifikator** aus [beispiele/ki](https://github.com/Smie89/lernplattform/tree/main/beispiele/ki) wäre minimales Risiko. Würde dasselbe Verfahren **Bewerbungen** sortieren, wäre es ein **Hochrisiko-System** – und der [Bias-Befund](./06-ki-systeme-testen.mdx#bias) („kam an“ → negativ) wäre plötzlich ein ernstes Problem.
+
+### Was Hochrisiko-Systeme erfüllen müssen \{#hochrisiko}
+
+Viele dieser Pflichten sind im Kern **Qualitäts- und Testanforderungen**:
+
+| Pflicht | Bezug zum Testen |
+|---|---|
+| **Risikomanagementsystem** über den gesamten Lebenszyklus | [risikobasiertes Testen](../01-softwaretest/06-testmanagement.mdx#risikobasiert) |
+| **Daten-Governance**: Trainings-, Validierungs- und Testdaten relevant, repräsentativ, möglichst fehlerfrei, auf **Bias** geprüft | [Datenqualität testen](./06-ki-systeme-testen.mdx#daten) |
+| **Technische Dokumentation** | Testkonzept, Testberichte, Evaluierungsergebnisse |
+| **Protokollierung** (Logging) | nachvollziehbare Entscheidungen, Auswertung im Betrieb |
+| **Transparenz** und Gebrauchsanweisung | dokumentierte Grenzen und bekannte Schwächen |
+| **Menschliche Aufsicht** | Menschen können Ergebnisse verstehen, übersteuern, das System anhalten |
+| **Genauigkeit, Robustheit, Cybersicherheit** | Metriken mit Schwellen, Robustheitstests, Tests gegen Manipulation (z. B. Prompt-Injection) |
+| **Konformitätsbewertung** vor dem Inverkehrbringen | Nachweis durch Tests und Dokumentation |
+
+Für Tester bedeutet das: Bei Hochrisiko-KI wird **gutes, dokumentiertes Testen zur gesetzlichen Pflicht**.
+
+## Datenschutz (DSGVO) \{#datenschutz}
+
+Sobald **personenbezogene Daten** im Spiel sind – Namen, E-Mails, Kundennummern, IP-Adressen, auch in Logs und Testdaten –, gilt die **Datenschutz-Grundverordnung**:
+
+- **Keine personenbezogenen Daten** in KI-Dienste eingeben, für die es keine Rechtsgrundlage und keinen Vertrag (z. B. **Auftragsverarbeitung**) gibt.
+- **Datenminimierung**: nur so viele Daten wie nötig; Logs vor der Analyse **bereinigen** oder **pseudonymisieren**.
+- **Testdaten**: synthetische Daten statt Kopien der Produktivdatenbank (siehe [Testdaten](./04-ki-im-softwaretest.mdx#testdaten)).
+- **Automatisierte Entscheidungen** mit erheblicher Wirkung auf Personen (z. B. Kreditablehnung allein durch ein System) unterliegen besonderen Regeln – Betroffene haben Anspruch auf Eingreifen eines Menschen und auf Erklärung.
+
+## Vertraulichkeit und Urheberrecht \{#vertraulichkeit}
+
+- **Firmeneigener Code, Testfälle und Dokumente** sind oft vertraulich. Nur **freigegebene** KI-Werkzeuge mit geklärten Nutzungsbedingungen verwenden (z. B. keine Verwendung der Eingaben zum Training).
+- **Zugangsdaten**, API-Schlüssel und Tokens gehören **nie** in einen Prompt.
+- **Urheberrecht**: Ob und wie KI-erzeugte Inhalte geschützt sind und welche Rechte an Trainingsdaten bestehen, ist rechtlich teils noch in Klärung. Unternehmen regeln das meist in **Richtlinien** – z. B. Prüfpflicht für generierten Code, Umgang mit Lizenzen von übernommenen Codeschnipseln.
+
+## Ethische Grundsätze \{#ethik}
+
+| Grundsatz | Frage | Beispiel |
+|---|---|---|
+| **Fairness** | Werden Gruppen benachteiligt? | Bias-Tests nach Geschlecht, Alter, Herkunft, Sprache |
+| **Transparenz** | Wissen Betroffene, dass KI beteiligt ist und wie sie entscheidet? | Hinweis „Diese Antwort wurde mit KI erstellt“ |
+| **Verantwortung** | Wer haftet, wer entscheidet? | Ein Mensch gibt Release und kritische Entscheidungen frei |
+| **Sicherheit und Robustheit** | Was passiert bei Fehlern oder Angriffen? | Tests gegen Manipulation, sichere Rückfallebene |
+| **Privatsphäre** | Werden Daten sparsam und geschützt verarbeitet? | keine Produktivdaten in Prompts |
+| **Nachhaltigkeit** | Steht der Nutzen im Verhältnis zum Ressourcenverbrauch? | kein großes Modell, wo eine einfache Regel reicht |
+
+:::tip[Ehrlichkeit über KI-Einsatz]
+Diese Lernplattform wurde mit einem KI-Agenten erstellt – das steht offen in der Lektion [KI-Assistenten](./05-ki-assistenten-entwicklung.mdx#echte-fehler), zusammen mit den Fehlern, die er gemacht hat, und wie sie gefunden wurden. Transparenz schafft Vertrauen – und zeigt, wo menschliche Prüfung nötig war.
+:::
+
+## Checkliste für Teams \{#checkliste}
+
+- [ ] Gibt es eine **Richtlinie**, welche KI-Werkzeuge mit welchen Daten genutzt werden dürfen?
+- [ ] Sind die Beschäftigten im Umgang mit KI **geschult** (KI-Kompetenz)?
+- [ ] Werden **keine personenbezogenen oder vertraulichen Daten** in nicht freigegebene Dienste eingegeben?
+- [ ] Wird **KI-generierter Code** reviewt und getestet wie jeder andere Code?
+- [ ] Ist bei eigenen KI-Funktionen die **Risikoklasse** nach AI Act geklärt?
+- [ ] Gibt es für KI-Funktionen **Evaluierungsdaten**, **Qualitätsschwellen**, **Bias-** und **Robustheitstests**?
+- [ ] Wissen Nutzer, wann sie mit **KI interagieren**?
+- [ ] Kann ein **Mensch** Ergebnisse prüfen und übersteuern?
+- [ ] Wird die Qualität **im Betrieb** überwacht?
+
+## Typische Fehler \{#typische-fehler}
+
+- **Kundendaten** zur „schnellen Analyse“ in einen öffentlichen Chat kopieren.
+- **Risikoklasse nicht prüfen** – „ist doch nur ein kleines Modell“, das aber über Bewerbungen entscheidet.
+- **Bias-Tests auslassen**, weil die Gesamtgenauigkeit gut ist.
+- **KI-Einsatz verschweigen**, wo Transparenz erwartet wird.
+- **Verantwortung an das System abgeben** („das hat die KI entschieden“).
+- **Rechtliche Fragen allein entscheiden**, statt Datenschutz und Rechtsabteilung einzubeziehen.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Der **AI Act** regelt KI nach Risiko: **verboten**, **hoch**, **begrenzt** (Transparenz), **minimal**; Pflichten gelten gestaffelt – aktuelle Fristen prüfen.
+- **Hochrisiko-Systeme** brauchen Risikomanagement, Daten-Governance, Dokumentation, Logging, menschliche Aufsicht und nachgewiesene Genauigkeit und Robustheit – **gutes Testen wird zur Pflicht**.
+- **DSGVO**: keine personenbezogenen Daten ohne Grundlage in KI-Dienste, Daten minimieren, synthetische Testdaten.
+- **Vertraulichkeit**: nur freigegebene Werkzeuge, keine Secrets in Prompts; Urheberrecht über Unternehmensrichtlinien klären.
+- **Ethik**: Fairness, Transparenz, Verantwortung, Sicherheit, Privatsphäre, Nachhaltigkeit – und Menschen bleiben verantwortlich.
+
+<Quiz fragen={fragen} titel="Quiz: Recht, Ethik und verantwortungsvoller Einsatz" />

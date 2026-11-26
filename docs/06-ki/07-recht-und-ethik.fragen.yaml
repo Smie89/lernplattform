@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Recht, Ethik und verantwortungsvoller Einsatz"
+
+- id: ki-re-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Nach welchem Prinzip regelt der EU AI Act KI-Systeme?"
+  optionen:
+    - "Nach der Größe des Unternehmens"
+    - "Nach dem Risiko, das von ihrem Einsatz ausgeht"
+    - "Nach der Programmiersprache"
+    - "Nach dem Preis"
+  richtig: [1]
+  erklaerung: "Unannehmbares Risiko ist verboten, hohes Risiko streng reguliert, begrenztes Risiko unterliegt Transparenzpflichten, minimales Risiko kaum Pflichten."
+  artikel: "#risikoklassen"
+  tags: [ki, ai-act]
+
+- id: ki-re-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein KI-System sortiert Bewerbungen vor. In welche Risikoklasse fällt es nach dem AI Act typischerweise?"
+  optionen:
+    - "Minimales Risiko"
+    - "Begrenztes Risiko"
+    - "Hohes Risiko"
+    - "Gar keine"
+  richtig: [2]
+  erklaerung: "KI in der Personalauswahl gilt als Hochrisiko-Anwendung, weil sie erheblich in Lebenschancen eingreift."
+  artikel: "#risikoklassen"
+  tags: [ki, ai-act]
+
+- id: ki-re-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Pflicht gilt typischerweise für einen Chatbot (begrenztes Risiko)?"
+  optionen:
+    - "Er ist verboten"
+    - "Nutzer müssen erkennen können, dass sie mit einer KI interagieren"
+    - "Er braucht eine Konformitätsbewertung wie ein Medizinprodukt"
+    - "Keine"
+  richtig: [1]
+  erklaerung: "Für Systeme mit begrenztem Risiko gelten vor allem Transparenzpflichten."
+  artikel: "#risikoklassen"
+  tags: [ki, ai-act]
+
+- id: ki-re-004
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Anforderungen an Hochrisiko-Systeme hängen direkt mit Testen zusammen?"
+  optionen:
+    - "Daten-Governance mit repräsentativen, auf Bias geprüften Daten"
+    - "Nachgewiesene Genauigkeit, Robustheit und Cybersicherheit"
+    - "Technische Dokumentation inklusive Testergebnissen"
+    - "Ein bestimmtes Firmenlogo auf der Oberfläche"
+  richtig: [0, 1, 2]
+  erklaerung: "Bei Hochrisiko-KI wird gutes, dokumentiertes Testen zur gesetzlichen Pflicht."
+  artikel: "#hochrisiko"
+  tags: [ki, ai-act, testen]
+
+- id: ki-re-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Bewertungs-Klassifikator aus dem Beispielprojekt soll künftig Bewerbungen sortieren. Warum wird der Bias-Befund ('kam an' → negativ) dadurch kritisch?"
+  optionen:
+    - "Weil der Code dann langsamer wird"
+    - "Weil das System dann ein Hochrisiko-System ist und Verzerrungen Menschen benachteiligen können"
+    - "Weil Bewerbungen keine Texte sind"
+    - "Er wird dadurch nicht kritisch"
+  richtig: [1]
+  erklaerung: "Dasselbe Verfahren hat je nach Einsatzzweck ein ganz anderes Risiko – und unterliegt anderen Pflichten."
+  artikel: "#risikoklassen"
+  tags: [ki, ai-act, bias]
+
+- id: ki-re-006
+  typ: single
+  schwierigkeit: 1
+  frage: "Darf man einen Export echter Kundendaten zur Analyse in einen öffentlichen KI-Chat hochladen?"
+  optionen:
+    - "Ja, wenn es schnell gehen muss"
+    - "Nein, nicht ohne Rechtsgrundlage und Vertrag – personenbezogene Daten unterliegen der DSGVO"
+    - "Ja, wenn man danach den Chat löscht"
+    - "Ja, KI-Dienste sind von der DSGVO ausgenommen"
+  richtig: [1]
+  erklaerung: "Personenbezogene Daten nur mit Rechtsgrundlage und geeigneten Verträgen (z. B. Auftragsverarbeitung) verarbeiten; besser bereinigen oder synthetische Daten nutzen."
+  artikel: "#datenschutz"
+  tags: [ki, dsgvo]
+
+- id: ki-re-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist für Testdaten bei KI-Projekten datenschutzfreundlich?"
+  optionen:
+    - "Eine vollständige Kopie der Produktivdatenbank"
+    - "Synthetische Testdaten ohne echte Personen"
+    - "Echte Kundendaten mit geänderten Vornamen"
+    - "Daten aus sozialen Netzwerken"
+  richtig: [1]
+  erklaerung: "Synthetische Daten vermeiden personenbezogene Daten im Test. Nur Vornamen zu ändern reicht in der Regel nicht."
+  artikel: "#datenschutz"
+  tags: [ki, dsgvo, testdaten]
+
+- id: ki-re-008
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Was gehört nie in einen Prompt an einen nicht freigegebenen KI-Dienst?"
+  optionen:
+    - "API-Schlüssel und Passwörter"
+    - "Vertraulicher Firmencode"
+    - "Personenbezogene Kundendaten"
+    - "Eine allgemeine Frage zur Syntax von LINQ"
+  richtig: [0, 1, 2]
+  erklaerung: "Allgemeine, nicht vertrauliche Fragen sind unproblematisch; Zugangsdaten, vertrauliche Inhalte und Personendaten nicht."
+  artikel: "#vertraulichkeit"
+  tags: [ki, vertraulichkeit]
+
+- id: ki-re-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Modell hat eine hohe Gesamtgenauigkeit, benachteiligt aber eine Gruppe deutlich. Welcher ethische Grundsatz ist verletzt?"
+  optionen:
+    - "Nachhaltigkeit"
+    - "Fairness"
+    - "Transparenz"
+    - "Keiner, die Genauigkeit ist ja hoch"
+  richtig: [1]
+  erklaerung: "Gute Durchschnittswerte können Benachteiligungen von Untergruppen verdecken – deshalb Ergebnisse getrennt nach Gruppen auswerten."
+  artikel: "#ethik"
+  tags: [ki, ethik, bias]
+
+- id: ki-re-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bedeutet 'menschliche Aufsicht' bei Hochrisiko-Systemen?"
+  optionen:
+    - "Ein Mensch sitzt neben dem Server"
+    - "Menschen können Ergebnisse verstehen, übersteuern und das System anhalten"
+    - "Das System wird nur tagsüber betrieben"
+    - "Die Entwickler kontrollieren den Code einmal im Jahr"
+  richtig: [1]
+  erklaerung: "Menschen müssen eingreifen können – das gehört auch zu den Rechten Betroffener bei automatisierten Entscheidungen."
+  artikel: "#hochrisiko"
+  tags: [ki, ai-act]
+
+- id: ki-re-011
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Wenn ein KI-System eine falsche Entscheidung trifft, ist niemand verantwortlich, weil die KI selbstständig entschieden hat."
+  richtig: [1]
+  erklaerung: "Falsch. Verantwortung tragen die Menschen und Organisationen, die das System entwickeln, einsetzen und Entscheidungen freigeben."
+  artikel: "#ethik"
+  tags: [ki, verantwortung]

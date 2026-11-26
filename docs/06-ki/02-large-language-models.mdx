@@ -1,0 +1,147 @@
+---
+title: Wie Large Language Models funktionieren
+description: Tokens, Vorhersage des nächsten Tokens, Training in mehreren Phasen, Kontextfenster, Temperatur, Wissensstand, Halluzinationen, Embeddings, RAG und Werkzeugnutzung – was Tester über Sprachmodelle wissen müssen.
+tags: [ki, llm, halluzinationen, rag]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-large-language-models.fragen.yaml';
+
+# Wie Large Language Models funktionieren
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, wie ein **Large Language Model** (LLM) Text erzeugt – Token für Token,
+- die **Trainingsphasen** grob beschreiben,
+- **Kontextfenster**, **Temperatur** und **Wissensstand** einordnen,
+- erklären, warum LLMs **halluzinieren** und wie man damit umgeht,
+- **Embeddings**, **RAG** und **Werkzeugnutzung** verstehen.
+:::
+
+## Was ist ein LLM? \{#was}
+
+Ein **Large Language Model** ist ein sehr großes neuronales Netz, das mit riesigen Textmengen trainiert wurde. Bekannte Beispiele sind die Modelle hinter ChatGPT, Claude, Gemini, Llama oder Mistral. Sie können Texte schreiben, zusammenfassen, übersetzen, Code erzeugen und Fragen beantworten.
+
+Im Kern machen sie aber nur eine Sache – und das ist der Schlüssel zum Verständnis ihrer Stärken und Schwächen.
+
+## Tokens \{#tokens}
+
+LLMs verarbeiten Text nicht als Buchstaben oder ganze Wörter, sondern als **Tokens** – häufige Wortteile. Ein Wort wie „Testautomatisierung“ kann aus mehreren Tokens bestehen, ein kurzes englisches Wort ist oft eines.
+
+Warum das wichtig ist:
+- **Kosten und Grenzen** werden in Tokens gemessen (Eingabe und Ausgabe).
+- Deutsch braucht meist **mehr Tokens** als Englisch für denselben Inhalt.
+- Aufgaben auf **Buchstabenebene** (Zeichen zählen, Wörter rückwärts schreiben) sind für LLMs überraschend schwer – sie „sehen“ Tokens, keine einzelnen Buchstaben.
+
+## Die Kernidee: das nächste Token vorhersagen \{#naechstes-token}
+
+Ein LLM berechnet für den bisherigen Text, **welches Token wahrscheinlich als nächstes kommt** – hängt es an und wiederholt das, bis die Antwort fertig ist.
+
+```text
+Eingabe:  "Ab 100 € Bestellwert gibt es 10 %"
+Modell:   " Rabatt"  (sehr wahrscheinlich)   " Nachlass" (möglich)   " Kaffee" (sehr unwahrscheinlich)
+→ "Ab 100 € Bestellwert gibt es 10 % Rabatt" → nächstes Token …
+```
+
+Daraus folgt Wichtiges:
+- Ein LLM erzeugt **plausiblen** Text – **nicht** zwingend **wahren** Text.
+- Es hat kein eingebautes „Ich weiß es nicht“, wenn es nicht darauf trainiert wurde, Unsicherheit zu zeigen.
+- Die Qualität hängt stark vom **Kontext** ab, den man mitgibt (siehe [Prompting](./03-prompting.mdx)).
+
+## Training in Phasen \{#training}
+
+| Phase | Was passiert | Ergebnis |
+|---|---|---|
+| **Vortraining** (Pretraining) | Vorhersage des nächsten Tokens auf riesigen Textmengen (Web, Bücher, Code) | breites Sprach- und Weltwissen, aber noch kein hilfreicher Assistent |
+| **Feinabstimmung** (Instruction Tuning) | Training mit Beispielen „Anweisung → gute Antwort“ | folgt Anweisungen |
+| **Ausrichtung** (z. B. RLHF – Reinforcement Learning from Human Feedback) | Menschen oder Regeln bewerten Antworten; das Modell lernt, bevorzugte Antworten zu geben | hilfreicher, ehrlicher, sicherer |
+
+## Kontextfenster \{#kontextfenster}
+
+Das **Kontextfenster** ist die maximale Menge an Text (in Tokens), die ein Modell **auf einmal** berücksichtigen kann – Eingabe, bisheriger Gesprächsverlauf und Antwort zusammen. Moderne Modelle schaffen oft Hunderttausende Tokens.
+
+- Was **nicht** im Kontext steht, kennt das Modell für diese Anfrage nicht – es hat kein Gedächtnis über Gespräche hinweg, außer eine Anwendung legt es gezielt wieder in den Kontext.
+- Sehr lange Kontexte können dazu führen, dass Details übersehen werden. Wichtiges deshalb klar und gut auffindbar formulieren.
+
+## Temperatur und Zufall \{#temperatur}
+
+Das Modell wählt nicht immer das wahrscheinlichste Token – es **zieht** aus der Wahrscheinlichkeitsverteilung. Die **Temperatur** steuert, wie stark:
+
+| Temperatur | Verhalten | geeignet für |
+|---|---|---|
+| niedrig (nahe 0) | wählt fast immer das Wahrscheinlichste, vorhersehbar | Code, Datenextraktion, Klassifikation |
+| hoch | kreativer, abwechslungsreicher, auch fehleranfälliger | Ideen, Texte, Varianten |
+
+:::warning[Gleiche Frage, andere Antwort]
+LLM-Ausgaben sind **nicht deterministisch** – dieselbe Eingabe kann unterschiedliche Antworten liefern. Für Tests heißt das: Ein einzelner erfolgreicher Versuch beweist wenig. Wie man solche Systeme testet, zeigt [KI-Systeme testen](./06-ki-systeme-testen.mdx#llm-testen).
+:::
+
+## Wissensstand \{#wissensstand}
+
+Ein LLM kennt nur, was in seinen Trainingsdaten stand – bis zu einem **Stichtag** (*knowledge cutoff*). Neuere Versionen von Bibliotheken, Werkzeugen oder Gesetzen kennt es nicht oder nur ungenau.
+
+Ein echtes Beispiel vom Bau dieser Plattform: Der KI-Assistent ging davon aus, dass Spring Boot die Version von REST Assured verwaltet. In der aktuellen Spring-Boot-Version ist das nicht mehr so – der **Build schlug fehl** und hat den Irrtum sofort gezeigt. Mehr solche Fälle in [KI-Assistenten in der Entwicklung](./05-ki-assistenten-entwicklung.mdx#echte-fehler).
+
+## Halluzinationen \{#halluzinationen}
+
+Eine **Halluzination** ist eine Ausgabe, die überzeugend klingt, aber **falsch oder erfunden** ist:
+- erfundene Methoden oder Parameter einer Bibliothek,
+- nicht existierende Quellen, Normen oder Paragraphen,
+- falsche Zahlen, die plausibel aussehen,
+- veraltete Informationen, als wären sie aktuell.
+
+Warum? Das Modell erzeugt **wahrscheinlichen** Text. Wenn es etwas nicht weiß, ist eine plausibel klingende Fortsetzung oft wahrscheinlicher als „Ich weiß es nicht“.
+
+Gegenmittel:
+- **Prüfen**: Code kompilieren und testen, Quellen öffnen, Zahlen nachrechnen.
+- **Kontext mitgeben**: aktuelle Dokumentation, eigene Codeausschnitte, Fehlermeldungen.
+- **Erlauben, Unsicherheit zu äußern**: „Wenn du es nicht sicher weißt, sag das.“
+- **Grounding / RAG**: das Modell auf bereitgestellte Dokumente stützen (siehe unten).
+
+:::danger[Faustregel]
+Ein LLM ist ein **sehr schneller, belesener Kollege mit gelegentlichem Übermut**. Alles, was zählt – Code, Fakten, Zahlen, rechtliche Aussagen – wird **geprüft**, bevor man sich darauf verlässt.
+:::
+
+## Embeddings \{#embeddings}
+
+Ein **Embedding** ist eine Liste von Zahlen (ein Vektor), die die **Bedeutung** eines Textes darstellt. Texte mit ähnlicher Bedeutung haben ähnliche Vektoren – auch wenn sie unterschiedliche Wörter verwenden („Lieferung kam zu spät“ und „Paket hatte Verspätung“).
+
+Anwendungen: **semantische Suche**, ähnliche Fehlerberichte finden (Duplikate!), Texte gruppieren.
+
+## RAG: Retrieval-Augmented Generation \{#rag}
+
+**RAG** verbindet Suche und Textgenerierung:
+
+```text
+ Frage ─► Suche in eigenen Dokumenten (oft per Embeddings) ─► passende Abschnitte
+                                                                     │
+ Antwort ◄── LLM erzeugt Antwort AUF BASIS dieser Abschnitte ◄───────┘
+```
+
+Vorteile: aktuelle und firmeninterne Informationen, weniger Halluzinationen, Quellenangaben möglich. Ein Beispiel: Ein Assistent beantwortet Fragen zur Teststrategie anhand des eigenen Testkonzepts.
+
+Für Tester wichtig: RAG-Systeme haben **zwei** Fehlerquellen – die **Suche** (falsche oder keine Abschnitte gefunden) und die **Generierung** (Abschnitte falsch wiedergegeben). Beide müssen getestet werden.
+
+## Werkzeuge und Agenten \{#agenten}
+
+Moderne LLMs können **Werkzeuge aufrufen**: Code ausführen, Dateien lesen, Webseiten abrufen, APIs ansprechen. Ein **Agent** plant dabei mehrere Schritte selbstständig – z. B. Code ändern, Tests ausführen, Fehler lesen, korrigieren, erneut testen.
+
+Genau so ist diese Lernplattform entstanden: Ein KI-Agent hat Lektionen geschrieben, Beispielprojekte gebaut und **die Tests selbst ausgeführt** – und dabei aus roten Tests gelernt. Die Tests waren das, was die Qualität gesichert hat, nicht die KI allein.
+
+## Typische Fehler \{#typische-fehler}
+
+- **LLM-Ausgaben als Fakten** behandeln, ohne zu prüfen.
+- **Aktuelles Wissen erwarten** – neue Versionen, aktuelle Gesetze, heutige Preise.
+- **Vertrauliche Daten** (Kundendaten, Passwörter, Quellcode unter NDA) in öffentliche KI-Dienste kopieren – siehe [Recht und Ethik](./07-recht-und-ethik.mdx).
+- **Ein einziger erfolgreicher Versuch** als Beweis, dass ein LLM-Feature funktioniert.
+- **Rechnen und Zählen** dem Modell überlassen statt einem Werkzeug.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- LLMs zerlegen Text in **Tokens** und sagen das **nächste Token** vorher – sie erzeugen **plausiblen**, nicht zwingend wahren Text.
+- Training: **Vortraining** → **Feinabstimmung** → **Ausrichtung** (z. B. RLHF).
+- **Kontextfenster** begrenzt, was das Modell sieht; **Temperatur** steuert den Zufall; Ausgaben sind **nicht deterministisch**.
+- **Wissensstand** und **Halluzinationen** sind die wichtigsten Grenzen – alles Wichtige wird geprüft.
+- **Embeddings** erfassen Bedeutung; **RAG** stützt Antworten auf eigene Dokumente; **Agenten** nutzen Werkzeuge in mehreren Schritten.
+
+<Quiz fragen={fragen} titel="Quiz: Wie Large Language Models funktionieren" />

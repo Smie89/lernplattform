@@ -1,0 +1,150 @@
+# Fragen zur Lektion "KI-Assistenten in Entwicklung und Testautomation"
+
+- id: ki-as-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was unterscheidet einen KI-Agenten von einer Autovervollständigung?"
+  optionen:
+    - "Ein Agent ist schneller"
+    - "Ein Agent arbeitet mehrschrittig: liest Dateien, ändert Code, führt Befehle und Tests aus und reagiert auf Fehler"
+    - "Ein Agent kann nur Kommentare schreiben"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Agenten handeln selbstständig über mehrere Schritte – deshalb brauchen sie besonders gute Leitplanken."
+  artikel: "#arten"
+  tags: [ki, agenten]
+
+- id: ki-as-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Assistent schlägt vor, ein Paket zu installieren, das du nicht kennst. Was ist vor der Installation wichtig?"
+  optionen:
+    - "Nichts, die KI kennt alle Pakete"
+    - "Prüfen, ob das Paket existiert, wer es pflegt und wie verbreitet es ist"
+    - "Es sofort in allen Projekten installieren"
+    - "Die Version weglassen"
+  richtig: [1]
+  erklaerung: "LLMs erfinden manchmal Paketnamen. Angreifer registrieren solche Namen gezielt mit Schadcode ('Slopsquatting')."
+  artikel: "#risiken"
+  tags: [ki, sicherheit]
+
+- id: ki-as-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wodurch wurden die Fehler gefunden, die der KI-Assistent beim Bau dieser Plattform gemacht hat?"
+  optionen:
+    - "Dadurch, dass die KI noch einmal nachgedacht hat"
+    - "Durch Builds, Tests, Analysewerkzeuge, Ausführen in der echten Umgebung und gezieltes Testen"
+    - "Durch Zufall"
+    - "Gar nicht, es gab keine Fehler"
+  richtig: [1]
+  erklaerung: "Dieselben Werkzeuge, die menschliche Fehler finden, finden auch KI-Fehler – Testautomatisierung wird mit KI wichtiger, nicht unwichtiger."
+  artikel: "#echte-fehler"
+  tags: [ki, qualitaet]
+
+- id: ki-as-004
+  typ: single
+  schwierigkeit: 3
+  frage: "Der KI-generierte Shop-Code hatte 43 grüne Tests und 100 % Zweigabdeckung – und trotzdem die Race Condition SHOP-1. Was zeigt das?"
+  optionen:
+    - "Dass Tests bei KI-Code überflüssig sind"
+    - "Dass sauber aussehender, gut abgedeckter Code trotzdem falsch sein kann – erst realistisches, gezieltes Testen zeigt das"
+    - "Dass Zweigabdeckung immer 100 % sein muss"
+    - "Dass Race Conditions nicht testbar sind"
+  richtig: [1]
+  erklaerung: "Plausibilität und Struktur beweisen keine Korrektheit. Gefunden wurde der Fehler durch exploratives Testen mit einer Fehlerhypothese."
+  artikel: "#echte-fehler"
+  tags: [ki, testen]
+
+- id: ki-as-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Build schlägt fehl, weil eine Bibliotheksversion in der neuen Framework-Version nicht mehr automatisch verwaltet wird. Welches Risiko von KI-Assistenten zeigt sich?"
+  optionen:
+    - "Sicherheitslücke"
+    - "Veraltetes Wissen"
+    - "Lizenzproblem"
+    - "Kompetenzverlust"
+  richtig: [1]
+  erklaerung: "Der Assistent kannte das Verhalten älterer Versionen. Der Build machte den Irrtum sofort sichtbar."
+  artikel: "#echte-fehler"
+  tags: [ki, wissensstand]
+
+- id: ki-as-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was gehört zu einer guten Arbeitsweise mit Code-Assistenten?"
+  optionen:
+    - "In kleinen Schritten arbeiten und nach jedem Schritt prüfen"
+    - "Build, Tests und Linter wirklich ausführen"
+    - "Generierten Code reviewen wie den Pull Request einer Kollegin"
+    - "Branch-Schutz abschalten, damit der Assistent schneller arbeiten kann"
+  richtig: [0, 1, 2]
+  erklaerung: "CI-Leitplanken gelten für KI-Code genauso – sie abzuschalten nimmt das wichtigste Sicherheitsnetz."
+  artikel: "#arbeitsweise"
+  tags: [ki, arbeitsweise]
+
+- id: ki-as-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum sollte man einen vom Assistenten geschriebenen Test einmal rot sehen?"
+  optionen:
+    - "Damit die CI länger läuft"
+    - "Um sicherzugehen, dass der Test einen Fehler überhaupt erkennen kann"
+    - "Weil grüne Tests verboten sind"
+    - "Damit die KI lernt"
+  richtig: [1]
+  erklaerung: "Ein Test, der nie rot war, prüft möglicherweise gar nichts – etwa weil der Assert fehlt oder das Falsche prüft."
+  artikel: "#arbeitsweise"
+  tags: [ki, tests]
+
+- id: ki-as-008
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Worauf achtest du bei KI-generiertem UI-Testcode besonders?"
+  optionen:
+    - "Feste Wartezeiten wie Thread.Sleep"
+    - "Fragile Locators wie lange XPath-Ausdrücke"
+    - "Fehlende oder schwache Asserts"
+    - "Ob der Code von einer KI stammt – dann ist er automatisch korrekt"
+  richtig: [0, 1, 2]
+  erklaerung: "Diese typischen Schwächen machen UI-Tests flaky oder aussagelos."
+  artikel: "#testautomation"
+  tags: [ki, testautomation]
+
+- id: ki-as-009
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Wenn ein Fehler in KI-generiertem Code in Produktion gelangt, liegt die Verantwortung bei der KI."
+  richtig: [1]
+  erklaerung: "Falsch. Wer Code committet oder freigibt, verantwortet ihn – unabhängig davon, wer ihn geschrieben hat."
+  artikel: "#arbeitsweise"
+  tags: [ki, verantwortung]
+
+- id: ki-as-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dient eine Datei mit Projektregeln, die ein Assistent liest?"
+  optionen:
+    - "Sie ersetzt die Tests"
+    - "Sie gibt dem Assistenten dauerhaft Konventionen und Vorgaben mit, z. B. Testframework und verbotene Muster"
+    - "Sie speichert Passwörter"
+    - "Sie beschleunigt die Hardware"
+  richtig: [1]
+  erklaerung: "So muss man Konventionen nicht in jedem Prompt wiederholen, und typische Fehler werden seltener."
+  artikel: "#arbeitsweise"
+  tags: [ki, arbeitsweise]
+
+- id: ki-as-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Assistent erzeugt SQL-Code, der Benutzereingaben per String-Verkettung in die Abfrage einbaut. Welches Risiko ist das?"
+  optionen:
+    - "Veraltetes Wissen"
+    - "Sicherheitslücke (SQL-Injection)"
+    - "Erfundenes Paket"
+    - "Kein Risiko"
+  richtig: [1]
+  erklaerung: "Eingaben gehören in parametrisierte Abfragen. Review und statische Sicherheitsanalyse finden solche Muster."
+  artikel: "#risiken"
+  tags: [ki, sicherheit]

@@ -76,3 +76,18 @@ jobs:
         run: dotnet test beispiele/entwicklung
       - name: Java-Sprachvergleich
         run: java beispiele/entwicklung-java/Sprachvergleich.java
+
+  ki:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beispiele/ki
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Auswertung (Metriken)
+        run: python auswertung.py
+      - name: Tests (Qualitätsschwellen, metamorphe Tests)
+        run: python -m unittest -v

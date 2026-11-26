@@ -1,0 +1,141 @@
+# Fragen zur Lektion "Prompting für Entwickler und Tester"
+
+- id: ki-pr-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Warum liefert der Prompt 'Schreib Testfälle für den Rabatt.' meist schwache Ergebnisse?"
+  optionen:
+    - "Weil das Modell keine Testfälle kennt"
+    - "Weil Regel, Ziel und Format fehlen – das Modell muss raten"
+    - "Weil der Prompt auf Deutsch ist"
+    - "Weil Testfälle nicht generiert werden können"
+  richtig: [1]
+  erklaerung: "Das Modell kennt nur den Kontext im Prompt. Ohne Regel, Verfahren und Format entstehen allgemeine, unpassende Vorschläge."
+  artikel: "#vergleich"
+  tags: [ki, prompting]
+
+- id: ki-pr-002
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Welche Bausteine gehören zu einem guten Prompt?"
+  optionen:
+    - "Kontext, z. B. die Regel oder der relevante Code"
+    - "Eine klare Aufgabe"
+    - "Das gewünschte Ausgabeformat"
+    - "Möglichst viele unterschiedliche Aufgaben auf einmal"
+  richtig: [0, 1, 2]
+  erklaerung: "Viele Aufgaben auf einmal verschlechtern das Ergebnis – besser in Schritten vorgehen."
+  artikel: "#bausteine"
+  tags: [ki, prompting]
+
+- id: ki-pr-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist Few-Shot-Prompting?"
+  optionen:
+    - "Wenige Wörter im Prompt verwenden"
+    - "Dem Modell ein oder mehrere Beispiele für das gewünschte Ergebnis mitgeben"
+    - "Das Modell nur wenige Male fragen"
+    - "Die Temperatur niedrig setzen"
+  richtig: [1]
+  erklaerung: "Beispiele zeigen oft besser als jede Beschreibung, wie das Ergebnis aussehen soll – etwa die Namenskonvention für Tests."
+  artikel: "#few-shot"
+  tags: [ki, few-shot]
+
+- id: ki-pr-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Worauf muss man bei Few-Shot-Beispielen achten?"
+  optionen:
+    - "Sie sollten möglichst gleich aussehen"
+    - "Sie sollten vielfältig und fehlerfrei sein, weil das Modell auch ihre Eigenheiten übernimmt"
+    - "Sie sollten Fehler enthalten, damit das Modell lernt"
+    - "Es reicht ein unvollständiges Beispiel"
+  richtig: [1]
+  erklaerung: "Fehler oder Einseitigkeiten in den Beispielen tauchen sonst in den Antworten wieder auf."
+  artikel: "#few-shot"
+  tags: [ki, few-shot]
+
+- id: ki-pr-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist der Satz 'Wenn die Regel mehrdeutig ist, stelle eine Rückfrage, statt etwas anzunehmen.' sinnvoll?"
+  optionen:
+    - "Er macht die Antwort kürzer"
+    - "Er verringert das Risiko, dass das Modell plausible, aber falsche Annahmen trifft"
+    - "Er erhöht die Temperatur"
+    - "Er ist überflüssig"
+  richtig: [1]
+  erklaerung: "LLMs füllen Lücken gern mit plausiblen Annahmen. Die Erlaubnis, nachzufragen, macht Unklarheiten sichtbar."
+  artikel: "#bausteine"
+  tags: [ki, prompting, halluzinationen]
+
+- id: ki-pr-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein generierter Testfall enthält einen falsch berechneten Endpreis. Welches Feedback ist am wirksamsten?"
+  optionen:
+    - "'Das ist falsch, mach es besser.'"
+    - "'T4 ist falsch: 100 € × 0,85 = 85,00 €. Prüfe alle Endpreise noch einmal.'"
+    - "Den ganzen Prompt neu schreiben und neu anfangen"
+    - "Den Fehler ignorieren"
+  richtig: [1]
+  erklaerung: "Konkretes Feedback mit Begründung steuert das Modell gezielt nach."
+  artikel: "#iterieren"
+  tags: [ki, prompting]
+
+- id: ki-pr-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Du willst ein LLM bitten, einen Fehlerbericht zu verbessern. Was sollte unbedingt im Prompt stehen?"
+  optionen:
+    - "'Erfinde fehlende Details, damit der Bericht vollständig ist.'"
+    - "'Erfinde keine Informationen – markiere Fehlendes mit [FEHLT].'"
+    - "'Schreibe ihn möglichst kurz.'"
+    - "Nichts weiter"
+  richtig: [1]
+  erklaerung: "Sonst ergänzt das Modell plausible, aber erfundene Schritte oder Versionen – ein gefährlicher Fehlerbericht."
+  artikel: "#vorlagen"
+  tags: [ki, fehlerbericht]
+
+- id: ki-pr-008
+  typ: single
+  schwierigkeit: 1
+  frage: "Darf man ein CI-Log mit echten Kunden-E-Mails und einem API-Token in einen öffentlichen KI-Chat kopieren?"
+  optionen:
+    - "Ja, das Modell vergisst es sofort"
+    - "Nein – vorher bereinigen oder ein freigegebenes Werkzeug verwenden"
+    - "Ja, wenn man den Chat danach löscht"
+    - "Nur Tokens, keine E-Mails"
+  richtig: [1]
+  erklaerung: "Personenbezogene Daten und Zugangsdaten gehören nicht in öffentliche Dienste. Ein offengelegtes Token muss ausgetauscht werden."
+  artikel: "#vorlagen"
+  tags: [ki, datenschutz]
+
+- id: ki-pr-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was prüfst du bei KI-generierten Testfällen?"
+  optionen:
+    - "Ob die erwarteten Ergebnisse richtig berechnet sind"
+    - "Ob Grenzwerte und ungültige Klassen fehlen"
+    - "Ob Regeln erfunden wurden, die nicht in der Testbasis stehen"
+    - "Nichts – das Modell ist gründlicher als ein Mensch"
+  richtig: [0, 1, 2]
+  erklaerung: "Die KI liefert einen Entwurf. Ein falsch berechnetes Orakel macht den ganzen Test wertlos."
+  artikel: "#pruefen"
+  tags: [ki, testen]
+
+- id: ki-pr-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum bittet man bei komplexen Aufgaben um ein schrittweises Vorgehen?"
+  optionen:
+    - "Damit die Antwort länger wird"
+    - "Damit Zwischenschritte sichtbar und Denkfehler leichter erkennbar sind"
+    - "Damit das Modell schneller antwortet"
+    - "Weil das Modell sonst nicht antwortet"
+  richtig: [1]
+  erklaerung: "Erst Bedingungen, dann Klassen, dann Grenzwerte, dann Tabelle – jeder Schritt lässt sich einzeln prüfen."
+  artikel: "#schrittweise"
+  tags: [ki, prompting]

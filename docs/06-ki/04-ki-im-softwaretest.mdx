@@ -1,0 +1,133 @@
+---
+title: KI im Softwaretest
+description: Wo KI im Testprozess hilft – Testideen und Testfälle, Testdaten, selbstheilende Locators, visuelle Tests, Priorisierung, Log-Analyse und Duplikaterkennung – und wo ihre Grenzen und Risiken liegen.
+tags: [ki, testen, testautomation, self-healing]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './04-ki-im-softwaretest.fragen.yaml';
+
+# KI im Softwaretest
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- **Einsatzfelder** von KI im gesamten Testprozess benennen,
+- **selbstheilende Locators** und **visuelle KI-Tests** mit ihren Chancen und Risiken erklären,
+- einschätzen, wo KI **wirklich hilft** und wo **Vorsicht** geboten ist,
+- typische **Risiken** wie Automatisierungsvertrauen und falsche Orakel erkennen,
+- KI sinnvoll in den **Arbeitsablauf** eines Testteams einbauen.
+:::
+
+## Überblick: KI entlang des Testprozesses \{#ueberblick}
+
+| Testaktivität ([Testprozess](../01-softwaretest/01-grundlagen-softwaretest.mdx#testprozess)) | Wie KI hilft | Reife / Risiko |
+|---|---|---|
+| **Testanalyse** | Anforderungen auf Mehrdeutigkeiten prüfen, Testbedingungen vorschlagen | hilfreich als Reviewpartner; Ergebnis prüfen |
+| **Testentwurf** | Testideen, Testfälle aus User Stories, Grenzwerte, Entscheidungstabellen | gut für Entwürfe; **Orakel nachrechnen** |
+| **Testrealisierung** | Testcode, Page Objects, Testdaten generieren | sehr verbreitet; Code muss reviewt und ausgeführt werden |
+| **Testdurchführung** | selbstheilende Locators, visuelle Vergleiche, explorative Agenten | nützlich, kann aber Fehler **verdecken** |
+| **Auswertung** | Log-Analyse, Fehlerursachen, Flaky-Erkennung, Duplikate | spart viel Zeit; Belege prüfen |
+| **Steuerung** | Tests nach Änderungsrisiko priorisieren und auswählen | braucht gute historische Daten |
+
+## Testideen und Testfälle \{#testfaelle}
+
+LLMs sind stark darin, aus Anforderungen **viele Ideen** zu erzeugen – auch solche, an die man selbst nicht gedacht hat (Sonderzeichen, Zeitzonen, Doppelklick). Mit einem guten [Prompt](./03-prompting.mdx#vergleich) entstehen Entwürfe für Äquivalenzklassen, Grenzwerte und Entscheidungstabellen in Sekunden.
+
+Aber:
+- **Erwartete Ergebnisse** können falsch berechnet sein – ein Test mit falschem Orakel ist schlimmer als keiner.
+- Das Modell **erfindet** gern Regeln, die nicht in der Anforderung stehen.
+- Die Ideen sind **plausibel**, aber nicht automatisch **vollständig** oder **risikoorientiert**.
+
+Bewährter Ablauf: **KI-Entwurf → menschliches Review gegen die Testbasis → Orakel nachrechnen → automatisieren → den Test einmal rot sehen.**
+
+## Testdaten \{#testdaten}
+
+KI kann realistische **synthetische Testdaten** erzeugen: Namen mit Umlauten, ungewöhnliche Adressen, Grenzfälle, ungültige Formate. Vorteile: keine echten Personendaten im Test, schnell viele Varianten.
+
+Zu beachten:
+- **Keine echten Personen** nachbilden; Domains wie `example.test` verwenden.
+- **Gültig/ungültig markieren** lassen und stichprobenartig prüfen.
+- Für **reproduzierbare** Tests die erzeugten Daten speichern (versionieren), nicht bei jedem Lauf neu generieren – sonst sind Tests nicht wiederholbar ([FIRST](../02-testautomation/01-grundlagen/01-grundlagen-testautomation.mdx#first)).
+
+## Selbstheilende Locators \{#self-healing}
+
+Problem: Ein UI-Test findet ein Element nicht mehr, weil sich ID oder Struktur geändert hat – typischer Wartungsaufwand.
+
+**Self-Healing**: Das Werkzeug merkt sich **viele Merkmale** eines Elements (ID, Text, Position, Attribute, Nachbarn). Findet es das Element über den ursprünglichen Locator nicht, sucht es das **ähnlichste** Element, nutzt es und schlägt einen neuen Locator vor.
+
+| Chance | Risiko |
+|---|---|
+| weniger rote Tests durch harmlose Änderungen (ID umbenannt) | der Test klickt das **falsche** Element und bleibt **grün** |
+| weniger Wartungsaufwand | echte Fehler (Button fehlt, falsches Element sichtbar) werden **verdeckt** |
+| | „Heilungen“ werden nicht geprüft und sammeln sich unbemerkt |
+
+:::warning[Heilungen sind Befunde]
+Jede automatische Heilung ist eine **Änderung**, die ein Mensch prüfen muss – sie gehört in den Testbericht, nicht stillschweigend in den nächsten Lauf. Die beste Vorbeugung bleibt ein stabiler Locator: `data-testid` oder Rollen und Namen (siehe [Locator-Strategien](../02-testautomation/04-browser/02-selenium-webdriver.mdx#locators)).
+:::
+
+## Visuelle KI-Tests \{#visuell}
+
+Klassische Screenshot-Vergleiche sind **pixelgenau** – jede Kantenglättung oder Schrift auf einem anderen Betriebssystem erzeugt Unterschiede (vgl. [Schriftarten unter Linux](../04-linux/07-linux-testautomation.mdx#browser)). KI-gestützte visuelle Tests vergleichen **wie ein Mensch**: Sie ignorieren unwichtige Pixelabweichungen und melden echte Änderungen – verschobene Buttons, überlappender Text, fehlende Bilder.
+
+Auch hier gilt: Die Toleranz ist eine **Einstellung**, die bewusst gewählt werden muss. Ist sie zu großzügig, rutschen echte Layoutfehler durch.
+
+## Priorisierung und Testauswahl \{#priorisierung}
+
+Bei großen Suiten kann KI anhand von **geänderten Dateien**, **früheren Fehlschlägen** und **Codeabhängigkeiten** vorhersagen, welche Tests für eine Änderung am wichtigsten sind – diese laufen zuerst oder als schneller Vorab-Lauf.
+
+Risiko: Ein nicht ausgewählter Test hätte den Fehler gefunden. Deshalb läuft die **vollständige Suite trotzdem regelmäßig** (z. B. nachts).
+
+## Log-Analyse, Flaky-Erkennung, Duplikate \{#auswertung}
+
+Hier spart KI im Alltag oft am meisten Zeit:
+
+- **Log-Analyse**: Aus Hunderten Zeilen eines roten CI-Laufs die wahrscheinliche Ursache zusammenfassen – mit Zeilenbelegen (siehe [Prompt-Vorlage](./03-prompting.mdx#vorlagen)).
+- **Fehlerklassifikation**: Ist ein roter Test ein Produktfehler, ein Testfehler, ein Umgebungsproblem oder flaky?
+- **Flaky-Erkennung**: Muster in der Historie erkennen (scheitert nur nachts, nur auf einem Agent, nur parallel).
+- **Duplikate**: Ähnliche Fehlerberichte über [Embeddings](./02-large-language-models.mdx#embeddings) finden, auch bei unterschiedlicher Formulierung.
+
+## Was KI (noch) nicht ersetzt \{#grenzen}
+
+- **Das Orakel**: Was **richtig** ist, steht in Anforderungen, Gesprächen mit dem Fachbereich, Gesetzen – nicht im Modell.
+- **Risikobewertung**: Was ein Fehler **kostet**, wissen Menschen im Kontext des Unternehmens.
+- **Exploratives Denken** mit Domänenwissen: Der [Doppelklick-Fehler SHOP-1](../01-softwaretest/05-white-box-erfahrungsbasiert.mdx#doppelklick) wurde durch eine gezielte Fehlerhypothese gefunden – eine KI kann solche Hypothesen vorschlagen, aber jemand muss sie ernsthaft ausprobieren und bewerten.
+- **Verantwortung**: Wer einen Test freigibt, verantwortet ihn – egal, wer ihn geschrieben hat.
+
+## Risiken \{#risiken}
+
+| Risiko | Beschreibung | Gegenmittel |
+|---|---|---|
+| **Automatisierungsvertrauen** (*automation bias*) | Menschen übernehmen KI-Ergebnisse ungeprüft, weil sie kompetent klingen | Review-Pflicht, Stichproben, „Vier-Augen“-Prinzip |
+| **Falsche Orakel** | falsch berechnete erwartete Ergebnisse | nachrechnen, Tests einmal rot sehen |
+| **Scheinsicherheit** | viele generierte Tests, wenig Aussagekraft | Abdeckung **und** Mutationstests prüfen |
+| **Verdeckte Fehler** | Self-Healing und tolerante Vergleiche lassen echte Fehler durch | Heilungen und Abweichungen berichten und prüfen |
+| **Datenschutz und Vertraulichkeit** | Produktivdaten oder Code in fremden Diensten | freigegebene Werkzeuge, Daten bereinigen |
+| **Nicht-Reproduzierbarkeit** | KI erzeugt bei jedem Lauf andere Tests/Daten | Ergebnisse speichern und versionieren |
+
+## Ein sinnvoller Arbeitsablauf \{#ablauf}
+
+1. **Mensch** legt Ziel, Testbasis und Risiken fest.
+2. **KI** erzeugt Entwürfe: Testideen, Testfälle, Code, Testdaten.
+3. **Mensch** reviewt gegen die Testbasis, rechnet Orakel nach, ergänzt Risikofälle.
+4. **Automatisierte Tests** laufen – neue Tests werden **einmal rot** gesehen.
+5. **KI** hilft bei der Auswertung (Logs, Ursachen, Duplikate) – **Mensch** entscheidet.
+6. Erkenntnisse fließen in **Checklisten** und **Prompts** zurück.
+
+## Typische Fehler \{#typische-fehler}
+
+- **KI-generierte Tests ungeprüft committen**.
+- **Self-Healing ohne Berichte** – Fehler werden unsichtbar.
+- **Generierte Testdaten bei jedem Lauf neu** – Tests sind nicht reproduzierbar.
+- **Echte Kundendaten** als „Beispiel“ an einen KI-Dienst schicken.
+- **KI als Orakel** verwenden („Das Modell sagt, 85,04 € ist richtig“).
+- **Volle Suite nie mehr laufen lassen**, weil die KI-Priorisierung „reicht“.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- KI hilft in **jeder Testaktivität** – besonders bei Entwürfen, Testdaten, Code und Auswertung.
+- **Self-Healing** und **visuelle KI** sparen Wartung, können aber **Fehler verdecken** – Heilungen sind Befunde.
+- **Priorisierung** beschleunigt Feedback, ersetzt aber nicht den regelmäßigen Volllauf.
+- Nicht ersetzbar: **Orakel**, **Risikobewertung**, **Domänenwissen**, **Verantwortung**.
+- Hauptrisiko ist **Automatisierungsvertrauen** – KI liefert Entwürfe, Menschen prüfen und entscheiden.
+
+<Quiz fragen={fragen} titel="Quiz: KI im Softwaretest" />

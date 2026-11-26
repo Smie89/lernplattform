@@ -1,0 +1,150 @@
+# Fragen zur Lektion "KI im Softwaretest"
+
+- id: ki-st-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches ist der empfohlene Ablauf für KI-generierte Testfälle?"
+  optionen:
+    - "Generieren und direkt committen"
+    - "KI-Entwurf, Review gegen die Testbasis, Orakel nachrechnen, automatisieren, Test einmal rot sehen"
+    - "Nur die Testnamen generieren lassen"
+    - "Generieren und nie ausführen"
+  richtig: [1]
+  erklaerung: "Die KI liefert einen Entwurf. Erst Review, nachgerechnete Erwartungen und ein einmal roter Test machen ihn vertrauenswürdig."
+  artikel: "#testfaelle"
+  tags: [ki, testfaelle]
+
+- id: ki-st-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum sollten KI-generierte Testdaten gespeichert und versioniert statt bei jedem Lauf neu erzeugt werden?"
+  optionen:
+    - "Weil die KI sonst zu teuer ist"
+    - "Damit die Tests reproduzierbar bleiben"
+    - "Weil gespeicherte Daten schneller sind"
+    - "Das ist nicht nötig"
+  richtig: [1]
+  erklaerung: "Neue Daten bei jedem Lauf machen Ergebnisse unvergleichbar – ein Verstoß gegen das FIRST-Prinzip 'Repeatable'."
+  artikel: "#testdaten"
+  tags: [ki, testdaten]
+
+- id: ki-st-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie funktioniert ein selbstheilender Locator?"
+  optionen:
+    - "Er repariert den Produktivcode"
+    - "Er merkt sich viele Merkmale eines Elements und sucht bei Fehlschlag das ähnlichste Element"
+    - "Er wartet so lange, bis das Element erscheint"
+    - "Er löscht fehlschlagende Tests"
+  richtig: [1]
+  erklaerung: "Findet der ursprüngliche Locator nichts, wählt das Werkzeug anhand von Text, Attributen, Position usw. ein ähnliches Element."
+  artikel: "#self-healing"
+  tags: [ki, self-healing]
+
+- id: ki-st-004
+  typ: single
+  schwierigkeit: 3
+  frage: "Was ist das größte Risiko selbstheilender Locators?"
+  optionen:
+    - "Sie sind zu langsam"
+    - "Der Test klickt ein falsches Element und bleibt grün – echte Fehler werden verdeckt"
+    - "Sie funktionieren nur mit Chrome"
+    - "Sie erzeugen zu viele rote Tests"
+  richtig: [1]
+  erklaerung: "Deshalb ist jede automatische Heilung ein Befund, den ein Mensch prüfen muss."
+  artikel: "#self-healing"
+  tags: [ki, self-healing]
+
+- id: ki-st-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was unterscheidet KI-gestützte visuelle Tests von klassischen Screenshot-Vergleichen?"
+  optionen:
+    - "Sie brauchen keine Screenshots"
+    - "Sie ignorieren unwichtige Pixelabweichungen und melden für Menschen relevante Änderungen"
+    - "Sie sind immer pixelgenau"
+    - "Sie testen nur Texte"
+  richtig: [1]
+  erklaerung: "Klassische Vergleiche schlagen schon bei Kantenglättung oder anderer Schrift an. Die Toleranz der KI muss aber bewusst gewählt werden."
+  artikel: "#visuell"
+  tags: [ki, visuell]
+
+- id: ki-st-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine KI wählt für jeden Commit nur die wichtigsten Tests aus. Was sollte trotzdem regelmäßig passieren?"
+  optionen:
+    - "Nichts, die Auswahl reicht"
+    - "Ein vollständiger Lauf aller Tests, z. B. nachts"
+    - "Die KI neu installieren"
+    - "Alle Tests löschen, die nicht ausgewählt wurden"
+  richtig: [1]
+  erklaerung: "Ein nicht ausgewählter Test hätte den Fehler vielleicht gefunden – der Volllauf ist das Sicherheitsnetz."
+  artikel: "#priorisierung"
+  tags: [ki, priorisierung]
+
+- id: ki-st-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Wobei spart KI in der Testauswertung besonders viel Zeit?"
+  optionen:
+    - "Logs eines roten CI-Laufs zusammenfassen"
+    - "Ähnliche Fehlerberichte (Duplikate) finden"
+    - "Muster bei Flaky Tests erkennen"
+    - "Entscheiden, ob ein Release ausgeliefert wird"
+  richtig: [0, 1, 2]
+  erklaerung: "Die Freigabeentscheidung bleibt eine menschliche Verantwortung auf Basis von Risiken und Testbericht."
+  artikel: "#auswertung"
+  tags: [ki, auswertung]
+
+- id: ki-st-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bedeutet Automatisierungsvertrauen (automation bias)?"
+  optionen:
+    - "Vertrauen in automatisierte Tests"
+    - "Menschen übernehmen KI-Ergebnisse ungeprüft, weil sie kompetent klingen"
+    - "Automatisierte Tests sind immer zuverlässig"
+    - "Die KI vertraut den Testern"
+  richtig: [1]
+  erklaerung: "Gegenmittel sind Review-Pflicht, Stichproben und das Vier-Augen-Prinzip."
+  artikel: "#risiken"
+  tags: [ki, risiken]
+
+- id: ki-st-009
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Wenn ein KI-Modell sagt, dass 85,04 € das richtige Ergebnis ist, kann man es als Testorakel verwenden."
+  richtig: [1]
+  erklaerung: "Falsch. Das Orakel ist die Testbasis (Anforderung, Spezifikation). KI-Werte müssen nachgerechnet werden."
+  artikel: "#grenzen"
+  tags: [ki, orakel]
+
+- id: ki-st-010
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was ersetzt KI im Testen (noch) nicht?"
+  optionen:
+    - "Die Entscheidung, was fachlich richtig ist (Orakel)"
+    - "Die Bewertung, was ein Fehler das Unternehmen kostet"
+    - "Die Verantwortung für freigegebene Tests"
+    - "Das Erzeugen erster Testideen"
+  richtig: [0, 1, 2]
+  erklaerung: "Testideen kann KI gut vorschlagen. Orakel, Risikobewertung und Verantwortung bleiben beim Menschen."
+  artikel: "#grenzen"
+  tags: [ki, grenzen]
+
+- id: ki-st-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie geht man am besten mit den Ergebnissen von Self-Healing um?"
+  optionen:
+    - "Ignorieren, solange die Tests grün sind"
+    - "Jede Heilung im Testbericht aufführen und von einem Menschen prüfen lassen"
+    - "Self-Healing immer abschalten"
+    - "Die geheilten Tests löschen"
+  richtig: [1]
+  erklaerung: "Heilungen sind Änderungen am Test und können echte Fehler verdecken – sie gehören in den Bericht und ins Review."
+  artikel: "#self-healing"
+  tags: [ki, self-healing]
