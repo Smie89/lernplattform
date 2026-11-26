@@ -1,0 +1,153 @@
+# Fragen zur Lektion "Barrierefreiheit – Grundlagen"
+
+- id: ta-a11y-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche WCAG-Stufe ist in der Regel das Ziel, z. B. nach EN 301 549 und BFSG?"
+  optionen:
+    - "Stufe A"
+    - "Stufe AA"
+    - "Stufe AAA"
+    - "Keine Stufe"
+  richtig: [1]
+  erklaerung: "WCAG 2.1 AA ist der übliche Standard. AAA ist nicht für alle Inhalte erreichbar."
+  artikel: "#wcag"
+  tags: [barrierefreiheit, wcag]
+
+- id: ta-a11y-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Seit wann gilt das Barrierefreiheitsstärkungsgesetz (BFSG) u. a. für Online-Shops?"
+  optionen:
+    - "Seit 2010"
+    - "Seit 28. Juni 2025"
+    - "Ab 2030"
+    - "Es gilt nur für Behörden"
+  richtig: [1]
+  erklaerung: "Das BFSG setzt den European Accessibility Act um. Für Behörden gilt schon länger die BITV 2.0."
+  artikel: "#recht"
+  tags: [barrierefreiheit, bfsg]
+
+- id: ta-a11y-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Woher bekommt ein Screenreader seine Informationen über die Seite?"
+  optionen:
+    - "Aus einem Screenshot"
+    - "Aus dem Accessibility Tree mit Rolle, Name und Zustand jedes Elements"
+    - "Aus dem CSS"
+    - "Aus der Server-Datenbank"
+  richtig: [1]
+  erklaerung: "Deshalb sind korrekte Rollen und Namen so wichtig – optisch gleiche Elemente können für Screenreader völlig verschieden sein."
+  artikel: "#assistive-technologien"
+  tags: [barrierefreiheit, screenreader]
+
+- id: ta-a11y-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist <button>Bestellen</button> besser als <div onclick=\"…\">Bestellen</div>?"
+  optionen:
+    - "Weil es schöner aussieht"
+    - "Weil der Button per Tastatur erreichbar und bedienbar ist und die Rolle 'button' mitbringt"
+    - "Weil divs nicht klickbar sind"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Native Elemente bringen Fokus, Tastaturbedienung und Semantik kostenlos mit."
+  artikel: "#semantik"
+  tags: [barrierefreiheit, html]
+
+- id: ta-a11y-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Playwright-Test findet den Bestellknopf nicht mit GetByRole(AriaRole.Button, Name = \"Bestellen\"). Was kann das bedeuten?"
+  optionen:
+    - "Dass Playwright fehlerhaft ist"
+    - "Dass das Element vermutlich auch für Screenreader nicht als Button 'Bestellen' erkennbar ist – ein Hinweis auf eine Barriere"
+    - "Dass man XPath verwenden sollte"
+    - "Nichts"
+  richtig: [1]
+  erklaerung: "GetByRole und GetByLabel finden Elemente so, wie assistive Technologien sie wahrnehmen."
+  artikel: "#semantik"
+  tags: [barrierefreiheit, playwright]
+
+- id: ta-a11y-006
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Man sollte möglichst viele ARIA-Attribute verwenden, um eine Seite barrierefrei zu machen."
+  richtig: [1]
+  erklaerung: "Falsch. Erste Regel von ARIA: kein ARIA, wenn ein natives HTML-Element genügt. Falsches ARIA ist schlimmer als keines."
+  artikel: "#semantik"
+  tags: [barrierefreiheit, aria]
+
+- id: ta-a11y-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Barrieren gehören laut WebAIM Million seit Jahren zu den häufigsten?"
+  optionen:
+    - "Zu geringer Textkontrast"
+    - "Fehlende Alternativtexte für Bilder"
+    - "Eingabefelder ohne Label"
+    - "Zu viele Überschriften"
+  richtig: [0, 1, 2]
+  erklaerung: "Dazu kommen leere Links, leere Buttons und eine fehlende Dokumentsprache – fast alles automatisch auffindbar."
+  artikel: "#barrieren"
+  tags: [barrierefreiheit]
+
+- id: ta-a11y-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedes Beispiel dem WCAG-Prinzip zu."
+  paare:
+    - ["Alternativtext für ein Produktbild", "Wahrnehmbar"]
+    - ["Bestellung komplett per Tastatur möglich", "Bedienbar"]
+    - ["Fehlermeldung erklärt, was zu tun ist", "Verständlich"]
+    - ["Korrekte Rolle und Name für jedes Bedienelement", "Robust"]
+  erklaerung: "Die vier Prinzipien POUR: Perceivable, Operable, Understandable, Robust."
+  artikel: "#wcag"
+  tags: [barrierefreiheit, wcag]
+
+- id: ta-a11y-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Einschränkung ein passendes Hilfsmittel bzw. eine Anforderung zu."
+  paare:
+    - ["Blind", "Screenreader"]
+    - ["Gehörlos", "Untertitel für Videos"]
+    - ["Zittern der Hände", "Tastaturbedienung und große Klickflächen"]
+    - ["Farbenblind", "Information nicht nur über Farbe"]
+  erklaerung: "Viele Lösungen helfen auch situativ – etwa Untertitel im Zug ohne Kopfhörer."
+  artikel: "#wer"
+  tags: [barrierefreiheit]
+
+- id: ta-a11y-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze das HTML: Sprache der Seite festlegen und das Eingabefeld beschriften."
+  sprache: html
+  text: |
+    <html ___="de">
+    ...
+    <label ___="kundenname">Name</label>
+    <input id="kundenname">
+  luecken:
+    - ["lang"]
+    - ["for"]
+  exakt: true
+  erklaerung: "lang sorgt für die richtige Aussprache im Screenreader; for verknüpft das Label mit der id des Feldes."
+  artikel: "#barrieren"
+  tags: [barrierefreiheit, html]
+
+- id: ta-a11y-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile ist eine Barriere für Tastatur- und Screenreader-Nutzer?"
+  sprache: html
+  code: |
+    <h2>Warenkorb</h2>
+    <label for="menge">Menge</label>
+    <input id="menge" type="number">
+    <div class="knopf" onclick="bestellen()">Bestellen</div>
+  richtig: [3]
+  erklaerung: "Ein div mit Klick-Handler ist per Tab nicht erreichbar und hat keine Rolle. Richtig: <button type=\"button\">Bestellen</button>."
+  artikel: "#semantik"
+  tags: [barrierefreiheit, html]

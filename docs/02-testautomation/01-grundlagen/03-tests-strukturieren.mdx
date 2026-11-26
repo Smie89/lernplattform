@@ -20,7 +20,7 @@ Nach dieser Lektion kannst du …
 
 ## Die Testanwendung \{#testanwendung}
 
-Zu dieser Lektion gibt es eine **echte, lauffähige Anwendung**: einen kleinen **Mini-Shop** mit Warenkorb, Rabattregeln und Bestellung – plus **44 Tests** auf drei Ebenen. Alle Codebeispiele unten stammen aus diesem Projekt. Die Lektion erklärt die **C#-Version**; die [Java-Version](#java) ist genauso aufgebaut.
+Zu dieser Lektion gibt es eine **echte, lauffähige Anwendung**: einen kleinen **Mini-Shop** mit Warenkorb, Rabattregeln und Bestellung – plus **47 Tests** auf drei Ebenen (23 Unit, 16 API, 8 UI inklusive Barrierefreiheit). Alle Codebeispiele unten stammen aus diesem Projekt. Die Lektion erklärt die **C#-Version**; die [Java-Version](#java) ist genauso aufgebaut.
 
 👉 **Quellcode:** [github.com/Smie89/lernplattform/tree/main/beispiele/shop](https://github.com/Smie89/lernplattform/tree/main/beispiele/shop)
 
@@ -377,7 +377,7 @@ Die Basisklasse `ShopUiTest` setzt Basis-URL, Sprache und Fenstergröße und öf
 
 ## Gegenprobe: Welche Ebene findet welchen Fehler? \{#gegenprobe}
 
-Ein lehrreiches Experiment mit der Testanwendung: Im `Rabattrechner` wird absichtlich `>=` durch `>` ersetzt. Ab genau 100,00 € gibt es dann keinen Rabatt mehr.
+Ein lehrreiches Experiment mit der Testanwendung: Im `Rabattrechner` wird absichtlich `>=` durch `>` ersetzt. Ab genau 100,00 € gibt es dann keinen Rabatt mehr. (Durchgeführt mit dem damaligen Stand von 5 UI-Tests; die später ergänzten [Barrierefreiheitstests](../07-barrierefreiheit/02-barrierefreiheit-testen.mdx) prüfen keine Preise.)
 
 ```text
 Shop.Core.Tests   Fehler: 2   erfolgreich: 21   ← Endpreis_wendet_Rabattregeln_an(100, …) rot
@@ -394,7 +394,7 @@ Das ist kein Mangel der API- und UI-Tests, sondern **genau die Aufgabenteilung**
 
 ## In Java: dieselbe Testanwendung \{#java}
 
-Den Mini-Shop gibt es auch als **Java-Version** mit Spring Boot – gleiche Regeln, gleiche REST-API, gleiche Oberfläche und ebenfalls **44 Tests**, getestet mit JUnit 5, AssertJ, Mockito, REST Assured und Selenium.
+Den Mini-Shop gibt es auch als **Java-Version** mit Spring Boot – gleiche Regeln, gleiche REST-API, gleiche Oberfläche und **44 Tests** (die Barrierefreiheitstests gibt es nur in C#), getestet mit JUnit 5, AssertJ, Mockito, REST Assured und Selenium.
 
 👉 **Quellcode:** [github.com/Smie89/lernplattform/tree/main/beispiele/shop-java](https://github.com/Smie89/lernplattform/tree/main/beispiele/shop-java)
 

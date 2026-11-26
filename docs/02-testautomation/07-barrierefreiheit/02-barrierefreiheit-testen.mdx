@@ -1,0 +1,174 @@
+---
+title: Barrierefreiheit testen
+description: Automatische Prüfung mit axe-core und Playwright für .NET am Mini-Shop – inklusive des absichtlich provozierten Fehlschlags –, was automatische Werkzeuge nicht finden, manuelle Prüfungen mit Tastatur, Screenreader, Zoom und Kontrast sowie Barrierefreiheit in Pipeline und Testkonzept.
+tags: [barrierefreiheit, axe, playwright, testautomation]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-barrierefreiheit-testen.fragen.yaml';
+
+# Barrierefreiheit testen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- Seiten **automatisch** mit **axe-core** und Playwright prüfen,
+- die **Grenzen** automatischer Prüfungen benennen,
+- die wichtigsten **manuellen Prüfungen** durchführen: Tastatur, Screenreader, Zoom, Kontrast,
+- Barrierefreiheit sinnvoll in **Teststrategie und Pipeline** einbauen.
+:::
+
+## Automatisch prüfen mit axe-core \{#axe}
+
+**axe-core** (Deque, Open Source) ist die verbreitetste Prüfbibliothek für Barrierefreiheit. Sie läuft im Browser, prüft die
+aktuelle Seite gegen WCAG-Regeln und liefert eine Liste von Verstößen. Es gibt sie für Playwright, Selenium, Cypress und als
+Browser-Erweiterung; auch Lighthouse in den Chrome-Entwicklertools nutzt sie.
+
+Im Mini-Shop prüft
+[BarrierefreiheitTests.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.UiTests/Barrierefreiheit/BarrierefreiheitTests.cs)
+drei Zustände der Seite mit dem NuGet-Paket `Deque.AxeCore.Playwright`:
+
+```csharp title="BarrierefreiheitTests.cs"
+public class BarrierefreiheitTests : ShopUiTest
+{
+    private static readonly AxeRunOptions WcagAundAA = new()
+    {
+        RunOnly = new RunOnlyOptions { Type = "tag", Values = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] },
+    };
+
+    [Test]
+    public async Task Startseite_hat_keine_Verstoesse()
+    {
+        var ergebnis = await Page.RunAxe(WcagAundAA);
+
+        Assert.That(ergebnis.Violations, Is.Empty, Beschreibe(ergebnis.Violations));
+    }
+
+    [Test]
+    public async Task Fehlermeldung_hat_keine_Verstoesse()
+    {
+        await Shop.InDenWarenkorbAsync("buch");
+        await Shop.BestellenAsync(name: "");   // Fehler: Name fehlt
+        await Expect(Shop.Fehlermeldung).ToBeVisibleAsync();
+
+        var ergebnis = await Page.RunAxe(WcagAundAA);
+
+        Assert.That(ergebnis.Violations, Is.Empty, Beschreibe(ergebnis.Violations));
+    }
+}
+```
+
+Drei Entscheidungen stecken darin:
+
+- **Regeln auf das Ziel einschränken** (`RunOnly` mit WCAG-Tags A und AA) – so passen Ergebnis und Anforderung zusammen.
+- **Mehrere Zustände prüfen**: Die Warenkorbtabelle und die Fehlermeldung gibt es beim Laden noch nicht. Ein Test nur der
+  Startseite übersieht alles, was erst durch Bedienung entsteht.
+- **Lesbare Fehlermeldung**: `Beschreibe(...)` listet Regel, Schweregrad, Link zur Erklärung und betroffene Elemente auf.
+
+### Einmal rot sehen \{#rot-sehen}
+
+Alle drei Tests sind grün – die Seite hat keine automatisch erkennbaren Verstöße. Ob der Test überhaupt etwas findet, zeigt
+erst ein absichtlich eingebauter Fehler. Dafür wurden in `index.html` vorübergehend `lang="de"` und das Label des Namensfelds
+entfernt. Das Ergebnis:
+
+```text
+Fehler Startseite_hat_keine_Verstoesse
+  [serious] html-has-lang: <html> element must have a lang attribute
+    (https://dequeuniversity.com/rules/axe/4.14/html-has-lang?...)
+    html
+  [critical] label: Form elements must have labels
+    (https://dequeuniversity.com/rules/axe/4.14/label?...)
+    #kundenname
+```
+
+Der Test nennt **was** fehlt, **wo** (CSS-Selektor) und **wie schwer** es wiegt, und verlinkt eine Erklärung mit
+Lösungsvorschlag. Danach wurde die Datei wiederhergestellt – genau so prüft man jeden neuen Test
+([einmal rot sehen](../../06-ki/05-ki-assistenten-entwicklung.mdx#arbeitsweise)).
+
+:::tip[Bestehende Anwendung mit vielen Verstößen?]
+Bei einer Anwendung, die nie auf Barrierefreiheit geprüft wurde, ist der erste Lauf oft rot. Bewährt hat sich: Befunde
+erfassen, einzelne bekannte Regeln vorübergehend ausschließen (`DisableRules`) und **neue** Verstöße sofort blockieren – wie
+eine Baseline bei [SAST](../../07-cybersecurity/04-sicherheitstests-devsecops.mdx#sast). Die Ausnahmen dann Schritt für Schritt abbauen.
+:::
+
+## Was automatische Prüfungen nicht finden \{#grenzen}
+
+Werkzeuge prüfen, ob etwas **vorhanden und technisch korrekt** ist – nicht, ob es **sinnvoll** ist. Nach Angaben von Deque
+findet axe-core im Schnitt etwa die Hälfte der Barrieren; der Rest braucht Menschen:
+
+| automatisch erkennbar | nur manuell prüfbar |
+|---|---|
+| Bild hat **einen** Alternativtext | Ist der Alternativtext **sinnvoll** („bild123.jpg“ vs. „Monitor 27 Zoll, Vorderansicht“)? |
+| Feld hat ein Label | Ist das Label **verständlich**? |
+| Kontrast der Textfarbe | Kontrast über Bildern und Farbverläufen, Bedeutung nur über Farbe |
+| Element ist fokussierbar | Ist die **Reihenfolge** beim Tabben logisch? Bleibt der Fokus irgendwo hängen? |
+| ARIA-Attribute sind gültig | Kündigt der Screenreader dynamische Änderungen (Warenkorb aktualisiert) **sinnvoll** an? |
+
+Ein grüner axe-Test heißt also: **keine automatisch erkennbaren Fehler** – nicht „barrierefrei“.
+
+## Manuelle Prüfungen \{#manuell}
+
+Vier Prüfungen decken einen großen Teil ab und brauchen kein Spezialwissen:
+
+### 1. Nur mit der Tastatur \{#tastatur}
+
+Maus beiseitelegen und den kompletten Ablauf durchspielen: `Tab` vorwärts, `Umschalt+Tab` zurück, `Enter` und
+`Leertaste` zum Auslösen, Pfeiltasten in Listen.
+
+- Ist **jedes** Bedienelement erreichbar und bedienbar?
+- Ist der **Fokus immer sichtbar**?
+- Ist die **Reihenfolge** logisch (wie gelesen wird)?
+- Gibt es eine **Tastaturfalle**, aus der man nicht mehr herauskommt (z. B. in einem Dialog)?
+
+Ein Teil davon lässt sich auch automatisieren:
+
+```csharp
+await Page.Keyboard.PressAsync("Tab");
+await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "In den Warenkorb" }).First).ToBeFocusedAsync();
+```
+
+### 2. Mit einem Screenreader \{#screenreader}
+
+Unter Windows ist **NVDA** kostenlos, auf dem Mac ist **VoiceOver** eingebaut (`Cmd+F5`). Einmal die Seite „hören“:
+Werden Überschriften, Felder und Knöpfe verständlich angesagt? Wird eine **Fehlermeldung** vorgelesen, sobald sie erscheint?
+Im Mini-Shop sorgt `role="alert"` genau dafür.
+
+### 3. Zoom und Umbruch \{#zoom}
+
+Browser-Zoom auf **200 %** und **400 %**: Bleibt alles lesbar und bedienbar, ohne dass man waagerecht scrollen muss? Bei
+400 % entspricht die Breite etwa der eines Smartphones – eine responsive Seite besteht diese Prüfung meist von selbst.
+
+### 4. Kontrast und Farbe \{#kontrast}
+
+Werkzeuge wie der **Colour Contrast Analyser** oder die Kontrastanzeige der Browser-Entwicklertools prüfen Farbpaare.
+Mindestens **4,5:1** für normalen Text, **3:1** für großen Text und Bedienelemente. Zusätzlich: Ist jede Information auch
+**ohne Farbe** erkennbar?
+
+## In Teststrategie und Pipeline \{#strategie}
+
+| Ebene | Was | Wann |
+|---|---|---|
+| **Entwurf** | Kontraste, Fokuszustände, Fehlerzustände im Design prüfen | vor der Umsetzung – am billigsten |
+| **Komponenten** | Barrierefreiheit von Bausteinen (Button, Dialog, Menü) einmal gründlich | beim Bau der Komponente |
+| **Automatisiert** | axe-Prüfung in UI-Tests für jeden wichtigen Zustand | bei jedem Push in der CI |
+| **Manuell** | Tastatur, Screenreader, Zoom für die wichtigsten Abläufe | pro Feature, vor Releases |
+| **Nutzertests** | Menschen mit Behinderung testen echte Aufgaben | regelmäßig, bei wichtigen Änderungen |
+
+In der CI dieses Repositorys laufen die axe-Tests zusammen mit den übrigen UI-Tests gegen den gestarteten Mini-Shop.
+
+## Typische Fehler \{#typische-fehler}
+
+- Nur die **Startseite** prüfen, nicht die Zustände nach Bedienung (Dialoge, Fehler, Ergebnisse).
+- **Grünes axe** als „barrierefrei“ verstehen.
+- Alle Regeln **pauschal abschalten**, weil der erste Lauf rot ist.
+- **Nie mit Tastatur oder Screenreader** testen.
+- Barrierefreiheit erst **kurz vor dem Release** prüfen.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **axe-core** prüft Seiten automatisch; mit Playwright für .NET über `Page.RunAxe(...)`.
+- Auf **WCAG A/AA** einschränken, **jeden wichtigen Zustand** prüfen, **lesbare** Fehlermeldungen ausgeben – und einmal rot sehen.
+- Automatisch lässt sich etwa die Hälfte finden; **Sinnhaftigkeit, Reihenfolge, Verständlichkeit** prüfen Menschen.
+- Manuell: **Tastatur, Screenreader, Zoom 200/400 %, Kontrast**.
+- Barrierefreiheit gehört in **jede Phase**: Entwurf, Komponenten, CI, manuelle Tests, Nutzertests.
+
+<Quiz fragen={fragen} titel="Quiz: Barrierefreiheit testen" />

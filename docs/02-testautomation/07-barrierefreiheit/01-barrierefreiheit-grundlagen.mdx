@@ -1,0 +1,139 @@
+---
+title: Barrierefreiheit – Grundlagen
+description: Warum Barrierefreiheit wichtig und seit 2025 für viele Unternehmen Pflicht ist (Barrierefreiheitsstärkungsgesetz), die WCAG mit den vier Prinzipien und den Stufen A, AA und AAA, assistive Technologien, die häufigsten Barrieren im Web und warum gutes HTML die halbe Miete ist.
+tags: [barrierefreiheit, accessibility, wcag, bfsg]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-barrierefreiheit-grundlagen.fragen.yaml';
+
+# Barrierefreiheit – Grundlagen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, für wen **Barrierefreiheit** (Accessibility, kurz a11y) wichtig ist und welche **rechtlichen Vorgaben** gelten,
+- die **WCAG** mit ihren **vier Prinzipien** und **Konformitätsstufen** einordnen,
+- **assistive Technologien** nennen und verstehen, wie sie eine Seite „sehen“,
+- die **häufigsten Barrieren** im Web erkennen.
+:::
+
+## Für wen? \{#wer}
+
+Barrierefreiheit bedeutet: Alle Menschen können eine Anwendung nutzen – unabhängig von Einschränkungen. Betroffen sind
+viel mehr Menschen als oft gedacht:
+
+| Einschränkung | Beispiel | Hilfsmittel bzw. Bedarf |
+|---|---|---|
+| **Sehen** | blind, sehbehindert, farbenblind | Screenreader, Vergrößerung, ausreichender Kontrast |
+| **Hören** | gehörlos, schwerhörig | Untertitel, Transkripte |
+| **Motorik** | Zittern, Lähmung, eine Hand | Tastatur statt Maus, Sprachsteuerung, große Klickflächen |
+| **Kognition** | Lernschwierigkeiten, Konzentration | einfache Sprache, klare Struktur, keine Zeitlimits |
+| **vorübergehend / situativ** | gebrochener Arm, grelles Sonnenlicht, Baby auf dem Arm | dieselben Lösungen helfen allen |
+
+Barrierefreie Anwendungen sind meist auch **besser benutzbar** für alle – und, ein schöner Nebeneffekt, **besser
+automatisiert testbar** (siehe [Locators über Rollen](#semantik)).
+
+## Rechtliche Vorgaben \{#recht}
+
+| Regelung | Für wen | Inhalt |
+|---|---|---|
+| **Barrierefreiheitsstärkungsgesetz (BFSG)** | viele Produkte und Dienstleistungen für Verbraucher, u. a. **Online-Shops**, Banking, E-Books, Fahrkarten – **seit 28. Juni 2025** | setzt den European Accessibility Act (EAA) um; Kleinstunternehmen bei Dienstleistungen ausgenommen |
+| **BITV 2.0** | öffentliche Stellen in Deutschland (Bund) | Websites und Apps müssen barrierefrei sein |
+| **EN 301 549** | europäische Norm | verweist für Web-Inhalte auf die WCAG 2.1 Stufe AA |
+
+Praktisch bedeutet das: Für die meisten Anwendungen ist **WCAG 2.1, Stufe AA** das Ziel. Für konkrete Projekte gelten wie
+immer die genauen Vorgaben und Ausnahmen – im Zweifel Rechtsabteilung oder Fachleute einbeziehen.
+
+## Die WCAG \{#wcag}
+
+Die **Web Content Accessibility Guidelines** (W3C) beschreiben, was barrierefrei bedeutet. Aktuell ist WCAG 2.2; Gesetze und
+Normen verweisen meist auf 2.1. Grundlage sind **vier Prinzipien** (POUR):
+
+| Prinzip | Bedeutung | Beispiele |
+|---|---|---|
+| **Wahrnehmbar** (Perceivable) | Inhalte müssen wahrgenommen werden können | Alternativtexte für Bilder, Untertitel, Kontrast, Text vergrößerbar |
+| **Bedienbar** (Operable) | alles muss bedienbar sein | vollständig per Tastatur, sichtbarer Fokus, genug Zeit, keine blinkenden Inhalte |
+| **Verständlich** (Understandable) | Inhalte und Bedienung müssen verständlich sein | Sprache der Seite angegeben, klare Fehlermeldungen, vorhersehbares Verhalten |
+| **Robust** | funktioniert mit verschiedenen Hilfsmitteln | gültiges HTML, korrekte Rollen und Namen für Bedienelemente |
+
+Jedes Erfolgskriterium hat eine **Konformitätsstufe**:
+
+| Stufe | Bedeutung | Beispiel |
+|---|---|---|
+| **A** | Mindestanforderung | Bilder haben Alternativtext, alles per Tastatur bedienbar |
+| **AA** | üblicher Standard, gesetzlich gefordert | Kontrast mindestens **4,5:1** für normalen Text (3:1 für großen) |
+| **AAA** | höchste Stufe, nicht für alle Inhalte erreichbar | Kontrast 7:1, Gebärdensprache für Videos |
+
+## Assistive Technologien \{#assistive-technologien}
+
+Ein **Screenreader** (NVDA und JAWS unter Windows, VoiceOver bei Apple, TalkBack bei Android) liest die Seite vor und
+lässt Nutzer per Tastatur oder Gesten navigieren – von Überschrift zu Überschrift, von Formularfeld zu Formularfeld.
+Dafür nutzt er nicht die Optik, sondern den **Accessibility Tree**: eine Darstellung der Seite mit **Rolle, Name und
+Zustand** jedes Elements.
+
+```text
+button "Bestellen"                    ← Rolle: button, Name: Bestellen
+textbox "Name"                        ← über <label for="kundenname"> verknüpft
+checkbox "Stammkunde", nicht aktiviert
+region "Warenkorb"                    ← <section aria-labelledby="titel-warenkorb">
+```
+
+Fehlt einem Eingabefeld das Label, hört ein blinder Nutzer nur „Eingabefeld“ – und weiß nicht, was er eintragen soll.
+
+## Semantisches HTML: die halbe Miete \{#semantik}
+
+Die meisten Barrieren entstehen, wenn statt passender HTML-Elemente generische `div`s mit JavaScript verwendet werden.
+Native Elemente bringen Tastaturbedienung, Fokus, Rolle und Zustand **kostenlos** mit:
+
+| statt … | besser … | weil |
+|---|---|---|
+| `<div onclick="…">Bestellen</div>` | `<button>Bestellen</button>` | per Tab erreichbar, mit Enter/Leertaste bedienbar, Rolle „button“ |
+| Platzhaltertext als einzige Beschriftung | `<label for="…">` | Label bleibt sichtbar und wird vorgelesen |
+| fett gedruckter Text als Überschrift | `<h2>` | Screenreader springen über Überschriften |
+| Farbe als einzige Information („rote Felder sind falsch“) | Farbe **und** Text oder Symbol | farbenblinde Nutzer sehen den Unterschied nicht |
+
+Die Seite des Mini-Shops nutzt genau das: `<label>`, `<button>`, Überschriften, `role="alert"` für Fehler und
+`role="status"` für Bestätigungen. Deshalb funktionieren auch die Playwright-Locators der UI-Tests so gut:
+`GetByRole(AriaRole.Button, new() { Name = "Bestellen" })` und `GetByLabel("Name")` finden Elemente **genau so, wie ein
+Screenreader sie wahrnimmt**. Ein Test, der ein Element nicht über Rolle oder Label findet, ist oft ein Hinweis auf eine
+Barriere.
+
+:::tip[ARIA nur, wenn nötig]
+ARIA-Attribute (`aria-label`, `aria-expanded`, `role=…`) ergänzen HTML dort, wo native Elemente nicht reichen, etwa bei
+eigenen Menüs oder Dialogen. Die erste Regel von ARIA lautet aber: **kein ARIA, wenn ein natives HTML-Element genügt.**
+Falsches ARIA ist schlimmer als keines.
+:::
+
+## Die häufigsten Barrieren \{#barrieren}
+
+Laut der jährlichen Untersuchung „WebAIM Million“ der eine Million meistbesuchten Startseiten sind seit Jahren dieselben
+Fehler am häufigsten:
+
+1. **Zu geringer Kontrast** von Text
+2. **Fehlende Alternativtexte** für Bilder
+3. **Eingabefelder ohne Label**
+4. **Leere Links** (z. B. nur ein Icon ohne Text)
+5. **Leere Buttons**
+6. **Fehlende Sprache** des Dokuments (`<html lang="de">`)
+
+Fast alle davon lassen sich **automatisch** finden – mehr dazu in
+[Barrierefreiheit testen](./02-barrierefreiheit-testen.mdx).
+
+## Typische Fehler \{#typische-fehler}
+
+- Barrierefreiheit erst **am Ende** prüfen, wenn das Design feststeht.
+- `div` und `span` mit Klick-Handlern statt **Buttons und Links**.
+- **Platzhalter statt Label**, Fehler nur **farblich** markiert.
+- Fokus-Rahmen per CSS **entfernt** (`outline: none`), ohne Ersatz.
+- ARIA **falsch oder überflüssig** einsetzen.
+- Annehmen, Barrierefreiheit betreffe nur „wenige“ Nutzer.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Barrierefreiheit hilft Menschen mit dauerhaften, vorübergehenden und situativen Einschränkungen – und allen anderen.
+- Das **BFSG** verpflichtet seit **28. Juni 2025** u. a. Online-Shops; Ziel ist meist **WCAG 2.1 AA**.
+- WCAG-Prinzipien: **wahrnehmbar, bedienbar, verständlich, robust**; Stufen **A, AA, AAA**.
+- Screenreader nutzen den **Accessibility Tree** mit Rolle, Name und Zustand.
+- **Semantisches HTML** verhindert die meisten Barrieren und macht Tests mit `GetByRole` und `GetByLabel` robust.
+
+<Quiz fragen={fragen} titel="Quiz: Barrierefreiheit – Grundlagen" />

@@ -129,22 +129,35 @@ Erst die Schwelle `checks: ['rate>0.99']` sorgt dafür, dass fehlgeschlagene Che
 
 ## Die Ausgabe lesen \{#ausgabe}
 
-Am Ende gibt k6 eine Zusammenfassung aus (gekürzt und vereinfacht):
+Am Ende gibt k6 eine Zusammenfassung aus. Das ist die echte Ausgabe des kurzen Lasttests (Profil `last`) aus der CI
+dieses Repositorys, leicht gekürzt:
 
 ```text
   █ THRESHOLDS
-    checks             ✓ 'rate>0.99'   rate=100.00%
-    http_req_duration  ✓ 'p(95)<300'   p(95)=4.1ms
-                       ✓ 'p(99)<800'   p(99)=9.8ms
-    http_req_failed    ✓ 'rate<0.01'   rate=0.00%
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+    http_req_duration
+    ✓ 'p(95)<300' p(95)=580.95µs
+    ✓ 'p(99)<800' p(99)=903.3µs
+    http_req_duration{schritt:bestellen}
+    ✓ 'p(95)<500' p(95)=621.56µs
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
 
   █ TOTAL RESULTS
-    checks_succeeded...: 100.00%
-    http_req_duration..: avg=2.3ms  med=1.9ms  p(90)=3.5ms  p(95)=4.1ms  max=31ms
-    http_reqs..........: 1240   27.5/s
-    iterations.........: 310
-    vus_max............: 20
+    checks_succeeded...: 100.00% 1820 out of 1820
+    http_req_duration..: avg=375.47µs min=148.17µs med=317.85µs max=11.29ms p(90)=502.45µs p(95)=580.95µs
+      { schritt:bestellen }: avg=445.01µs med=389.99µs max=6.17ms p(95)=621.56µs
+    http_req_failed....: 0.00%  0 out of 1040
+    http_reqs..........: 1040   22.296694/s
+    iterations.........: 260    5.574174/s
+    vus_max............: 20     min=20 max=20
 ```
+
+Der Mini-Shop hält seine Daten im Arbeitsspeicher und antwortet deshalb in Bruchteilen einer Millisekunde – eine echte
+Anwendung mit Datenbank liegt eher im Bereich von Dutzenden Millisekunden. Auffällig: Im **Rauchtest** mit nur einem Nutzer
+lag p95 bei rund 10 ms, also deutlich **langsamer**. Die ersten Anfragen nach dem Start sind teurer (Just-in-Time-Kompilierung,
+Caches noch leer) – ein Grund, Messungen erst nach einer **Aufwärmphase** zu werten.
 
 Die Zahlen hängen stark von Rechner und Umgebung ab. Worauf man schaut:
 

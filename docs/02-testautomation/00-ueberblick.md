@@ -38,6 +38,11 @@ Empfohlene Reihenfolge:
 13. [Performance- und Lasttests – Grundlagen](./06-performance/01-performance-grundlagen.mdx) – Testarten, Metriken, Perzentile, Lastprofile, Engpässe
 14. [Lasttests mit k6](./06-performance/02-lasttests-mit-k6.mdx) – Einkaufsablauf gegen den Mini-Shop, Checks, Schwellen, CI
 
+**Barrierefreiheit**
+
+15. [Barrierefreiheit – Grundlagen](./07-barrierefreiheit/01-barrierefreiheit-grundlagen.mdx) – BFSG, WCAG, Screenreader, semantisches HTML
+16. [Barrierefreiheit testen](./07-barrierefreiheit/02-barrierefreiheit-testen.mdx) – axe-core mit Playwright, manuelle Prüfungen, Strategie
+
 Die C#-, Java- und Desktop-Module kannst du auch in beliebiger Reihenfolge oder nur eines davon bearbeiten.
 
 Querverbindungen: Selenium Grid, Playwright im Container und Testcontainers im Bereich 🐳 [Docker](../05-docker/05-docker-testautomation.mdx).

@@ -1,0 +1,157 @@
+# Fragen zur Lektion "Barrierefreiheit testen"
+
+- id: ta-ax-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist axe-core?"
+  optionen:
+    - "Ein Screenreader"
+    - "Eine Bibliothek, die Seiten automatisch auf Barrierefreiheitsverstöße prüft"
+    - "Ein Lasttestwerkzeug"
+    - "Ein CSS-Framework"
+  richtig: [1]
+  erklaerung: "axe-core läuft im Browser und lässt sich mit Playwright, Selenium und Cypress in Tests einbinden."
+  artikel: "#axe"
+  tags: [barrierefreiheit, axe]
+
+- id: ta-ax-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum prüft das Beispielprojekt nicht nur die Startseite, sondern auch den gefüllten Warenkorb und die Fehlermeldung?"
+  optionen:
+    - "Damit die Tests länger laufen"
+    - "Weil diese Inhalte erst durch Bedienung entstehen und eine Prüfung der Startseite sie nicht sieht"
+    - "Weil axe nur Tabellen prüfen kann"
+    - "Ohne Grund"
+  richtig: [1]
+  erklaerung: "Dialoge, Fehlermeldungen und Ergebnisse müssen in ihrem jeweiligen Zustand geprüft werden."
+  artikel: "#axe"
+  tags: [barrierefreiheit, axe]
+
+- id: ta-ax-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Alle axe-Tests sind grün. Was bedeutet das?"
+  optionen:
+    - "Die Anwendung ist barrierefrei"
+    - "Es gibt keine automatisch erkennbaren Verstöße – Sinnhaftigkeit, Reihenfolge und Verständlichkeit müssen Menschen prüfen"
+    - "Man braucht keine manuellen Tests mehr"
+    - "Die Anwendung erfüllt WCAG AAA"
+  richtig: [1]
+  erklaerung: "Automatisch lässt sich etwa die Hälfte der Barrieren finden."
+  artikel: "#grenzen"
+  tags: [barrierefreiheit, grenzen]
+
+- id: ta-ax-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie hat das Beispielprojekt nachgewiesen, dass die axe-Tests Fehler überhaupt erkennen?"
+  optionen:
+    - "Gar nicht"
+    - "Vorübergehend lang-Attribut und Label entfernt – der Test wurde rot und nannte beide Fehler"
+    - "Durch einen Screenreader"
+    - "Durch einen Lasttest"
+  richtig: [1]
+  erklaerung: "Jeder neue Test sollte einmal rot gesehen werden. Danach wurde die Datei wiederhergestellt."
+  artikel: "#rot-sehen"
+  tags: [barrierefreiheit, testen]
+
+- id: ta-ax-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Prüfungen gehören zum manuellen Tastaturtest?"
+  optionen:
+    - "Ist jedes Bedienelement per Tab erreichbar?"
+    - "Ist der Fokus immer sichtbar?"
+    - "Ist die Reihenfolge logisch?"
+    - "Sind die Bilder hochauflösend?"
+  richtig: [0, 1, 2]
+  erklaerung: "Außerdem: Gibt es eine Tastaturfalle, aus der man nicht mehr herauskommt?"
+  artikel: "#tastatur"
+  tags: [barrierefreiheit, tastatur]
+
+- id: ta-ax-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Welchen Mindestkontrast verlangt WCAG AA für normalen Text?"
+  optionen:
+    - "2:1"
+    - "3:1"
+    - "4,5:1"
+    - "7:1"
+  richtig: [2]
+  erklaerung: "3:1 gilt für großen Text und Bedienelemente, 7:1 ist die Stufe AAA."
+  artikel: "#kontrast"
+  tags: [barrierefreiheit, kontrast]
+
+- id: ta-ax-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Eine bestehende Anwendung hat beim ersten axe-Lauf 80 Verstöße. Was ist ein sinnvolles Vorgehen?"
+  optionen:
+    - "axe aus der Pipeline entfernen"
+    - "Befunde erfassen, bekannte Regeln vorübergehend ausschließen, neue Verstöße sofort blockieren und Ausnahmen schrittweise abbauen"
+    - "Alle Regeln dauerhaft abschalten"
+    - "Erst alles beheben, dann testen"
+  richtig: [1]
+  erklaerung: "Wie eine Baseline bei SAST: Es wird nicht schlechter, und es wird Schritt für Schritt besser."
+  artikel: "#rot-sehen"
+  tags: [barrierefreiheit, strategie]
+
+- id: ta-ax-008
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche dieser Punkte kann axe-core automatisch erkennen?"
+  optionen:
+    - "Ein Bild hat überhaupt keinen Alternativtext"
+    - "Ein Formularfeld hat kein Label"
+    - "Der Alternativtext beschreibt das Bild sinnvoll"
+    - "Die Tab-Reihenfolge ist logisch"
+  richtig: [0, 1]
+  erklaerung: "Werkzeuge prüfen, ob etwas vorhanden und technisch korrekt ist – ob es sinnvoll ist, beurteilen Menschen."
+  artikel: "#grenzen"
+  tags: [barrierefreiheit, grenzen]
+
+- id: ta-ax-009
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Ebenen der Barrierefreiheit im Entwicklungsprozess in eine sinnvolle zeitliche Reihenfolge."
+  elemente:
+    - "Kontraste und Fokuszustände im Entwurf prüfen"
+    - "Komponenten beim Bau gründlich prüfen"
+    - "axe-Prüfung in UI-Tests bei jedem Push"
+    - "Manuelle Prüfung mit Tastatur und Screenreader pro Feature"
+    - "Nutzertests mit Menschen mit Behinderung"
+  erklaerung: "Je früher, desto billiger – Fehler im Design sind schnell korrigiert."
+  artikel: "#strategie"
+  tags: [barrierefreiheit, strategie]
+
+- id: ta-ax-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die axe-Prüfung mit Playwright für .NET."
+  sprache: csharp
+  text: |
+    var ergebnis = await Page.___(WcagAundAA);
+    Assert.That(ergebnis.___, Is.Empty);
+  luecken:
+    - ["RunAxe"]
+    - ["Violations"]
+  exakt: true
+  erklaerung: "RunAxe kommt aus dem NuGet-Paket Deque.AxeCore.Playwright; Violations enthält die gefundenen Verstöße."
+  artikel: "#axe"
+  tags: [barrierefreiheit, axe, csharp]
+
+- id: ta-ax-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche CSS-Regel ist eine Barriere für Tastaturnutzer?"
+  sprache: css
+  code: |
+    button { min-height: 44px; background: #2e7d5b; color: #fff; }
+    button:focus { outline: none; }
+    [role=alert] { color: #b23b3b; font-weight: 600; }
+  richtig: [1]
+  erklaerung: "Ohne sichtbaren Fokus wissen Tastaturnutzer nicht, wo sie sind. Wenn der Standardrahmen stört: durch eine eigene, gut sichtbare Fokusdarstellung ersetzen (z. B. mit :focus-visible)."
+  artikel: "#tastatur"
+  tags: [barrierefreiheit, css]
