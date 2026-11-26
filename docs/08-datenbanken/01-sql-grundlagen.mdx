@@ -1,0 +1,143 @@
+---
+title: SQL-Grundlagen
+description: Relationale Datenbanken mit Tabellen, Zeilen und Schlüsseln, Abfragen mit SELECT, WHERE, ORDER BY und LIMIT, Vergleichsoperatoren, LIKE, IN, BETWEEN und der richtige Umgang mit NULL.
+tags: [sql, datenbanken, grundlagen]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-sql-grundlagen.fragen.yaml';
+
+# SQL-Grundlagen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- **Tabellen, Zeilen, Spalten** und **Schlüssel** einer relationalen Datenbank erklären,
+- Daten mit **SELECT**, **WHERE**, **ORDER BY** und **LIMIT** abfragen,
+- Bedingungen mit **AND/OR, LIKE, IN, BETWEEN** formulieren,
+- **NULL** richtig behandeln.
+:::
+
+## Relationale Datenbanken \{#relational}
+
+Eine relationale Datenbank speichert Daten in **Tabellen**. Jede **Zeile** ist ein Datensatz, jede **Spalte** ein Merkmal
+mit festem Datentyp. Die Tabellen des Mini-Shops ([schema.sql](https://github.com/Smie89/lernplattform/blob/main/beispiele/datenbank/schema.sql)):
+
+```text
+kunden ──< bestellungen ──< positionen >── produkte
+ id         id                bestellung_id   id
+ name       kunde_id ─────►   produkt_id ──►  name
+ email      datum             menge           kategorie
+ stammkunde status            einzelpreis     preis, bestand
+```
+
+| Begriff | Bedeutung | Beispiel |
+|---|---|---|
+| **Primärschlüssel** (Primary Key) | identifiziert eine Zeile eindeutig | `kunden.id` |
+| **Fremdschlüssel** (Foreign Key) | verweist auf den Primärschlüssel einer anderen Tabelle | `bestellungen.kunde_id` → `kunden.id` |
+| **1:n-Beziehung** | ein Kunde hat viele Bestellungen | `kunden ──< bestellungen` |
+| **n:m-Beziehung** | eine Bestellung hat viele Produkte, ein Produkt ist in vielen Bestellungen | über die Zwischentabelle `positionen` |
+
+Daten werden **nicht doppelt** gespeichert: Die Bestellung kennt nur die `kunde_id`, nicht Name und E-Mail. Den Namen holt
+man bei Bedarf per [JOIN](./02-joins-aggregation.mdx) dazu (**Normalisierung**).
+
+## SELECT: Daten abfragen \{#select}
+
+```sql
+SELECT name, preis          -- welche Spalten
+FROM produkte               -- aus welcher Tabelle
+WHERE kategorie = 'Technik' -- welche Zeilen
+ORDER BY preis DESC;        -- in welcher Reihenfolge
+```
+
+```text
+name               preis
+Monitor 27 Zoll    249.0
+Funkmaus            24.9
+HDMI-Kabel           9.9
+```
+
+Die Reihenfolge der Klauseln ist fest: `SELECT … FROM … WHERE … GROUP BY … HAVING … ORDER BY … LIMIT`.
+`SELECT *` liefert alle Spalten – praktisch zum Erkunden, in Code und Tests aber besser die Spalten nennen: Dann bricht nichts,
+wenn eine Spalte dazukommt.
+
+:::warning[Ohne ORDER BY keine Reihenfolge]
+Eine Datenbank liefert Zeilen ohne `ORDER BY` in **beliebiger** Reihenfolge – heute so, nach einem Update oder mit mehr
+Daten anders. Ein Test, der sich auf die Reihenfolge verlässt, ohne zu sortieren, ist ein typischer
+[Flaky Test](../02-testautomation/01-grundlagen/02-flaky-tests.mdx).
+:::
+
+## WHERE: Zeilen filtern \{#where}
+
+| Operator | Beispiel | Bedeutung |
+|---|---|---|
+| `=`, `<>` | `status <> 'storniert'` | gleich, ungleich |
+| `<`, `<=`, `>`, `>=` | `preis >= 100` | Vergleiche |
+| `AND`, `OR`, `NOT` | `kategorie = 'Technik' AND preis < 50` | verknüpfen (Klammern setzen!) |
+| `IN` | `status IN ('offen', 'bezahlt')` | einer von mehreren Werten |
+| `BETWEEN` | `datum BETWEEN '2026-11-01' AND '2026-11-30'` | Bereich, **beide Grenzen eingeschlossen** |
+| `LIKE` | `email LIKE '%@example.org'` | Muster: `%` beliebig viele Zeichen, `_` genau eines |
+
+```sql
+-- Klammern entscheiden über das Ergebnis:
+SELECT * FROM produkte WHERE kategorie = 'Technik' OR kategorie = 'Küche' AND preis < 20;
+-- bedeutet: Technik (egal welcher Preis) ODER (Küche UND unter 20 €), denn AND bindet stärker als OR
+SELECT * FROM produkte WHERE (kategorie = 'Technik' OR kategorie = 'Küche') AND preis < 20;
+```
+
+`BETWEEN` schließt beide Grenzen ein – genau die Stelle, an der die
+[Grenzwertanalyse](../01-softwaretest/04-black-box-testverfahren.mdx#grenzwerte) ansetzt.
+
+## LIMIT und DISTINCT \{#limit-distinct}
+
+```sql
+SELECT name, preis FROM produkte ORDER BY preis DESC LIMIT 3;   -- die drei teuersten
+SELECT DISTINCT kategorie FROM produkte ORDER BY kategorie;     -- jede Kategorie nur einmal
+```
+
+SQL Server schreibt statt `LIMIT 3` am Ende `SELECT TOP 3 …`, Oracle und neuere Standards `FETCH FIRST 3 ROWS ONLY`.
+
+## NULL: der fehlende Wert \{#null}
+
+`NULL` bedeutet **„unbekannt“ oder „nicht vorhanden“** – nicht 0 und nicht leerer Text. Jeder Vergleich mit NULL ergibt
+wieder „unbekannt“, deshalb findet `= NULL` **nie** etwas:
+
+```sql
+SELECT * FROM notizen WHERE text = NULL;    -- immer 0 Zeilen!
+SELECT * FROM notizen WHERE text IS NULL;   -- richtig
+SELECT * FROM notizen WHERE text IS NOT NULL;
+SELECT COALESCE(text, '(keine Notiz)') FROM notizen;  -- Ersatzwert für NULL
+```
+
+Genau das prüft ein Test im Beispielprojekt:
+
+```python title="test_datenbank.py"
+def test_null_vergleich_mit_gleich_findet_nichts(self):
+    self.db.execute("CREATE TABLE notizen (text TEXT)")
+    self.db.execute("INSERT INTO notizen VALUES (NULL)")
+    self.assertEqual(self.wert("SELECT COUNT(*) FROM notizen WHERE text = NULL"), 0)
+    self.assertEqual(self.wert("SELECT COUNT(*) FROM notizen WHERE text IS NULL"), 1)
+```
+
+:::tip[NULL ist ein Testfall]
+Für jede Spalte, die NULL erlaubt, lohnt sich ein Test: Was zeigt die Oberfläche, wenn der Wert fehlt? Rechnet die
+Auswertung richtig? Viele Fehler entstehen, weil Entwickler nur an gefüllte Werte gedacht haben.
+:::
+
+## Typische Fehler \{#typische-fehler}
+
+- `= NULL` statt `IS NULL`.
+- **AND und OR ohne Klammern** gemischt.
+- Sich auf die Reihenfolge verlassen **ohne ORDER BY**.
+- `SELECT *` in Code und Tests, die von bestimmten Spalten abhängen.
+- Texte mit Anführungszeichen **selbst in SQL einbauen** statt Parameter zu verwenden – das ist der Weg zur
+  [SQL-Injection](../07-cybersecurity/02-web-schwachstellen.mdx#sql-injection).
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Daten liegen in **Tabellen**; **Primärschlüssel** identifizieren Zeilen, **Fremdschlüssel** verbinden Tabellen.
+- `SELECT … FROM … WHERE … ORDER BY … LIMIT` – die Reihenfolge der Klauseln ist fest.
+- Filter mit `=`, `<>`, `AND/OR` (Klammern!), `IN`, `BETWEEN` (Grenzen eingeschlossen), `LIKE`.
+- Ohne `ORDER BY` ist die Reihenfolge zufällig.
+- **NULL** ist „unbekannt“: `IS NULL` statt `= NULL`, Ersatzwerte mit `COALESCE`.
+
+<Quiz fragen={fragen} titel="Quiz: SQL-Grundlagen" />

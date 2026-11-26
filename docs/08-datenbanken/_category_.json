@@ -1,0 +1,9 @@
+{
+  "label": "🗄️ Datenbanken und SQL",
+  "position": 8,
+  "link": {
+    "type": "generated-index",
+    "slug": "/datenbanken",
+    "description": "SQL von SELECT bis JOIN, Daten ändern, Constraints und Transaktionen, Datenbanken in automatisierten Tests."
+  }
+}

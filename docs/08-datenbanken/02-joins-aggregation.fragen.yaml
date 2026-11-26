@@ -1,0 +1,160 @@
+# Fragen zur Lektion "JOINs und Auswertungen"
+
+- id: db-jo-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Zeilen liefert ein INNER JOIN?"
+  optionen:
+    - "Alle Zeilen beider Tabellen"
+    - "Nur Zeilen, die in beiden Tabellen einen passenden Partner haben"
+    - "Alle Zeilen der linken Tabelle"
+    - "Nur die erste Zeile"
+  richtig: [1]
+  erklaerung: "Zeilen ohne Partner fallen beim INNER JOIN weg."
+  artikel: "#inner-join"
+  tags: [sql, join]
+
+- id: db-jo-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Du willst alle Kunden mit der Anzahl ihrer Bestellungen anzeigen – auch Kunden ohne Bestellung. Welcher JOIN?"
+  optionen:
+    - "INNER JOIN"
+    - "LEFT JOIN von kunden auf bestellungen"
+    - "Kein JOIN nötig"
+    - "CROSS JOIN"
+  richtig: [1]
+  erklaerung: "LEFT JOIN behält alle Kunden; bei Kunden ohne Bestellung sind die Spalten der Bestellung NULL."
+  artikel: "#left-join"
+  tags: [sql, join]
+
+- id: db-jo-003
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum meldet COUNT(*) bei LEFT JOIN für David (keine Bestellung) eine Bestellung?"
+  optionen:
+    - "Weil David heimlich bestellt hat"
+    - "Weil der LEFT JOIN für David eine Zeile mit NULL erzeugt und COUNT(*) Zeilen zählt – COUNT(b.id) würde 0 liefern"
+    - "Weil COUNT immer mindestens 1 liefert"
+    - "Weil SQLite einen Fehler hat"
+  richtig: [1]
+  erklaerung: "COUNT(spalte) zählt nur Werte ungleich NULL. Der Test im Beispielprojekt hält diesen Fehler fest."
+  artikel: "#count-falle"
+  tags: [sql, count]
+
+- id: db-jo-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Unterschied zwischen WHERE und HAVING?"
+  optionen:
+    - "Es gibt keinen"
+    - "WHERE filtert Zeilen vor dem Gruppieren, HAVING filtert Gruppen nach dem Gruppieren"
+    - "HAVING ist nur in SQL Server erlaubt"
+    - "WHERE funktioniert nur mit Zahlen"
+  richtig: [1]
+  erklaerung: "In HAVING darf man Aggregatfunktionen wie SUM verwenden, in WHERE nicht."
+  artikel: "#group-by"
+  tags: [sql, group-by]
+
+- id: db-jo-005
+  typ: single
+  schwierigkeit: 3
+  frage: "Nach einem JOIN von kunden über bestellungen auf positionen ist die Summe eines Kundenfelds viel zu hoch. Was ist die wahrscheinliche Ursache?"
+  optionen:
+    - "Ein Rundungsfehler"
+    - "Vervielfachung: Jede Kundenzeile erscheint einmal pro Position"
+    - "Ein fehlender Index"
+    - "Die Datenbank ist defekt"
+  richtig: [1]
+  erklaerung: "JOINs über 1:n-Beziehungen vervielfachen die Zeilen der 1-Seite. Auf der richtigen Ebene zählen oder vorher aggregieren."
+  artikel: "#vervielfachung"
+  tags: [sql, join]
+
+- id: db-jo-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu Aggregatfunktionen stimmen?"
+  optionen:
+    - "SUM und AVG ignorieren NULL-Werte"
+    - "COUNT(spalte) zählt nur Werte ungleich NULL"
+    - "Jede Spalte im SELECT muss gruppiert oder aggregiert sein"
+    - "AVG zählt NULL als 0 mit"
+  richtig: [0, 1, 2]
+  erklaerung: "AVG ignoriert NULL – der Durchschnitt wird nur über vorhandene Werte gebildet."
+  artikel: "#group-by"
+  tags: [sql, aggregation]
+
+- id: db-jo-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum ist NOT EXISTS oft robuster als NOT IN mit einer Unterabfrage?"
+  optionen:
+    - "NOT EXISTS ist kürzer"
+    - "Liefert die Unterabfrage bei NOT IN einen NULL-Wert, findet die Bedingung gar nichts mehr"
+    - "NOT IN ist veraltet"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Durch die NULL-Logik wird die Bedingung 'unbekannt' – das Ergebnis ist leer, ohne Fehlermeldung."
+  artikel: "#unterabfragen"
+  tags: [sql, unterabfrage]
+
+- id: db-jo-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie prüfst du eine Umsatzauswertung am besten?"
+  optionen:
+    - "Abfrage laufen lassen und das Ergebnis als erwarteten Wert übernehmen"
+    - "Testdaten mit Sonderfällen anlegen und die erwarteten Werte vorher von Hand ausrechnen"
+    - "Nur prüfen, dass die Abfrage keinen Fehler wirft"
+    - "Gar nicht"
+  richtig: [1]
+  erklaerung: "Wer das Ergebnis übernimmt, testet nur, was herauskommt – nicht, ob es stimmt."
+  artikel: "#pruefen"
+  tags: [sql, testen]
+
+- id: db-jo-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem JOIN sein Ergebnis zu."
+  paare:
+    - ["INNER JOIN", "Nur Zeilen mit Partner auf beiden Seiten"]
+    - ["LEFT JOIN", "Alle Zeilen links, fehlende Partner als NULL"]
+    - ["RIGHT JOIN", "Alle Zeilen rechts, fehlende Partner als NULL"]
+    - ["FULL OUTER JOIN", "Alle Zeilen beider Seiten"]
+  erklaerung: "In der Praxis braucht man fast immer INNER oder LEFT JOIN."
+  artikel: "#left-join"
+  tags: [sql, join]
+
+- id: db-jo-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Abfrage: Umsatz pro Kunde, nur Kunden mit mehr als 50 € Umsatz."
+  sprache: sql
+  text: |
+    SELECT k.name, SUM(pos.menge * pos.einzelpreis) AS umsatz
+    FROM kunden AS k
+    JOIN bestellungen AS b ON b.kunde_id = k.id
+    JOIN positionen AS pos ON pos.bestellung_id = b.id
+    ___ BY k.id, k.name
+    ___ SUM(pos.menge * pos.einzelpreis) > 50;
+  luecken:
+    - ["GROUP"]
+    - ["HAVING"]
+  erklaerung: "Der Filter bezieht sich auf die Summe pro Gruppe – deshalb HAVING, nicht WHERE."
+  artikel: "#group-by"
+  tags: [sql, group-by]
+
+- id: db-jo-011
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Die Abfrage soll alle Kunden mit ihrer Bestellanzahl zeigen, aber David (keine Bestellung) erscheint mit 1. Welche Zeile ist falsch?"
+  sprache: sql
+  code: |
+    SELECT k.name, COUNT(*) AS anzahl
+    FROM kunden AS k
+    LEFT JOIN bestellungen AS b ON b.kunde_id = k.id
+    GROUP BY k.id, k.name;
+  richtig: [0]
+  erklaerung: "COUNT(*) zählt auch die NULL-Zeile des LEFT JOIN. Richtig: COUNT(b.id)."
+  artikel: "#count-falle"
+  tags: [sql, count]

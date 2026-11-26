@@ -1,0 +1,149 @@
+# Fragen zur Lektion "Daten ändern, Constraints und Transaktionen"
+
+- id: db-tr-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was passiert bei 'UPDATE produkte SET preis = 1' ohne WHERE?"
+  optionen:
+    - "Nichts, WHERE ist Pflicht"
+    - "Der Preis aller Produkte wird auf 1 gesetzt"
+    - "Nur das erste Produkt wird geändert"
+    - "Die Datenbank fragt nach"
+  richtig: [1]
+  erklaerung: "Deshalb: Bedingung erst als SELECT prüfen und die Anzahl betroffener Zeilen kontrollieren."
+  artikel: "#aendern"
+  tags: [sql, update]
+
+- id: db-tr-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum gehören Regeln wie 'Preis muss positiv sein' zusätzlich als CHECK-Constraint in die Datenbank?"
+  optionen:
+    - "Weil Programme keine Regeln prüfen können"
+    - "Weil auch andere Programme, Skripte oder Importe schreiben und die Prüfung im Programm umgehen könnten"
+    - "Weil CHECK schneller ist als jede andere Prüfung"
+    - "Gar nicht, das ist doppelt"
+  richtig: [1]
+  erklaerung: "Die Datenbank ist die letzte Schutzschicht für die Datenqualität – Defense in Depth."
+  artikel: "#constraints"
+  tags: [sql, constraints]
+
+- id: db-tr-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Bestellung über ein Kabel und fünf Monitore scheitert, weil nur vier Monitore da sind. Was gilt dank Transaktion?"
+  optionen:
+    - "Das Kabel ist bestellt, die Monitore nicht"
+    - "Nichts wird gespeichert – auch der Kabel-Bestand bleibt unverändert"
+    - "Es werden vier Monitore bestellt"
+    - "Der Bestand wird negativ"
+  richtig: [1]
+  erklaerung: "Atomarität: alles oder nichts. Der Test test_zu_wenig_bestand_rollt_alles_zurueck prüft genau das."
+  artikel: "#transaktionen"
+  tags: [sql, transaktionen]
+
+- id: db-tr-004
+  typ: single
+  schwierigkeit: 3
+  frage: "Zwei Käufe lesen gleichzeitig Bestand 4, rechnen im Programm 4 − 1 und schreiben beide 3 zurück. Wie heißt das Problem?"
+  optionen:
+    - "Dirty Read"
+    - "Lost Update"
+    - "Deadlock"
+    - "SQL-Injection"
+  richtig: [1]
+  erklaerung: "Ein Verkauf geht verloren. Abhilfe: SET bestand = bestand - 1 in der Datenbank rechnen, Sperren oder passende Isolationsstufe."
+  artikel: "#isolation"
+  tags: [sql, isolation]
+
+- id: db-tr-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was zeigt 'SCAN bestellungen' in einem Ausführungsplan?"
+  optionen:
+    - "Die Abfrage nutzt einen Index"
+    - "Die Datenbank durchläuft die ganze Tabelle"
+    - "Die Tabelle wird auf Viren geprüft"
+    - "Die Abfrage ist fehlerhaft"
+  richtig: [1]
+  erklaerung: "Mit Index stünde dort SEARCH ... USING INDEX. Bei großen Tabellen ist ein kompletter Durchlauf teuer."
+  artikel: "#index"
+  tags: [sql, index]
+
+- id: db-tr-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu Indizes stimmen?"
+  optionen:
+    - "Sie beschleunigen Suchen über häufig gefilterte Spalten"
+    - "Sie verlangsamen INSERT und UPDATE etwas"
+    - "Mit wenigen Testdaten fallen fehlende Indizes oft nicht auf"
+    - "Jede Spalte sollte einen Index haben"
+  richtig: [0, 1, 2]
+  erklaerung: "Indizes kosten Speicher und Schreibzeit – sie gehören dorthin, wo häufig gesucht oder verbunden wird."
+  artikel: "#index"
+  tags: [sql, index]
+
+- id: db-tr-007
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "SQLite prüft Fremdschlüssel standardmäßig immer."
+  richtig: [1]
+  erklaerung: "Falsch. Erst mit PRAGMA foreign_keys = ON – deshalb setzt datenbank.py das bei jeder Verbindung."
+  artikel: "#constraints"
+  tags: [sql, sqlite]
+
+- id: db-tr-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Welcher Constraint verhindert den Fehler?"
+  paare:
+    - ["Zwei Konten mit derselben E-Mail", "UNIQUE"]
+    - ["Produkt ohne Namen", "NOT NULL"]
+    - ["Preis von 0 €", "CHECK"]
+    - ["Bestellung eines Kunden, den es nicht gibt", "FOREIGN KEY"]
+  erklaerung: "Jeder Constraint ist ein Testfall: ungültige Daten speichern und den Fehler erwarten."
+  artikel: "#constraints"
+  tags: [sql, constraints]
+
+- id: db-tr-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne die ACID-Eigenschaften zu."
+  paare:
+    - ["Atomicity", "Alles oder nichts"]
+    - ["Consistency", "Danach gelten wieder alle Regeln"]
+    - ["Isolation", "Parallele Transaktionen stören sich nicht"]
+    - ["Durability", "Nach dem COMMIT bleiben die Daten erhalten"]
+  erklaerung: "ACID beschreibt, was eine Transaktion garantiert."
+  artikel: "#acid"
+  tags: [sql, acid]
+
+- id: db-tr-010
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Du musst auf einer wichtigen Datenbank Preise korrigieren. Bringe das sichere Vorgehen in die richtige Reihenfolge."
+  elemente:
+    - "Transaktion beginnen"
+    - "Bedingung als SELECT ausführen und betroffene Zeilen prüfen"
+    - "UPDATE mit derselben WHERE-Bedingung ausführen"
+    - "Anzahl geänderter Zeilen kontrollieren"
+    - "COMMIT – oder bei Abweichung ROLLBACK"
+  erklaerung: "So bleibt jeder Fehler korrigierbar, bevor er dauerhaft wird."
+  artikel: "#aendern"
+  tags: [sql, update]
+
+- id: db-tr-011
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Dieser Code kann bei gleichzeitigen Bestellungen Verkäufe verlieren. Welche Zeile ist das Problem?"
+  sprache: python
+  code: |
+    bestand = db.execute("SELECT bestand FROM produkte WHERE id = ?", (pid,)).fetchone()[0]
+    if bestand < menge:
+        raise BestellFehler("Nicht genug Bestand")
+    db.execute("UPDATE produkte SET bestand = ? WHERE id = ?", (bestand - menge, pid))
+  richtig: [3]
+  erklaerung: "Der im Programm berechnete Wert überschreibt eine parallele Änderung (Lost Update). Besser: SET bestand = bestand - ? mit CHECK (bestand >= 0) in einer Transaktion."
+  artikel: "#isolation"
+  tags: [sql, isolation]

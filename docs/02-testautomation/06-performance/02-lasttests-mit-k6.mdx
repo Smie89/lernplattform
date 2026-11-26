@@ -1,0 +1,195 @@
+---
+title: Lasttests mit k6
+description: Lasttests als Code mit k6 – ein Einkaufsablauf gegen den Mini-Shop mit virtuellen Nutzern, Checks, Schwellen (Thresholds), Lastprofilen und Tags, die Ausgabe richtig lesen und Lasttests automatisch in der CI ausführen. Mit Vergleich zu JMeter, Gatling und NBomber.
+tags: [performance, k6, lasttest, ci]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-lasttests-mit-k6.fragen.yaml';
+
+# Lasttests mit k6
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- einen **Lasttest als Code** mit k6 schreiben,
+- **Checks** (fachliche Prüfungen) und **Thresholds** (Schwellen) unterscheiden und einsetzen,
+- **Lastprofile** mit Stufen definieren,
+- die **Ausgabe** von k6 lesen,
+- Lasttests **automatisch in der CI** ausführen.
+:::
+
+## Warum k6? \{#warum-k6}
+
+**k6** (Grafana Labs, Open Source) beschreibt Lasttests in **JavaScript**, läuft als einzelnes Programm ohne Laufzeitumgebung
+und passt damit gut in Repository und Pipeline. Andere verbreitete Werkzeuge:
+
+| Werkzeug | Sprache / Bedienung | Stärke |
+|---|---|---|
+| **k6** | JavaScript, Kommandozeile | Tests als Code, CI-freundlich, Schwellen eingebaut |
+| **Apache JMeter** | grafische Oberfläche, XML | sehr verbreitet, viele Protokolle, Plugins |
+| **Gatling** | Java, Kotlin, Scala | hohe Last mit wenig Ressourcen, schöne Berichte |
+| **NBomber** | C# / .NET | Lasttests in derselben Sprache wie der .NET-Code |
+| **Locust** | Python | einfache Skripte, verteilte Ausführung |
+
+Die Konzepte – virtuelle Nutzer, Lastprofil, Prüfungen, Schwellen – sind überall gleich.
+
+## Der Lasttest für den Mini-Shop \{#skript}
+
+[beispiele/performance/lasttest.js](https://github.com/Smie89/lernplattform/blob/main/beispiele/performance/lasttest.js)
+spielt mit jedem virtuellen Nutzer (VU) den typischen Einkauf durch:
+
+```javascript title="lasttest.js (Auszug)"
+import http from 'k6/http';
+import {check, group, sleep} from 'k6';
+
+const BASIS = __ENV.SHOP_URL || 'http://localhost:5000';
+
+export default function einkauf() {
+  group('Produkte ansehen', () => {
+    const antwort = http.get(`${BASIS}/api/produkte`, {tags: {schritt: 'produkte'}});
+    check(antwort, {
+      'Produkte: Status 200': (r) => r.status === 200,
+      'Produkte: Liste nicht leer': (r) => r.json().length > 0,
+    });
+  });
+  sleep(1);   // Denkzeit
+
+  // ... Warenkorb anlegen, Artikel hinzufügen, Rabatt prüfen ...
+
+  group('Bestellen', () => {
+    const bestellung = http.post(`${BASIS}/api/warenkoerbe/${warenkorbId}/bestellung`,
+      JSON.stringify({kundenName: `Lasttest ${__VU}-${__ITER}`, stammkunde: false}),
+      {...JSON_KOPF, tags: {schritt: 'bestellen'}});
+    check(bestellung, {'Bestellung: Status 201': (r) => r.status === 201});
+  });
+  sleep(1);
+}
+```
+
+| Baustein | Aufgabe |
+|---|---|
+| `export default function` | der Ablauf, den **jeder** virtuelle Nutzer immer wieder durchläuft (eine **Iteration**) |
+| `group` | fasst Schritte zusammen, die Ausgabe zeigt Zeiten pro Gruppe |
+| `check` | **fachliche Prüfung** – schlägt sie fehl, läuft der Test weiter, der Fehlschlag wird gezählt |
+| `sleep` | **Denkzeit** zwischen den Schritten |
+| `tags` | markiert Anfragen, um Metriken und Schwellen pro Schritt auszuwerten |
+| `__VU`, `__ITER` | Nummer des virtuellen Nutzers und der Iteration – hier für eindeutige Kundennamen |
+| `__ENV` | Umgebungsvariablen, z. B. `-e SHOP_URL=…` |
+
+:::tip[Ein Lasttest ist auch ein Funktionstest]
+Die Checks prüfen nicht nur „Status 200“, sondern auch fachliche Ergebnisse, etwa den Rabatt ab 100 €. Unter Last
+zeigen sich so Fehler, die bei einzelnen Aufrufen nie auftreten – wie die Race Condition
+[SHOP-1](../../01-softwaretest/05-white-box-erfahrungsbasiert.mdx#doppelklick).
+:::
+
+## Lastprofile \{#profile}
+
+Wie viele Nutzer wann aktiv sind, steht in den `options`. Das Beispiel hat zwei Profile:
+
+```javascript title="lasttest.js"
+const PROFILE = {
+  rauch: {vus: 1, duration: '10s'},          // Rauchtest: Funktioniert das Skript?
+  last: {
+    stages: [
+      {duration: '10s', target: 20},         // Rampe auf 20 gleichzeitige Nutzer
+      {duration: '30s', target: 20},         // Plateau halten
+      {duration: '5s', target: 0},           // herunterfahren
+    ],
+  },
+};
+```
+
+Mit `stages` lassen sich alle Testarten aus den [Grundlagen](./01-performance-grundlagen.mdx#arten) bauen: ein Spike-Test
+ist eine sehr kurze, steile Stufe, ein Stresstest eine Treppe mit immer höheren Zielen, ein Dauertest ein langes Plateau.
+
+## Schwellen: aus Diagrammen wird ein Ergebnis \{#schwellen}
+
+**Thresholds** übersetzen die [Anforderungen](./01-performance-grundlagen.mdx#anforderungen) in Prüfungen. Wird eine Schwelle
+verletzt, endet k6 mit einem **Exit-Code ungleich 0** – die CI wird rot:
+
+```javascript title="lasttest.js"
+export const options = {
+  ...PROFILE[__ENV.PROFIL || 'rauch'],
+  thresholds: {
+    http_req_failed: ['rate<0.01'],                         // weniger als 1 % Fehler
+    http_req_duration: ['p(95)<300', 'p(99)<800'],          // Perzentile der Antwortzeit
+    'http_req_duration{schritt:bestellen}': ['p(95)<500'],  // eigene Schwelle für einen Schritt
+    checks: ['rate>0.99'],                                  // fachliche Prüfungen
+  },
+};
+```
+
+| | check | threshold |
+|---|---|---|
+| prüft | eine **einzelne Antwort** | eine **Kennzahl über den ganzen Test** |
+| bei Fehlschlag | Test läuft weiter, Fehlschlag wird gezählt | Exit-Code ungleich 0 |
+| Beispiel | „Status 201“ | „p95 < 300 ms“, „Checks > 99 %“ |
+
+Erst die Schwelle `checks: ['rate>0.99']` sorgt dafür, dass fehlgeschlagene Checks den Test auch wirklich rot machen.
+
+## Die Ausgabe lesen \{#ausgabe}
+
+Am Ende gibt k6 eine Zusammenfassung aus (gekürzt und vereinfacht):
+
+```text
+  █ THRESHOLDS
+    checks             ✓ 'rate>0.99'   rate=100.00%
+    http_req_duration  ✓ 'p(95)<300'   p(95)=4.1ms
+                       ✓ 'p(99)<800'   p(99)=9.8ms
+    http_req_failed    ✓ 'rate<0.01'   rate=0.00%
+
+  █ TOTAL RESULTS
+    checks_succeeded...: 100.00%
+    http_req_duration..: avg=2.3ms  med=1.9ms  p(90)=3.5ms  p(95)=4.1ms  max=31ms
+    http_reqs..........: 1240   27.5/s
+    iterations.........: 310
+    vus_max............: 20
+```
+
+Die Zahlen hängen stark von Rechner und Umgebung ab. Worauf man schaut:
+
+1. **Schwellen**: alle mit ✓?
+2. **Fehlerrate** und **Checks**: Wurde richtig geantwortet?
+3. **p95/p99** statt Durchschnitt.
+4. **Durchsatz** (`http_reqs` pro Sekunde) und **Iterationen**: Wurde die geplante Last überhaupt erzeugt?
+
+Für Verläufe über die Zeit lassen sich die Ergebnisse an Grafana, Prometheus oder als JSON/CSV exportieren.
+
+## Lasttests in der CI \{#ci}
+
+In der CI dieses Repositorys laufen bei jedem Push ein Rauchtest und ein kurzer Lasttest gegen den gestarteten Mini-Shop.
+Das Skript `tests-mit-app.sh` aus dem Bereich [Linux](../../04-linux/06-bash-skripte.mdx#praxis) startet die Anwendung,
+wartet, führt den Befehl aus und beendet sie wieder:
+
+```yaml title=".github/workflows/beispiele.yml (Ausschnitt, Job shop-dotnet)"
+      - name: k6 installieren
+        uses: grafana/setup-k6-action@v1
+      - name: Rauchtest und kurzer Lasttest mit k6
+        run: |
+          ../linux/tests-mit-app.sh k6 run ../performance/lasttest.js
+          ../linux/tests-mit-app.sh k6 run -e PROFIL=last ../performance/lasttest.js
+```
+
+:::warning[CI-Runner sind keine Lastumgebung]
+Gehostete CI-Runner teilen sich Hardware mit anderen – Messwerte schwanken. In der Pipeline eignen sich deshalb vor allem
+**Rauchtests** und **kurze Lasttests mit großzügigen Schwellen**, die grobe Verschlechterungen finden. Aussagekräftige
+Lasttests laufen auf einer **produktionsähnlichen Umgebung**, z. B. nachts oder vor einem Release.
+:::
+
+## Typische Fehler \{#typische-fehler}
+
+- **Keine Checks** – der Test misst begeistert die Antwortzeit von Fehlerseiten.
+- **Keine Schwellen** – das Ergebnis muss jemand interpretieren, die CI bleibt immer grün.
+- **Keine Denkzeiten** und immer **dieselben Daten**.
+- Ergebnisse von **CI-Runnern** als absolute Wahrheit nehmen.
+- Den Lastgenerator **auf demselben Rechner** wie die Anwendung bei hoher Last – beide konkurrieren um die CPU.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- k6 beschreibt Lasttests in **JavaScript**; jeder **virtuelle Nutzer** durchläuft die Standardfunktion immer wieder.
+- **check** prüft einzelne Antworten, **threshold** Kennzahlen über den ganzen Test und bestimmt den Exit-Code.
+- **stages** bilden Last-, Stress-, Spike- und Dauertests ab; **tags** erlauben Schwellen pro Schritt.
+- In der Ausgabe zuerst auf Schwellen, Fehlerrate, Checks und Perzentile schauen.
+- In der CI: Rauchtest und kurzer Lasttest; echte Lasttests auf produktionsähnlicher Umgebung.
+
+<Quiz fragen={fragen} titel="Quiz: Lasttests mit k6" />

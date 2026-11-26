@@ -1,0 +1,181 @@
+---
+title: JOINs und Auswertungen
+description: Tabellen mit INNER JOIN und LEFT JOIN verbinden, mit COUNT, SUM und AVG auswerten, mit GROUP BY gruppieren, mit HAVING nach dem Gruppieren filtern, Unterabfragen schreiben – und die typischen Fallstricke wie COUNT(*) beim LEFT JOIN.
+tags: [sql, join, aggregation]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-joins-aggregation.fragen.yaml';
+
+# JOINs und Auswertungen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- Tabellen mit **INNER JOIN** und **LEFT JOIN** verbinden und den Unterschied erklären,
+- Daten mit **COUNT, SUM, AVG, MIN, MAX** auswerten,
+- mit **GROUP BY** gruppieren und mit **HAVING** nach dem Gruppieren filtern,
+- **Unterabfragen** einsetzen,
+- typische **Fallstricke** erkennen, die zu falschen Zahlen führen.
+:::
+
+Alle Abfragen stehen in [abfragen.py](https://github.com/Smie89/lernplattform/blob/main/beispiele/datenbank/abfragen.py)
+und werden von Tests gegen die Testdaten geprüft.
+
+## INNER JOIN \{#inner-join}
+
+Ein JOIN verbindet Zeilen zweier Tabellen über eine Bedingung – meist Fremdschlüssel = Primärschlüssel:
+
+```sql
+SELECT b.id AS bestellung, p.name AS produkt, pos.menge, pos.menge * pos.einzelpreis AS summe
+FROM bestellungen AS b
+JOIN positionen AS pos ON pos.bestellung_id = b.id
+JOIN produkte   AS p   ON p.id = pos.produkt_id
+WHERE b.id = 1
+ORDER BY p.name;
+```
+
+```text
+bestellung  produkt          menge  summe
+1           HDMI-Kabel       2      19.8
+1           Monitor 27 Zoll  1      249.0
+```
+
+`JOIN` allein bedeutet `INNER JOIN`: Im Ergebnis erscheinen nur Zeilen, die **in beiden** Tabellen einen Partner haben.
+Die Kürzel (`b`, `pos`, `p`) heißen **Aliase** und machen lange Abfragen lesbar.
+
+## LEFT JOIN \{#left-join}
+
+Ein `LEFT JOIN` behält **alle Zeilen der linken Tabelle** – auch ohne Partner. Die Spalten der rechten Tabelle sind dann NULL.
+So findet man z. B. Kunden ohne Bestellung:
+
+```sql
+SELECT k.name, COUNT(b.id) AS anzahl
+FROM kunden AS k
+LEFT JOIN bestellungen AS b ON b.kunde_id = k.id
+GROUP BY k.id, k.name
+ORDER BY anzahl DESC, k.name;
+```
+
+```text
+name          anzahl
+Anna Berg     2
+Ben Kraus     1
+Clara Wolf    1
+David Sommer  0
+```
+
+Mit einem INNER JOIN würde David fehlen – er hat nie bestellt.
+
+| JOIN | Ergebnis |
+|---|---|
+| `INNER JOIN` | nur Zeilen mit Partner auf beiden Seiten |
+| `LEFT JOIN` | alle Zeilen links, rechts NULL, wo kein Partner existiert |
+| `RIGHT JOIN` | spiegelbildlich (selten; meist schreibt man die Tabellen um und nimmt LEFT JOIN) |
+| `FULL OUTER JOIN` | alle Zeilen beider Seiten |
+
+### Fallstrick: COUNT(*) beim LEFT JOIN \{#count-falle}
+
+`COUNT(*)` zählt **Zeilen**, `COUNT(spalte)` nur Zeilen, in denen die Spalte **nicht NULL** ist. Beim LEFT JOIN entsteht für
+David genau eine Zeile – mit NULL bei der Bestellung. `COUNT(*)` meldet deshalb **1 Bestellung** statt 0. Der Test im
+Beispielprojekt hält diesen Fehler fest:
+
+```python title="test_datenbank.py"
+def test_count_stern_zaehlt_die_null_zeile_falsch_mit(self):
+    ergebnis = dict(self.db.execute(abfragen.BESTELLUNGEN_PRO_KUNDE_FALSCH).fetchall())
+    self.assertEqual(ergebnis["David Sommer"], 1)
+```
+
+### Fallstrick: Vervielfachung \{#vervielfachung}
+
+Ein JOIN über eine 1:n-Beziehung **vervielfacht** die Zeilen der 1-Seite: Anna erscheint einmal pro Position ihrer
+Bestellungen. Wer danach `SUM(kunde.irgendwas)` oder `COUNT(*)` bildet, zählt doppelt. Abhilfe: genau überlegen, auf welcher
+Ebene man zählt (`COUNT(DISTINCT b.id)`), oder vorher in einer Unterabfrage aggregieren.
+
+## Aggregatfunktionen und GROUP BY \{#group-by}
+
+| Funktion | Ergebnis |
+|---|---|
+| `COUNT(*)` / `COUNT(spalte)` | Anzahl Zeilen / Anzahl Werte ungleich NULL |
+| `SUM(x)`, `AVG(x)` | Summe, Durchschnitt (NULL-Werte werden ignoriert) |
+| `MIN(x)`, `MAX(x)` | kleinster, größter Wert |
+
+`GROUP BY` bildet Gruppen, und die Aggregatfunktion rechnet **pro Gruppe**:
+
+```sql
+SELECT k.name, ROUND(SUM(pos.menge * pos.einzelpreis), 2) AS umsatz
+FROM kunden AS k
+JOIN bestellungen AS b   ON b.kunde_id = k.id
+JOIN positionen   AS pos ON pos.bestellung_id = b.id
+WHERE b.status <> 'storniert'                     -- filtert Zeilen VOR dem Gruppieren
+GROUP BY k.id, k.name
+HAVING SUM(pos.menge * pos.einzelpreis) > 50      -- filtert Gruppen NACH dem Gruppieren
+ORDER BY umsatz DESC;
+```
+
+```text
+name       umsatz
+Anna Berg  308.7
+Ben Kraus  92.3
+```
+
+Clara fehlt doppelt: Ihre einzige Bestellung ist storniert (WHERE), und ihr Umsatz läge ohnehin unter 50 € (HAVING).
+
+| | WHERE | HAVING |
+|---|---|---|
+| filtert | einzelne **Zeilen** | ganze **Gruppen** |
+| Zeitpunkt | vor `GROUP BY` | nach `GROUP BY` |
+| Aggregatfunktionen erlaubt? | nein | ja |
+
+:::warning[Jede Spalte gruppieren oder aggregieren]
+Jede Spalte im `SELECT` muss entweder im `GROUP BY` stehen oder in einer Aggregatfunktion. SQLite und MySQL lassen
+manches durchgehen und liefern dann einen **zufälligen** Wert aus der Gruppe; PostgreSQL und SQL Server melden einen Fehler.
+:::
+
+## Unterabfragen \{#unterabfragen}
+
+Eine Abfrage kann das Ergebnis einer anderen verwenden:
+
+```sql
+-- Produkte, die noch nie bestellt wurden
+SELECT name FROM produkte
+WHERE id NOT IN (SELECT produkt_id FROM positionen);
+-- Ergebnis: Funkmaus
+
+-- Bestellungen, deren Gesamtwert über dem Durchschnitt aller Positionen liegt
+SELECT bestellung_id, SUM(menge * einzelpreis) AS wert
+FROM positionen
+GROUP BY bestellung_id
+HAVING SUM(menge * einzelpreis) > (SELECT AVG(menge * einzelpreis) FROM positionen);
+```
+
+:::note[NOT IN und NULL]
+Enthält die Unterabfrage bei `NOT IN` auch nur einen NULL-Wert, liefert die ganze Bedingung kein Ergebnis mehr. Hier ist
+`produkt_id` als `NOT NULL` definiert. Allgemein robuster ist `NOT EXISTS (SELECT 1 FROM positionen WHERE produkt_id = p.id)`.
+:::
+
+## Auswertungen prüfen \{#pruefen}
+
+Auswertungen sind ein häufiger Testgegenstand: Berichte, Dashboards, Exporte. Bewährt hat sich:
+
+- **Testdaten mit Sonderfällen**: Kunde ohne Bestellung, stornierte Bestellung, Produkt ohne Bestand – genau wie in
+  [daten.sql](https://github.com/Smie89/lernplattform/blob/main/beispiele/datenbank/daten.sql).
+- **Erwartete Werte von Hand ausrechnen**, bevor man die Abfrage laufen lässt – sonst testet man nur, was herauskommt.
+- **Grenzen** der Filter prüfen: genau 50 € bei `HAVING > 50`, Bestellung am letzten Tag des Monats.
+
+## Typische Fehler \{#typische-fehler}
+
+- **INNER JOIN, wo LEFT JOIN nötig ist** – Datensätze ohne Partner verschwinden still.
+- **COUNT(*)** beim LEFT JOIN statt `COUNT(spalte)`.
+- **Vervielfachung** durch JOINs über 1:n-Beziehungen, danach falsche Summen.
+- Gruppenfilter mit **WHERE** statt HAVING.
+- `NOT IN` mit einer Unterabfrage, die **NULL** liefern kann.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **INNER JOIN**: nur Zeilen mit Partner. **LEFT JOIN**: alle Zeilen links, fehlende Partner als NULL.
+- `COUNT(*)` zählt Zeilen, `COUNT(spalte)` nur Werte ungleich NULL.
+- **GROUP BY** bildet Gruppen; **WHERE** filtert davor, **HAVING** danach.
+- **Unterabfragen** verwenden Ergebnisse anderer Abfragen; Vorsicht mit `NOT IN` und NULL.
+- Auswertungen mit **Sonderfällen in den Testdaten** und **vorher berechneten** Erwartungswerten prüfen.
+
+<Quiz fragen={fragen} titel="Quiz: JOINs und Auswertungen" />

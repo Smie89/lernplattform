@@ -1,0 +1,9 @@
+{
+  "label": "Performance und Last",
+  "position": 6,
+  "link": {
+    "type": "generated-index",
+    "slug": "/testautomation/performance",
+    "description": "Performance- und Lasttests: Arten, Metriken, Perzentile und automatisierte Lasttests mit k6."
+  }
+}

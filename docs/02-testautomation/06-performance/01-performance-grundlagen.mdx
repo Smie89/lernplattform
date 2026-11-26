@@ -1,0 +1,139 @@
+---
+title: Performance- und Lasttests – Grundlagen
+description: Arten von Performancetests (Last, Stress, Spike, Dauer), die wichtigsten Metriken wie Antwortzeit, Durchsatz und Fehlerrate, warum Perzentile aussagekräftiger sind als Durchschnitte, realistische Lastprofile, Testumgebung und das Vorgehen von der Anforderung bis zur Engpassanalyse.
+tags: [performance, lasttest, metriken]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-performance-grundlagen.fragen.yaml';
+
+# Performance- und Lasttests – Grundlagen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- **Last-, Stress-, Spike-** und **Dauertests** unterscheiden,
+- **Antwortzeit, Durchsatz, Fehlerrate** und **Perzentile** erklären und lesen,
+- ein **realistisches Lastprofil** entwerfen,
+- messbare **Performance-Anforderungen** formulieren,
+- typische **Engpässe** und ihre Ursachen einordnen.
+:::
+
+## Warum Performance testen? \{#warum}
+
+Eine Funktion kann fachlich korrekt sein und trotzdem unbrauchbar: Die Suche liefert das richtige Ergebnis – nach
+12 Sekunden. Oder der Shop funktioniert mit 10 Nutzern und bricht am Black Friday mit 2 000 zusammen. **Performancetests**
+prüfen das *Wie gut* unter Last – ein [nicht-funktionales Qualitätsmerkmal](../../01-softwaretest/02-teststufen-und-testarten.mdx#nicht-funktional).
+
+## Arten von Performancetests \{#arten}
+
+| Art | Frage | Lastverlauf |
+|---|---|---|
+| **Lasttest** (Load Test) | Hält das System die **erwartete** Last aus? | hochfahren, auf erwarteter Last halten |
+| **Stresstest** | Wo ist die **Belastungsgrenze**, und wie verhält sich das System darüber? | Last schrittweise steigern, bis es bricht |
+| **Spike-Test** | Was passiert bei einem **plötzlichen** Ansturm? | in Sekunden von wenig auf sehr viel |
+| **Dauertest** (Soak Test) | Bleibt das System über **Stunden** stabil (Speicherlecks, volle Logs)? | mittlere Last über lange Zeit |
+| **Rauchtest** (Smoke Test) | Funktioniert das **Testskript** überhaupt? | 1 Nutzer, kurz |
+
+
+## Die wichtigsten Metriken \{#metriken}
+
+| Metrik | Bedeutung | Beispiel |
+|---|---|---|
+| **Antwortzeit** (Latenz) | Zeit von der Anfrage bis zur vollständigen Antwort | 120 ms |
+| **Durchsatz** | bearbeitete Anfragen pro Zeiteinheit | 450 Anfragen/s |
+| **Fehlerrate** | Anteil fehlgeschlagener Anfragen | 0,2 % |
+| **Gleichzeitige Nutzer** (VUs) | wie viele virtuelle Nutzer parallel arbeiten | 200 |
+| **Ressourcen** | CPU, Arbeitsspeicher, Datenbankverbindungen, Threads auf dem Server | CPU 85 % |
+
+Antwortzeiten allein reichen nicht: Ein System kann schnell antworten – mit Fehlermeldungen. Deshalb immer **Antwortzeit
+und Fehlerrate gemeinsam** betrachten.
+
+## Perzentile statt Durchschnitt \{#perzentile}
+
+Zehn Anfragen mit diesen Antwortzeiten in Millisekunden:
+
+```text
+80  85  90  90  95  100  105  110  120  2 400
+```
+
+| Kennzahl | Wert | Aussage |
+|---|---|---|
+| **Durchschnitt** | 327,5 ms | entspricht **keiner einzigen** echten Anfrage |
+| **Median** (p50) | 97,5 ms | die Hälfte war schneller, die Hälfte langsamer |
+| **p90** | 120 ms | 90 % der Anfragen waren höchstens so langsam |
+| **Maximum** | 2 400 ms | der Ausreißer |
+
+Ein einzelner Ausreißer verzerrt den Durchschnitt stark – und ein guter Durchschnitt kann verbergen, dass jeder
+zwanzigste Nutzer 5 Sekunden wartet. **Perzentile** (p95, p99) beschreiben, was die langsamen Nutzer erleben. Anforderungen
+formuliert man deshalb so: „**95 % der Anfragen unter 300 ms**“ (p95 < 300 ms).
+
+:::tip[Bei vielen Nutzern zählt das Ende der Verteilung]
+Ruft eine Seite 20 Ressourcen ab, ist die Wahrscheinlichkeit hoch, dass **mindestens eine** davon im langsamen Bereich
+liegt. Was in einer einzelnen Anfrage „nur p99“ ist, erlebt bei 20 Anfragen ein großer Teil der Nutzer.
+:::
+
+## Realistische Lastprofile \{#lastprofil}
+
+Ein Lasttest ist nur so gut wie sein **Lastprofil**. Fragen, die man vorher klären sollte:
+
+- **Welche Abläufe** machen Nutzer, und wie oft? Im Shop z. B. 70 % stöbern, 25 % Warenkorb, 5 % bestellen.
+- **Wie viele** Nutzer gleichzeitig, zu Spitzenzeiten? Woher stammt die Zahl – Logs, Analytics, Fachbereich?
+- **Denkzeiten**: Echte Nutzer lesen und tippen. Ohne Pausen erzeugen 20 virtuelle Nutzer die Last von Hunderten echten.
+- **Testdaten**: verschiedene Produkte, Kunden, Suchbegriffe – sonst misst man nur den Cache.
+- **Datenmenge** in der Datenbank: mit 50 Testdatensätzen ist alles schnell (siehe
+  [N+1-Problem](../../08-datenbanken/04-datenbanken-im-test.mdx#n-plus-1)).
+
+## Messbare Anforderungen \{#anforderungen}
+
+„Der Shop soll schnell sein“ ist nicht testbar. Besser:
+
+> Bei **200 gleichzeitigen Nutzern** mit dem Lastprofil „Weihnachtsgeschäft“ beträgt die Antwortzeit für
+> „In den Warenkorb“ **p95 < 300 ms** und **p99 < 800 ms**, die **Fehlerrate < 1 %**, gemessen über **30 Minuten**.
+
+Solche Anforderungen werden direkt zu **Schwellen** (Thresholds) im Lasttest – siehe
+[Lasttests mit k6](./02-lasttests-mit-k6.mdx#schwellen).
+
+## Testumgebung \{#umgebung}
+
+- **Produktionsähnlich**: gleiche Konfiguration, ähnliche Hardware, gleiche Datenbankgröße. Ergebnisse von einer viel
+  kleineren Umgebung lassen sich nicht einfach hochrechnen.
+- **Lastgenerator nicht zum Engpass machen**: Der Rechner, der die Last erzeugt, darf nicht selbst bei 100 % CPU laufen.
+- **Isoliert**: Andere Tests oder Nutzer auf derselben Umgebung verfälschen die Messung.
+- **Nie ohne Absprache gegen Produktion** – und nie gegen fremde Systeme: Ein Lasttest unterscheidet sich technisch kaum
+  von einem [Denial-of-Service-Angriff](../../07-cybersecurity/01-security-grundlagen.mdx#schutzziele).
+
+## Vorgehen und Engpassanalyse \{#vorgehen}
+
+1. **Ziele und Anforderungen** klären (welche Abläufe, wie viel Last, welche Schwellen).
+2. **Skript** schreiben und mit einem **Rauchtest** prüfen.
+3. **Baseline** messen: Ergebnis mit dem aktuellen Stand als Vergleichswert.
+4. **Lasttest** durchführen, Server-Ressourcen parallel beobachten.
+5. **Engpass** suchen, beheben, erneut messen – immer nur **eine** Änderung auf einmal.
+
+| Symptom unter Last | häufige Ursache |
+|---|---|
+| Antwortzeit steigt mit der Nutzerzahl, CPU bei 100 % | aufwendige Berechnung, fehlender Cache |
+| Antwortzeit steigt, CPU niedrig | Warten auf Datenbank, Sperren, zu kleiner Verbindungspool |
+| Plötzlich viele Fehler ab einer bestimmten Last | Verbindungs- oder Thread-Pool erschöpft, Timeouts |
+| Antwortzeit steigt langsam über Stunden | Speicherleck, wachsende Tabellen oder Logs |
+| Einzelne Endpunkte langsam | fehlender Index, N+1-Abfragen |
+
+## Typische Fehler \{#typische-fehler}
+
+- Nur den **Durchschnitt** betrachten.
+- **Keine Denkzeiten** – unrealistisch hohe Last.
+- Immer **dieselben Testdaten** – man misst den Cache.
+- Ergebnisse einer **kleinen Testumgebung** auf Produktion hochrechnen.
+- Lasttest **ohne Schwellen** – am Ende gibt es Diagramme, aber kein Ergebnis.
+- Erst **kurz vor dem Release** testen, wenn Architekturänderungen nicht mehr möglich sind.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Lasttest** (erwartete Last), **Stresstest** (Grenze), **Spike** (plötzlicher Anstieg), **Dauertest** (Stabilität), **Rauchtest** (Skript prüfen).
+- Metriken: **Antwortzeit, Durchsatz, Fehlerrate**, Ressourcen – Antwortzeit und Fehlerrate immer gemeinsam.
+- **Perzentile** (p95, p99) statt Durchschnitt.
+- Realistisches **Lastprofil** mit Abläufen, Nutzerzahlen, Denkzeiten und vielfältigen Testdaten.
+- Anforderungen messbar formulieren – sie werden zu **Schwellen** im Test.
+- Engpässe Schritt für Schritt finden; nie unabgesprochen gegen Produktion.
+
+<Quiz fragen={fragen} titel="Quiz: Performance- und Lasttests – Grundlagen" />

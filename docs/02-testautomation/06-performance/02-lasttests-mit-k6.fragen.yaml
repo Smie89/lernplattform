@@ -1,0 +1,158 @@
+# Fragen zur Lektion "Lasttests mit k6"
+
+- id: ta-k6-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was führt jeder virtuelle Nutzer (VU) in k6 aus?"
+  optionen:
+    - "Nur eine einzige Anfrage"
+    - "Die exportierte Standardfunktion – immer wieder, solange der Test läuft"
+    - "Die options-Konfiguration"
+    - "Einen Browser"
+  richtig: [1]
+  erklaerung: "Jeder Durchlauf der Standardfunktion heißt Iteration."
+  artikel: "#skript"
+  tags: [k6]
+
+- id: ta-k6-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Unterschied zwischen check und threshold?"
+  optionen:
+    - "Es gibt keinen"
+    - "check prüft eine einzelne Antwort, threshold eine Kennzahl über den ganzen Test und bestimmt den Exit-Code"
+    - "threshold prüft nur Statuscodes"
+    - "check bricht den Test sofort ab"
+  richtig: [1]
+  erklaerung: "Ein fehlgeschlagener check wird nur gezählt. Erst eine Schwelle wie checks: ['rate>0.99'] macht den Test rot."
+  artikel: "#schwellen"
+  tags: [k6, threshold]
+
+- id: ta-k6-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Lasttest hat Checks, aber keine Schwellen. Die Hälfte der Checks schlägt fehl. Wie endet k6?"
+  optionen:
+    - "Mit Exit-Code ungleich 0"
+    - "Mit Exit-Code 0 – die CI bleibt grün"
+    - "Mit einer Exception"
+    - "k6 startet gar nicht"
+  richtig: [1]
+  erklaerung: "Ohne Thresholds gibt es kein Kriterium für Bestehen oder Scheitern."
+  artikel: "#schwellen"
+  tags: [k6, threshold]
+
+- id: ta-k6-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dienen tags wie {schritt: 'bestellen'} an einer Anfrage?"
+  optionen:
+    - "Zur Verschlüsselung"
+    - "Um Metriken und Schwellen gezielt für diesen Schritt auszuwerten"
+    - "Damit die Anfrage schneller ist"
+    - "Sie werden an den Server geschickt"
+  richtig: [1]
+  erklaerung: "Beispiel: 'http_req_duration{schritt:bestellen}': ['p(95)<500']"
+  artikel: "#schwellen"
+  tags: [k6, tags]
+
+- id: ta-k6-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum eignen sich gehostete CI-Runner nur begrenzt für Lasttests?"
+  optionen:
+    - "Weil k6 dort nicht läuft"
+    - "Weil sie sich Hardware mit anderen teilen und Messwerte schwanken – gut für Rauchtests und grobe Verschlechterungen"
+    - "Weil CI-Runner kein Netzwerk haben"
+    - "Weil Lasttests in der CI verboten sind"
+  richtig: [1]
+  erklaerung: "Aussagekräftige Lasttests laufen auf einer produktionsähnlichen Umgebung."
+  artikel: "#ci"
+  tags: [k6, ci]
+
+- id: ta-k6-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Worauf schaust du in der Ausgabe von k6 zuerst?"
+  optionen:
+    - "Ob alle Schwellen erfüllt sind"
+    - "Fehlerrate und Checks"
+    - "p95 und p99 der Antwortzeit"
+    - "Nur auf den Durchschnitt"
+  richtig: [0, 1, 2]
+  erklaerung: "Außerdem: Wurde die geplante Last überhaupt erzeugt (Anfragen pro Sekunde, Iterationen)?"
+  artikel: "#ausgabe"
+  tags: [k6, ausgabe]
+
+- id: ta-k6-007
+  typ: single
+  schwierigkeit: 1
+  frage: "Welches Werkzeug schreibt Lasttests in C#?"
+  optionen:
+    - "JMeter"
+    - "NBomber"
+    - "Locust"
+    - "Gatling"
+  richtig: [1]
+  erklaerung: "JMeter wird meist grafisch bedient, Locust nutzt Python, Gatling Java/Kotlin/Scala."
+  artikel: "#warum-k6"
+  tags: [k6, werkzeuge]
+
+- id: ta-k6-008
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Schwellen: weniger als 1 % Fehler, 95 % der Anfragen unter 300 ms."
+  sprache: javascript
+  text: |
+    thresholds: {
+      http_req_failed: ['rate<___'],
+      http_req_duration: ['p(___)<300'],
+    },
+  luecken:
+    - ["0.01", ".01"]
+    - ["95"]
+  erklaerung: "rate ist ein Anteil zwischen 0 und 1; p(95) ist das 95. Perzentil."
+  artikel: "#schwellen"
+  tags: [k6, threshold]
+
+- id: ta-k6-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem k6-Baustein seine Aufgabe zu."
+  paare:
+    - ["check", "Fachliche Prüfung einer einzelnen Antwort"]
+    - ["sleep", "Denkzeit zwischen den Schritten"]
+    - ["group", "Schritte zusammenfassen, Zeiten pro Gruppe"]
+    - ["stages", "Lastverlauf über die Zeit festlegen"]
+    - ["__ENV", "Werte von außen übergeben, z. B. die URL"]
+  erklaerung: "Mit diesen Bausteinen lässt sich fast jeder Lasttest beschreiben."
+  artikel: "#skript"
+  tags: [k6]
+
+- id: ta-k6-010
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Stufen dieses Lastprofils in die richtige Reihenfolge."
+  elemente:
+    - "{duration: '10s', target: 20}  – Rampe"
+    - "{duration: '30s', target: 20}  – Plateau"
+    - "{duration: '5s', target: 0}  – Herunterfahren"
+  erklaerung: "Rampe, Plateau, Herunterfahren – das typische Profil eines Lasttests."
+  artikel: "#profile"
+  tags: [k6, lastprofil]
+
+- id: ta-k6-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Mit dieser Schwelle bleiben langsame Ausreißer unbemerkt. Welche Zeile ist das Problem?"
+  sprache: javascript
+  code: |
+    export const options = {
+      vus: 20,
+      duration: '1m',
+      thresholds: { http_req_duration: ['avg<300'] },
+    };
+  richtig: [3]
+  erklaerung: "Der Durchschnitt verdeckt, dass ein Teil der Nutzer sehr lange wartet. Besser: p(95)<300 und p(99)<800 – und eine Schwelle für die Fehlerrate."
+  artikel: "#schwellen"
+  tags: [k6, threshold]

@@ -33,6 +33,11 @@ Empfohlene Reihenfolge:
 11. [FlaUI – Grundlagen](./05-desktop/01-flaui-grundlagen.mdx) – UI Automation, Elemente finden und bedienen, warten, Dialoge
 12. [WPF testbar machen](./05-desktop/02-wpf-testbar-machen.mdx) – MVVM-Teststrategie, AutomationIds in XAML, Screen Objects, CI
 
+**Performance und Last**
+
+13. [Performance- und Lasttests – Grundlagen](./06-performance/01-performance-grundlagen.mdx) – Testarten, Metriken, Perzentile, Lastprofile, Engpässe
+14. [Lasttests mit k6](./06-performance/02-lasttests-mit-k6.mdx) – Einkaufsablauf gegen den Mini-Shop, Checks, Schwellen, CI
+
 Die C#-, Java- und Desktop-Module kannst du auch in beliebiger Reihenfolge oder nur eines davon bearbeiten.
 
 Querverbindungen: Selenium Grid, Playwright im Container und Testcontainers im Bereich 🐳 [Docker](../05-docker/05-docker-testautomation.mdx).

@@ -1,0 +1,152 @@
+# Fragen zur Lektion "Datenbanken in automatisierten Tests"
+
+- id: db-te-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Integrationstest ist gegen eine In-Memory-Datenbank grün, gegen PostgreSQL rot. Woran liegt das typischerweise?"
+  optionen:
+    - "PostgreSQL ist fehlerhaft"
+    - "In-Memory-Datenbanken verhalten sich anders, z. B. bei Datentypen, SQL-Dialekt oder Constraints"
+    - "Der Test ist flaky"
+    - "In-Memory-Datenbanken sind langsamer"
+  richtig: [1]
+  erklaerung: "Für Integrationstests dieselbe Datenbank wie in Produktion verwenden – am einfachsten mit Testcontainers."
+  artikel: "#welche-db"
+  tags: [sql, testen]
+
+- id: db-te-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist 'aufräumen vor dem Test' robuster als 'aufräumen nach dem Test'?"
+  optionen:
+    - "Es ist schneller"
+    - "Ein abgebrochener vorheriger Test hinterlässt Reste – wer vorher den Zustand herstellt, ist davon unabhängig"
+    - "Weil TearDown nicht existiert"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Der Test stellt selbst sicher, dass seine Voraussetzungen stimmen."
+  artikel: "#isolation"
+  tags: [sql, isolation]
+
+- id: db-te-003
+  typ: single
+  schwierigkeit: 3
+  frage: "Wann funktioniert die Strategie 'Transaktion pro Test, am Ende Rollback' nicht?"
+  optionen:
+    - "Wenn der Test schnell ist"
+    - "Wenn der getestete Code selbst committet oder eine eigene Verbindung öffnet"
+    - "Wenn SQLite verwendet wird"
+    - "Sie funktioniert immer"
+  richtig: [1]
+  erklaerung: "Dann liegen die Änderungen außerhalb der Test-Transaktion und bleiben nach dem Rollback erhalten."
+  artikel: "#isolation"
+  tags: [sql, isolation]
+
+- id: db-te-004
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Sonderfälle gehören in gute Testdaten?"
+  optionen:
+    - "Kunde ohne Bestellung"
+    - "Name mit Apostroph wie O'Brien"
+    - "NULL in optionalen Spalten"
+    - "Eine Kopie der Produktivdatenbank"
+  richtig: [0, 1, 2]
+  erklaerung: "Produktivdaten enthalten personenbezogene Daten und ändern sich ständig – dafür sind sie keine stabilen Testdaten."
+  artikel: "#testdaten"
+  tags: [sql, testdaten]
+
+- id: db-te-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Wann ist es sinnvoll, im Test direkt in der Datenbank zu prüfen?"
+  optionen:
+    - "Immer, statt über die API"
+    - "Für Seiteneffekte, die über die Schnittstelle nicht sichtbar sind, z. B. ob der Bestand nach einer abgelehnten Bestellung unverändert ist"
+    - "Nie"
+    - "Nur bei UI-Tests"
+  richtig: [1]
+  erklaerung: "Prüfungen in der Datenbank koppeln Tests an das interne Schema – deshalb gezielt einsetzen."
+  artikel: "#pruefen"
+  tags: [sql, testen]
+
+- id: db-te-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist das N+1-Problem?"
+  optionen:
+    - "Ein Rundungsfehler"
+    - "Für eine Liste wird eine Abfrage und danach eine zusätzliche Abfrage pro Eintrag ausgeführt"
+    - "Eine Tabelle mit N+1 Spalten"
+    - "Ein fehlender Primärschlüssel"
+  richtig: [1]
+  erklaerung: "Mit wenigen Testdaten unauffällig, mit vielen echten Daten sehr langsam. Abhilfe: Daten per JOIN gemeinsam laden (z. B. Include in EF Core)."
+  artikel: "#n-plus-1"
+  tags: [sql, performance]
+
+- id: db-te-007
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "In Testcode darf man Werte ruhig direkt in den SQL-Text einbauen, weil dort keine Angreifer sind."
+  richtig: [1]
+  erklaerung: "Falsch. Auch in Tests parametrisieren – sonst scheitern Tests an Namen wie O'Brien, und unsichere Muster werden kopiert."
+  artikel: "#pruefen"
+  tags: [sql, sicherheit]
+
+- id: db-te-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Welche Datenbank passt zu welchem Zweck?"
+  paare:
+    - ["Integrationstest gegen echtes Datenbankverhalten", "Echte Datenbank mit Testcontainers"]
+    - ["Sehr schneller Test einer einfachen Abfragelogik", "In-Memory-Datenbank"]
+    - ["Lasttest mit realistischen Datenmengen", "Gemeinsame, befüllte Testdatenbank"]
+  erklaerung: "Jede Variante hat ihren Platz – entscheidend ist, was der Test beweisen soll."
+  artikel: "#welche-db"
+  tags: [sql, testen]
+
+- id: db-te-009
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe den Ablauf eines robusten Datenbank-Integrationstests in die richtige Reihenfolge."
+  elemente:
+    - "Datenbank-Container starten und Migrationen ausführen"
+    - "Benötigten Zustand für den Test herstellen"
+    - "Aktion über die Anwendung bzw. API ausführen"
+    - "Ergebnis über die Schnittstelle prüfen"
+    - "Seiteneffekte gezielt in der Datenbank prüfen"
+  erklaerung: "Der Test stellt seinen Ausgangszustand selbst her und prüft zuerst, was Nutzer sehen."
+  artikel: "#isolation"
+  tags: [sql, testen]
+
+- id: db-te-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Dapper-Abfrage mit Parameter (C#)."
+  sprache: csharp
+  text: |
+    var bestand = await verbindung.ExecuteScalarAsync<int>(
+        "SELECT bestand FROM produkte WHERE id = ___id", new { id = "monitor" });
+  luecken:
+    - ["@"]
+  exakt: true
+  erklaerung: "In SQL Server und mit Dapper werden Parameter mit @name geschrieben; JDBC und SQLite verwenden ?."
+  artikel: "#pruefen"
+  tags: [sql, csharp]
+
+- id: db-te-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile erzeugt das N+1-Problem?"
+  sprache: csharp
+  code: |
+    var bestellungen = await db.Bestellungen.ToListAsync();
+    foreach (var b in bestellungen)
+    {
+        var kunde = await db.Kunden.FindAsync(b.KundeId);
+        Console.WriteLine($"{b.Id}: {kunde!.Name}");
+    }
+  richtig: [3]
+  erklaerung: "Pro Bestellung eine eigene Abfrage. Besser: einmal mit Include(b => b.Kunde) oder einem JOIN laden."
+  artikel: "#n-plus-1"
+  tags: [sql, performance]

@@ -1,0 +1,160 @@
+# Fragen zur Lektion "SQL-Grundlagen"
+
+- id: db-gl-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist ein Fremdschlüssel?"
+  optionen:
+    - "Ein Passwort für die Datenbank"
+    - "Eine Spalte, die auf den Primärschlüssel einer anderen Tabelle verweist"
+    - "Ein Schlüssel aus einer fremden Datenbank"
+    - "Ein Index für schnellere Suche"
+  richtig: [1]
+  erklaerung: "bestellungen.kunde_id verweist auf kunden.id und verbindet so jede Bestellung mit ihrem Kunden."
+  artikel: "#relational"
+  tags: [sql, schluessel]
+
+- id: db-gl-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie bildet man eine n:m-Beziehung zwischen Bestellungen und Produkten ab?"
+  optionen:
+    - "Mit einer Spalte produkt_ids als Text in der Bestelltabelle"
+    - "Mit einer Zwischentabelle, die beide Fremdschlüssel enthält (hier: positionen)"
+    - "Gar nicht, das geht in SQL nicht"
+    - "Mit einer zweiten Datenbank"
+  richtig: [1]
+  erklaerung: "Die Zwischentabelle positionen enthält bestellung_id und produkt_id – dazu Menge und Einzelpreis."
+  artikel: "#relational"
+  tags: [sql, beziehungen]
+
+- id: db-gl-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Test erwartet die Produkte in einer bestimmten Reihenfolge, die Abfrage hat aber kein ORDER BY. Was ist das Problem?"
+  optionen:
+    - "Keins, Datenbanken liefern immer in Einfügereihenfolge"
+    - "Die Reihenfolge ist ohne ORDER BY nicht garantiert – der Test kann zufällig scheitern"
+    - "ORDER BY ist nur bei Zahlen nötig"
+    - "Die Abfrage ist dann langsamer"
+  richtig: [1]
+  erklaerung: "Heute passt die Reihenfolge, nach einem Update oder mit mehr Daten nicht mehr – ein klassischer Flaky Test."
+  artikel: "#select"
+  tags: [sql, flaky]
+
+- id: db-gl-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Bedingung findet Zeilen, in denen die Spalte text keinen Wert hat?"
+  optionen:
+    - "WHERE text = NULL"
+    - "WHERE text IS NULL"
+    - "WHERE text = ''"
+    - "WHERE text = 0"
+  richtig: [1]
+  erklaerung: "Jeder Vergleich mit NULL ergibt 'unbekannt' – '= NULL' findet deshalb nie etwas."
+  artikel: "#null"
+  tags: [sql, null]
+
+- id: db-gl-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Werte liefert datum BETWEEN '2026-11-01' AND '2026-11-30'?"
+  optionen:
+    - "Nur Werte strikt zwischen den Grenzen"
+    - "Werte zwischen den Grenzen, beide Grenzen eingeschlossen"
+    - "Nur den 1. und 30. November"
+    - "Alle Werte außerhalb"
+  richtig: [1]
+  erklaerung: "BETWEEN schließt beide Grenzen ein – ein guter Ansatzpunkt für Grenzwerttests."
+  artikel: "#where"
+  tags: [sql, where]
+
+- id: db-gl-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Was liefert: WHERE kategorie = 'Technik' OR kategorie = 'Küche' AND preis < 20 ?"
+  optionen:
+    - "Technik- und Küchenprodukte unter 20 €"
+    - "Alle Technikprodukte sowie Küchenprodukte unter 20 €"
+    - "Nur Küchenprodukte"
+    - "Einen Syntaxfehler"
+  richtig: [1]
+  erklaerung: "AND bindet stärker als OR. Für 'beide Kategorien unter 20 €' braucht man Klammern um die OR-Bedingung."
+  artikel: "#where"
+  tags: [sql, where]
+
+- id: db-gl-007
+  typ: single
+  schwierigkeit: 1
+  frage: "Was liefert SELECT DISTINCT kategorie FROM produkte?"
+  optionen:
+    - "Alle Produkte"
+    - "Jede Kategorie genau einmal"
+    - "Die Anzahl der Kategorien"
+    - "Die teuerste Kategorie"
+  richtig: [1]
+  erklaerung: "DISTINCT entfernt doppelte Zeilen aus dem Ergebnis."
+  artikel: "#limit-distinct"
+  tags: [sql, distinct]
+
+- id: db-gl-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem LIKE-Muster die passenden Werte zu."
+  paare:
+    - ["'%@example.org'", "Alle E-Mail-Adressen dieser Domain"]
+    - ["'A%'", "Alles, was mit A beginnt"]
+    - ["'%kabel%'", "Alles, was 'kabel' irgendwo enthält"]
+    - ["'_ase'", "Genau ein Zeichen und dann 'ase', z. B. Hase oder Vase"]
+  erklaerung: "% steht für beliebig viele Zeichen (auch keins), _ für genau ein Zeichen."
+  artikel: "#where"
+  tags: [sql, like]
+
+- id: db-gl-009
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Klauseln einer SQL-Abfrage in die vorgeschriebene Reihenfolge."
+  elemente:
+    - "SELECT"
+    - "FROM"
+    - "WHERE"
+    - "GROUP BY"
+    - "HAVING"
+    - "ORDER BY"
+    - "LIMIT"
+  erklaerung: "Die Reihenfolge ist fest. Nicht jede Klausel ist nötig, aber die vorhandenen stehen immer in dieser Abfolge."
+  artikel: "#select"
+  tags: [sql, select]
+
+- id: db-gl-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Abfrage: die drei teuersten Produkte, teuerstes zuerst."
+  sprache: sql
+  text: |
+    SELECT name, preis
+    FROM produkte
+    ORDER BY preis ___
+    ___ 3;
+  luecken:
+    - ["DESC"]
+    - ["LIMIT"]
+  erklaerung: "DESC sortiert absteigend (ASC ist der Standard). In SQL Server schreibt man stattdessen SELECT TOP 3 ..."
+  artikel: "#limit-distinct"
+  tags: [sql, select]
+
+- id: db-gl-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Diese Abfrage soll Kunden ohne hinterlegte Telefonnummer finden, liefert aber nie etwas. Welche Zeile ist falsch?"
+  sprache: sql
+  code: |
+    SELECT name, email
+    FROM kunden
+    WHERE telefon = NULL
+    ORDER BY name;
+  richtig: [2]
+  erklaerung: "Vergleiche mit NULL ergeben immer 'unbekannt'. Richtig: WHERE telefon IS NULL."
+  artikel: "#null"
+  tags: [sql, null]

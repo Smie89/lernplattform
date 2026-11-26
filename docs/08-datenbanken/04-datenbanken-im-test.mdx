@@ -1,0 +1,166 @@
+---
+title: Datenbanken in automatisierten Tests
+description: Welche Datenbank im Test verwenden (In-Memory, Testcontainers, gemeinsame Testdatenbank), Testdaten anlegen und isolieren, Zustand in der Datenbank prüfen, Migrationen testen, parametrisierte Abfragen in C# und Java sowie das N+1-Problem.
+tags: [sql, testautomation, testdaten, testcontainers]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import fragen from './04-datenbanken-im-test.fragen.yaml';
+
+# Datenbanken in automatisierten Tests
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die passende **Datenbank für Tests** wählen,
+- **Testdaten** gezielt anlegen und Tests **voneinander isolieren**,
+- Ergebnisse **in der Datenbank prüfen**, wo es sinnvoll ist,
+- **Migrationen** testen,
+- typische Datenbankprobleme wie **N+1-Abfragen** im Test erkennen.
+:::
+
+## Welche Datenbank im Test? \{#welche-db}
+
+| Variante | Vorteile | Nachteile | gut für |
+|---|---|---|---|
+| **In-Memory** (SQLite, EF Core InMemory, H2) | sehr schnell, nichts zu installieren | verhält sich anders als die echte Datenbank (Datentypen, SQL-Dialekt, Constraints) | Unit-nahe Tests, Lernen |
+| **Echte Datenbank im Container** ([Testcontainers](../05-docker/05-docker-testautomation.mdx#testcontainers)) | gleiche Datenbank wie in Produktion, frisch pro Lauf | braucht Docker, Start dauert Sekunden | **Integrationstests** – meist die beste Wahl |
+| **Gemeinsame Testdatenbank** | realistische Datenmengen | Tests stören sich gegenseitig, Zustand unklar | manuelle Tests, Lasttests |
+
+:::warning[In-Memory-Datenbanken täuschen]
+Ein Test kann gegen eine In-Memory-Datenbank grün und gegen PostgreSQL rot sein: andere Datumsfunktionen, andere
+Groß-/Kleinschreibung bei Vergleichen, fehlende Fremdschlüssel (wie bei SQLite ohne `PRAGMA foreign_keys = ON`). Für
+Integrationstests deshalb dieselbe Datenbank wie in Produktion verwenden.
+:::
+
+## Testdaten anlegen \{#testdaten}
+
+Jeder Test braucht einen **bekannten Ausgangszustand**. Möglichkeiten:
+
+| Ansatz | Beispiel |
+|---|---|
+| **Basisdaten per Skript** | `daten.sql` mit bewusst gewählten Sonderfällen |
+| **Pro Test gezielt anlegen** | [Test Data Builder](../02-testautomation/01-grundlagen/03-tests-strukturieren.mdx#testdaten), der genau die Daten anlegt, die dieser Test braucht |
+| **Über die Anwendung** | Testdaten per API anlegen – langsamer, prüft aber die echten Regeln |
+
+Gute Testdaten enthalten **Sonderfälle** absichtlich: Kunde ohne Bestellung, stornierte Bestellung, ausverkauftes Produkt,
+Namen mit Umlauten und Apostroph (`O'Brien` – ein schneller Test für fehlende Parametrisierung), NULL in optionalen Spalten.
+
+Und: **keine Produktivdaten** in Tests – sie enthalten personenbezogene Daten (DSGVO) und ändern sich ständig.
+
+## Tests isolieren \{#isolation}
+
+Tests dürfen sich nicht über die Datenbank beeinflussen, sonst hängen Ergebnisse von der Reihenfolge ab. Strategien:
+
+| Strategie | Wie | Bewertung |
+|---|---|---|
+| **Frische Datenbank pro Test** | im Beispielprojekt: `setUp` erstellt eine neue In-Memory-Datenbank | maximal sicher; bei echten Datenbanken zu langsam |
+| **Transaktion pro Test, am Ende Rollback** | Test läuft in einer Transaktion, die nie committet wird | schnell; funktioniert nicht, wenn der getestete Code selbst committet oder eigene Verbindungen öffnet |
+| **Aufräumen nach dem Test** | angelegte Daten im `TearDown` löschen | fehleranfällig – ein abgebrochener Test hinterlässt Reste |
+| **Eindeutige Daten pro Test** | jeder Test nutzt eigene Kunden-IDs bzw. E-Mails (z. B. mit GUID) | gut für parallele Tests gegen eine gemeinsame Datenbank |
+| **Zurücksetzen vor dem Test** | Tabellen leeren und Basisdaten neu laden (z. B. mit Respawn für .NET) | robust, weil der Zustand vor dem Test hergestellt wird |
+
+Die Isolation im Beispielprojekt ist selbst getestet:
+
+```python title="test_datenbank.py"
+class IsolationsTests(unittest.TestCase):
+    def test_aenderung_in_einer_datenbank(self):
+        db = datenbank.verbinden()
+        db.execute("DELETE FROM positionen")
+        self.assertEqual(db.execute("SELECT COUNT(*) FROM positionen").fetchone()[0], 0)
+
+    def test_andere_datenbank_ist_unberuehrt(self):
+        db = datenbank.verbinden()
+        self.assertEqual(db.execute("SELECT COUNT(*) FROM positionen").fetchone()[0], 6)
+```
+
+:::tip[Aufräumen vorher statt nachher]
+Ein Test, der **vor** seinem Lauf den benötigten Zustand herstellt, funktioniert auch dann, wenn der vorige Test abgestürzt
+ist. Aufräumen **danach** verlässt sich darauf, dass alle Tests sauber enden.
+:::
+
+## In der Datenbank prüfen – oder über die API? \{#pruefen}
+
+| Prüfen über … | Vorteil | Nachteil |
+|---|---|---|
+| **die Schnittstelle** (API, Oberfläche) | prüft, was Nutzer sehen; unabhängig vom internen Schema | Seiteneffekte bleiben unsichtbar |
+| **die Datenbank** | macht Seiteneffekte sichtbar: Wurde der Bestand reduziert? Ist die Bestellung storniert? | koppelt Tests an das interne Schema |
+
+Faustregel: Ergebnisse primär **über die Schnittstelle** prüfen, die Datenbank für **Seiteneffekte**, die anders nicht
+sichtbar sind – etwa „nach einer abgelehnten Bestellung ist der Bestand unverändert“.
+
+<Tabs groupId="sprache">
+<TabItem value="csharp" label="C#">
+
+```csharp
+// Mit Dapper: parametrisiert, kurz und lesbar
+var bestand = await verbindung.ExecuteScalarAsync<int>(
+    "SELECT bestand FROM produkte WHERE id = @id", new { id = "monitor" });
+Assert.That(bestand, Is.EqualTo(4));
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+try (var befehl = verbindung.prepareStatement("SELECT bestand FROM produkte WHERE id = ?")) {
+    befehl.setString(1, "monitor");
+    try (var ergebnis = befehl.executeQuery()) {
+        ergebnis.next();
+        assertThat(ergebnis.getInt("bestand")).isEqualTo(4);
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Auch in Testcode gilt: **immer parametrisieren**, nie Werte in SQL-Text einbauen.
+
+## Migrationen testen \{#migrationen}
+
+Schemaänderungen werden in echten Projekten als **Migrationen** versioniert (Entity Framework Migrations, Flyway, Liquibase).
+Testenswert:
+
+- Läuft die Migration auf einer **leeren** Datenbank durch?
+- Läuft sie auf einer Datenbank **mit realistischen Daten** – inklusive NULL-Werten und Altlasten?
+- Bleiben **bestehende Daten** korrekt (z. B. beim Aufteilen einer Spalte)?
+- Funktioniert die Anwendung danach noch (Regressionstests)?
+
+Mit Testcontainers lässt sich jede Migration in der CI gegen die echte Datenbank prüfen.
+
+## Das N+1-Problem \{#n-plus-1}
+
+Ein klassischer Performancefehler mit ORMs: Für eine Liste von 100 Bestellungen wird erst die Liste geladen (1 Abfrage) und
+dann für **jede** Bestellung einzeln der Kunde (100 Abfragen).
+
+```csharp
+var bestellungen = await db.Bestellungen.ToListAsync();          // 1 Abfrage
+foreach (var b in bestellungen)
+    Console.WriteLine(b.Kunde.Name);                              // + 1 Abfrage pro Bestellung (Lazy Loading)
+
+var mitKunden = await db.Bestellungen.Include(b => b.Kunde).ToListAsync();  // 1 Abfrage mit JOIN
+```
+
+Mit 5 Testdatensätzen fällt das nicht auf, mit 10 000 echten schon. Erkennen lässt es sich, indem man im Test die
+**Anzahl ausgeführter Abfragen** protokolliert oder begrenzt – oder spätestens im [Lasttest](../02-testautomation/06-performance/01-performance-grundlagen.mdx).
+
+## Typische Fehler \{#typische-fehler}
+
+- In-Memory-Datenbank für Tests, die **datenbankspezifisches Verhalten** prüfen sollen.
+- **Abhängigkeiten zwischen Tests** über gemeinsame Daten.
+- Aufräumen nur im `TearDown` – abgebrochene Tests hinterlassen Reste.
+- **Produktivdaten** als Testdaten.
+- Testdaten **ohne Sonderfälle** – nur der glatte Normalfall.
+- Werte in SQL-Text einbauen, auch „nur im Test“.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Für Integrationstests die **echte Datenbank** im Container (Testcontainers); In-Memory nur, wo Unterschiede keine Rolle spielen.
+- Testdaten bewusst mit **Sonderfällen**; keine Produktivdaten.
+- **Isolation**: frische Datenbank, Rollback pro Test, eindeutige Daten oder Zurücksetzen vor dem Test.
+- Primär über die Schnittstelle prüfen, die Datenbank für **Seiteneffekte**.
+- **Migrationen** gegen leere und befüllte Datenbanken testen; **N+1-Abfragen** zeigen sich erst mit vielen Daten.
+
+<Quiz fragen={fragen} titel="Quiz: Datenbanken in automatisierten Tests" />

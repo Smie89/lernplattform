@@ -1,0 +1,9 @@
+{
+  "label": "Barrierefreiheit",
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "slug": "/testautomation/barrierefreiheit",
+    "description": "Barrierefreiheit (Accessibility) nach WCAG und BFSG prüfen – manuell und automatisiert mit axe-core und Playwright."
+  }
+}

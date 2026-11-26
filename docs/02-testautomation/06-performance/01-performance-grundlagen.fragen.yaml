@@ -1,0 +1,149 @@
+# Fragen zur Lektion "Performance- und Lasttests – Grundlagen"
+
+- id: ta-pf-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Testart prüft, wo die Belastungsgrenze eines Systems liegt?"
+  optionen:
+    - "Rauchtest"
+    - "Stresstest"
+    - "Dauertest"
+    - "Komponententest"
+  richtig: [1]
+  erklaerung: "Beim Stresstest steigert man die Last, bis das System bricht – und beobachtet, wie es sich dabei verhält."
+  artikel: "#arten"
+  tags: [performance]
+
+- id: ta-pf-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Nach 6 Stunden mittlerer Last steigen die Antwortzeiten langsam immer weiter. Welche Testart hat das gezeigt, und was ist eine typische Ursache?"
+  optionen:
+    - "Spike-Test, zu wenig CPU"
+    - "Dauertest, z. B. ein Speicherleck"
+    - "Rauchtest, falsches Skript"
+    - "Lasttest, fehlende Denkzeiten"
+  richtig: [1]
+  erklaerung: "Dauertests (Soak Tests) finden Probleme, die erst über lange Zeit entstehen: Speicherlecks, volle Logs, wachsende Tabellen."
+  artikel: "#arten"
+  tags: [performance]
+
+- id: ta-pf-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Antwortzeiten: 80, 85, 90, 90, 95, 100, 105, 110, 120, 2400 ms. Warum ist der Durchschnitt (327,5 ms) hier wenig aussagekräftig?"
+  optionen:
+    - "Weil er falsch berechnet ist"
+    - "Weil ein einzelner Ausreißer ihn stark verzerrt – er entspricht keiner echten Anfrage"
+    - "Weil man nur das Maximum betrachten sollte"
+    - "Weil Antwortzeiten nicht gemittelt werden dürfen"
+  richtig: [1]
+  erklaerung: "Median und Perzentile beschreiben die Verteilung besser: p50 = 97,5 ms, p90 = 120 ms."
+  artikel: "#perzentile"
+  tags: [performance, perzentile]
+
+- id: ta-pf-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Was bedeutet 'p95 < 300 ms'?"
+  optionen:
+    - "Die durchschnittliche Antwortzeit liegt unter 300 ms"
+    - "95 % der Anfragen sind höchstens 300 ms langsam"
+    - "95 Nutzer warten 300 ms"
+    - "Die schnellste Anfrage dauert 300 ms"
+  richtig: [1]
+  erklaerung: "Perzentile beschreiben, was die langsamen Nutzer erleben – deshalb formuliert man Anforderungen damit."
+  artikel: "#perzentile"
+  tags: [performance, perzentile]
+
+- id: ta-pf-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Lasttest mit 20 virtuellen Nutzern ohne Denkzeiten erzeugt viel höhere Last als erwartet. Warum?"
+  optionen:
+    - "Weil virtuelle Nutzer schneller tippen"
+    - "Ohne Pausen schickt jeder virtuelle Nutzer Anfragen im Millisekundentakt – so viel wie Hunderte echte Nutzer"
+    - "Weil k6 die Nutzer verdoppelt"
+    - "Das ist nicht der Fall"
+  richtig: [1]
+  erklaerung: "Echte Nutzer lesen und überlegen. Denkzeiten (sleep) machen das Lastprofil realistisch."
+  artikel: "#lastprofil"
+  tags: [performance, lastprofil]
+
+- id: ta-pf-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Unter Last steigen die Antwortzeiten stark, die CPU des Servers liegt aber nur bei 20 %. Was ist eine wahrscheinliche Ursache?"
+  optionen:
+    - "Zu aufwendige Berechnungen"
+    - "Warten auf Datenbank, Sperren oder einen zu kleinen Verbindungspool"
+    - "Der Server ist zu schnell"
+    - "Die Testdaten sind zu klein"
+  richtig: [1]
+  erklaerung: "Der Server rechnet nicht, er wartet. Datenbankmetriken und Pools ansehen."
+  artikel: "#vorgehen"
+  tags: [performance, engpass]
+
+- id: ta-pf-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was gehört zu einer guten Testumgebung für Lasttests?"
+  optionen:
+    - "Produktionsähnliche Konfiguration und Datenmenge"
+    - "Ein Lastgenerator, der selbst nicht zum Engpass wird"
+    - "Keine anderen Tests gleichzeitig auf derselben Umgebung"
+    - "Ein beliebiges fremdes System, das gerade gut erreichbar ist"
+  richtig: [0, 1, 2]
+  erklaerung: "Lasttests gegen fremde Systeme sind technisch kaum von einem DoS-Angriff zu unterscheiden – nie ohne Erlaubnis."
+  artikel: "#umgebung"
+  tags: [performance, umgebung]
+
+- id: ta-pf-008
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Eine niedrige Antwortzeit allein zeigt, dass das System unter Last gut funktioniert."
+  richtig: [1]
+  erklaerung: "Falsch. Ein System kann sehr schnell antworten – mit Fehlermeldungen. Antwortzeit und Fehlerrate gehören zusammen."
+  artikel: "#metriken"
+  tags: [performance, metriken]
+
+- id: ta-pf-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Testart ihren Lastverlauf zu."
+  paare:
+    - ["Lasttest", "Hochfahren und auf der erwarteten Last halten"]
+    - ["Stresstest", "Last steigern, bis das System bricht"]
+    - ["Spike-Test", "In Sekunden von wenig auf sehr viel Last"]
+    - ["Dauertest", "Mittlere Last über viele Stunden"]
+    - ["Rauchtest", "Ein Nutzer, kurze Zeit"]
+  erklaerung: "Jede Art beantwortet eine andere Frage."
+  artikel: "#arten"
+  tags: [performance]
+
+- id: ta-pf-010
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe das Vorgehen bei einem Performancetest in die richtige Reihenfolge."
+  elemente:
+    - "Ziele, Lastprofil und Schwellen festlegen"
+    - "Skript schreiben und mit einem Rauchtest prüfen"
+    - "Baseline messen"
+    - "Lasttest durchführen und Ressourcen beobachten"
+    - "Engpass beheben und erneut messen"
+  erklaerung: "Immer nur eine Änderung auf einmal – sonst weiß man nicht, was geholfen hat."
+  artikel: "#vorgehen"
+  tags: [performance]
+
+- id: ta-pf-011
+  typ: zuordnen
+  schwierigkeit: 3
+  frage: "Ordne jedem Symptom unter Last die häufige Ursache zu."
+  paare:
+    - ["CPU bei 100 %, Antwortzeit steigt mit der Nutzerzahl", "Aufwendige Berechnung, fehlender Cache"]
+    - ["Ab einer bestimmten Last plötzlich viele Fehler", "Verbindungs- oder Thread-Pool erschöpft"]
+    - ["Antwortzeit steigt langsam über Stunden", "Speicherleck oder wachsende Tabellen"]
+    - ["Nur ein Endpunkt langsam, CPU niedrig", "Fehlender Index oder N+1-Abfragen"]
+  erklaerung: "Server-Ressourcen parallel zum Lasttest zu beobachten ist der Schlüssel zur Engpassanalyse."
+  artikel: "#vorgehen"
+  tags: [performance, engpass]
