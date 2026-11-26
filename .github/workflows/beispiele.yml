@@ -31,3 +31,20 @@ jobs:
         run: pwsh tests/Shop.UiTests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
       - name: UI-Tests
         run: dotnet test tests/Shop.UiTests --no-build
+
+  shop-java:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beispiele/shop-java
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Unit-Tests
+        run: ./mvnw -B test
+      - name: API- und UI-Tests
+        run: ./mvnw -B verify

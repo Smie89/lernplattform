@@ -176,3 +176,31 @@
   erklaerung: "Das ist die Aufgabenteilung der Testpyramide: Unit-Tests prüfen Regeln und Grenzen gründlich, API- und UI-Tests das Zusammenspiel."
   artikel: "#gegenprobe"
   tags: [struktur, testpyramide]
+
+- id: ta-st-014
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie trennt die Java-Version des Shops Unit-Tests von API- und UI-Tests?"
+  optionen:
+    - "Über drei getrennte Git-Repositories"
+    - "Über die Namenskonvention: *Test läuft mit Surefire (mvn test), *IT mit Failsafe (mvn verify)"
+    - "Gar nicht, alle Tests laufen immer gemeinsam"
+    - "Über Kommentare im Code"
+  richtig: [1]
+  erklaerung: "Surefire führt bei mvn test die schnellen *Test-Klassen aus, Failsafe bei mvn verify zusätzlich die *IT-Klassen mit gestarteter Anwendung."
+  artikel: "#java-struktur"
+  tags: [struktur, java, maven]
+
+- id: ta-st-015
+  typ: single
+  schwierigkeit: 3
+  frage: "Mehrere Testklassen nutzen @SpringBootTest mit derselben Konfiguration. Wie oft startet Spring die Anwendung?"
+  optionen:
+    - "Für jeden Test neu"
+    - "Für jede Testklasse neu"
+    - "Einmal – Spring cacht den Anwendungskontext und verwendet ihn wieder"
+    - "Gar nicht, man muss sie manuell starten"
+  richtig: [2]
+  erklaerung: "Der Spring-TestContext cacht Kontexte mit gleicher Konfiguration. Das ist das Gegenstück zum [SetUpFixture] in der C#-Version."
+  artikel: "#java-vergleich"
+  tags: [struktur, java, spring]

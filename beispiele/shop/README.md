@@ -5,6 +5,8 @@ die zeigen, wie man Tests in einem echten .NET-Projekt strukturiert.
 Erklärt in der Lektion **„Tests strukturieren“**:
 https://smie89.github.io/lernplattform/lernen/testautomation/grundlagen/tests-strukturieren
 
+Dieselbe Anwendung gibt es auch in Java: [../shop-java](../shop-java/README.md).
+
 ## Fachliche Regeln
 
 - Ab 100 € Zwischensumme gibt es 10 % Rabatt, Stammkunden erhalten zusätzlich 5 %.

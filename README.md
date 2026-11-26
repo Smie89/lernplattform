@@ -65,6 +65,7 @@ Prüft alle `*.fragen.yaml`: Pflichtfelder, eindeutige IDs, gültige `richtig`-I
 
 `beispiele/shop/` enthält eine lauffähige Testanwendung (Mini-Shop, .NET 10) mit Unit-, API- und UI-Tests –
 Grundlage der Lektion „Tests strukturieren“. Details im [README des Projekts](beispiele/shop/README.md).
+`beispiele/shop-java/` ist dieselbe Anwendung in Java (Spring Boot, JUnit 5, REST Assured, Selenium) – siehe [README](beispiele/shop-java/README.md).
 Die Tests laufen bei Änderungen automatisch per GitHub Action (`.github/workflows/beispiele.yml`).
 
 ## Veröffentlichen

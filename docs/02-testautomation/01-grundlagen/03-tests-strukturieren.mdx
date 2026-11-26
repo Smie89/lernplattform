@@ -20,7 +20,7 @@ Nach dieser Lektion kannst du …
 
 ## Die Testanwendung \{#testanwendung}
 
-Zu dieser Lektion gibt es eine **echte, lauffähige Anwendung**: einen kleinen **Mini-Shop** mit Warenkorb, Rabattregeln und Bestellung – plus **41 Tests** auf drei Ebenen. Alle Codebeispiele unten stammen aus diesem Projekt.
+Zu dieser Lektion gibt es eine **echte, lauffähige Anwendung**: einen kleinen **Mini-Shop** mit Warenkorb, Rabattregeln und Bestellung – plus **41 Tests** auf drei Ebenen. Alle Codebeispiele unten stammen aus diesem Projekt. Die Lektion erklärt die **C#-Version**; die [Java-Version](#java) ist genauso aufgebaut.
 
 👉 **Quellcode:** [github.com/Smie89/lernplattform/tree/main/beispiele/shop](https://github.com/Smie89/lernplattform/tree/main/beispiele/shop)
 
@@ -392,29 +392,109 @@ Das ist kein Mangel der API- und UI-Tests, sondern **genau die Aufgabenteilung**
 - **API-Tests** prüfen Statuscodes, Fehlerfälle und das JSON-Format.
 - **UI-Tests** prüfen, dass die Oberfläche alles richtig zusammensetzt und anzeigt.
 
-## In Java: dieselben Ideen \{#java}
+## In Java: dieselbe Testanwendung \{#java}
 
-In Java gibt **Maven** die Grundstruktur vor. Die Prinzipien sind identisch:
+Den Mini-Shop gibt es auch als **Java-Version** mit Spring Boot – gleiche Regeln, gleiche REST-API, gleiche Oberfläche und ebenfalls **41 Tests**, getestet mit JUnit 5, AssertJ, Mockito, REST Assured und Selenium.
 
-```text
-shop/
-├── pom.xml
-└── src/
-    ├── main/java/de/shop/preise/Rabattrechner.java
-    └── test/java/de/shop/
-        ├── preise/RabattrechnerTest.java          ← gleiches Paket, Unit-Test
-        ├── testdaten/WarenkorbBuilder.java
-        └── api/BestellungApiIT.java               ← "IT" = Integrationstest
+👉 **Quellcode:** [github.com/Smie89/lernplattform/tree/main/beispiele/shop-java](https://github.com/Smie89/lernplattform/tree/main/beispiele/shop-java)
+
+```powershell
+cd lernplattform/beispiele/shop-java
+./mvnw test      # 21 Unit-Tests (Surefire)
+./mvnw verify    # zusätzlich 15 API- und 5 UI-Tests (Failsafe), benötigt Google Chrome
 ```
 
-| .NET | Java |
-|---|---|
-| eigenes Testprojekt pro Testart | eigenes Maven-Modul oder Namenskonvention: `*Test` (Surefire, `mvn test`) und `*IT` (Failsafe, `mvn verify`) |
-| Ordner/Namespace spiegeln | Pakete spiegeln (`de.shop.preise` ↔ `de.shop.preise`) |
-| `[SetUpFixture]` | JUnit-Extension oder `@BeforeAll` in einer gemeinsamen Basisklasse |
-| `Category` + `--filter` | `@Tag` + `-Dgroups` |
+Maven muss nicht installiert sein: Der **Maven Wrapper** (`mvnw`) lädt die passende Version beim ersten Aufruf selbst – ein JDK 21 genügt.
 
-Weil Testklasse und getestete Klasse im **selben Paket** liegen, können Java-Tests auch auf Methoden mit Paket-Sichtbarkeit zugreifen.
+### Ein Projekt, zwei Testarten \{#java-struktur}
+
+In Java ist es üblich, **ein** Maven-Projekt zu haben und die Testarten über die **Namenskonvention** zu trennen:
+
+```text
+src/main/java/de/shop/preise/Rabattrechner.java
+src/test/java/de/shop/
+├── preise/RabattrechnerTest.java            ← *Test  = Unit-Test   → Surefire, mvn test
+├── warenkoerbe/WarenkorbTest.java
+├── bestellungen/BestellServiceTest.java
+├── testdaten/                               ← TestProdukte, WarenkorbBuilder
+├── apitests/
+│   ├── infrastruktur/                       ← ApiTestBasis, ShopApiClient, Antworten
+│   └── bestellungen/BestellungApiIT.java    ← *IT    = Integrationstest → Failsafe, mvn verify
+└── uitests/
+    ├── infrastruktur/UiTestBasis.java
+    ├── seiten/ShopSeite.java
+    ├── komponenten/WarenkorbBereich.java
+    └── bestellungen/BestellungUiIT.java
+```
+
+- **Surefire** führt bei `mvn test` alle Klassen `*Test` aus – schnell, ohne Server.
+- **Failsafe** führt bei `mvn verify` zusätzlich alle Klassen `*IT` aus – mit gestarteter Anwendung.
+- Unit-Tests liegen im **selben Paket** wie die getestete Klasse (`de.shop.preise`) und können so auch auf paketsichtbare Methoden zugreifen.
+
+### Die Bausteine im Vergleich \{#java-vergleich}
+
+| Baustein | C# (Shop) | Java (Shop-Java) |
+|---|---|---|
+| Testarten trennen | drei Testprojekte | `*Test` (Surefire) und `*IT` (Failsafe) |
+| Ordner spiegeln | Ordner + Namespace | Pakete |
+| Testdaten | `WarenkorbBuilder.EinWarenkorb()` | `WarenkorbBuilder.einWarenkorb()` |
+| Testdoubles | NSubstitute | Mockito (`@Mock`, `when`, `verify`) |
+| Feste Zeit | `FakeTimeProvider` | `Clock.fixed(...)` |
+| Anwendung einmal starten | `[SetUpFixture]` + `WebApplicationFactory` | `@SpringBootTest(webEnvironment = RANDOM_PORT)` – Spring cacht den Kontext für alle Testklassen |
+| API-Client | `ShopApiClient` mit `HttpClient` | `ShopApiClient` mit REST Assured |
+| UI-Tests | Playwright, `ShopSeite` + `WarenkorbBereich` | Selenium, `ShopSeite` + `WarenkorbBereich` |
+| Gruppieren | Klassen/Ordner, `Category` | `@Nested`, `@Tag` |
+
+Ein Ausschnitt aus [BestellServiceTest.java](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop-java/src/test/java/de/shop/bestellungen/BestellServiceTest.java) – gleiche Struktur wie in C#:
+
+```java
+@ExtendWith(MockitoExtension.class)   // erzeugt die @Mock-Felder für JEDEN Test neu
+class BestellServiceTest {
+
+    private static final Kunde MAX = new Kunde("Max", false);   // unveränderlich -> static ok
+
+    @Mock private Zahlungsdienst zahlung;
+    @Mock private BestellRepository repository;
+    private BestellService service;
+
+    @BeforeEach
+    void vorbereiten() {
+        var uhr = Clock.fixed(Instant.parse("2026-03-15T10:00:00Z"), ZoneOffset.UTC);
+        service = new BestellService(new Rabattrechner(), zahlung, repository, uhr);
+    }
+
+    @Test
+    void bestellenBeiAbgelehnterZahlungSpeichertNichts() {
+        when(zahlung.abbuchen(anyString(), any())).thenReturn(false);
+        var warenkorb = einWarenkorb().mit(TestProdukte.MONITOR).bauen();
+
+        var ergebnis = service.bestellen(warenkorb, MAX);
+
+        assertThat(ergebnis.erfolgreich()).isFalse();
+        verifyNoInteractions(repository);
+    }
+}
+```
+
+Und ein UI-Test mit Selenium und Page Object ([BestellungUiIT.java](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop-java/src/test/java/de/shop/uitests/bestellungen/BestellungUiIT.java)):
+
+```java
+class BestellungUiIT extends UiTestBasis {
+
+    @Test
+    void stammkundeKannBestellenUndSiehtBestaetigung() {
+        shop.inDenWarenkorb("buch");
+
+        shop.bestellen("Anna Beispiel", true);
+
+        assertThat(shop.bestaetigung())
+            .contains("Vielen Dank, Anna Beispiel!")
+            .contains("23,66 €");
+    }
+}
+```
+
+Die **Gegenprobe** (`>=` → `>` im `Rabattrechner`) liefert in Java dasselbe Ergebnis: 2 von 21 Unit-Tests werden rot, alle 20 API- und UI-Tests bleiben grün.
 
 ## Checkliste \{#checkliste}
 
