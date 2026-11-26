@@ -1,0 +1,146 @@
+# Fragen zur Lektion "Cloud-Grundlagen"
+
+- id: cl-gl-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Bei welchem Servicemodell ist der Kunde für Betriebssystem und Patches verantwortlich?"
+  optionen:
+    - "SaaS"
+    - "PaaS"
+    - "IaaS"
+    - "Bei keinem"
+  richtig: [2]
+  erklaerung: "Bei IaaS stellt der Anbieter nur Hardware, Netz und Virtualisierung – alles darüber betreibt der Kunde."
+  artikel: "#servicemodelle"
+  tags: [cloud, servicemodelle]
+
+- id: cl-gl-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Speicher mit Kundendaten war öffentlich lesbar. Wer ist nach dem Modell der geteilten Verantwortung verantwortlich?"
+  optionen:
+    - "Der Cloud-Anbieter"
+    - "Der Kunde – Konfiguration und Daten liegen immer bei ihm"
+    - "Niemand"
+    - "Die Datenschutzbehörde"
+  richtig: [1]
+  erklaerung: "Der Anbieter sichert die Cloud, der Kunde das, was er darin konfiguriert und speichert."
+  artikel: "#verantwortung"
+  tags: [cloud, verantwortung]
+
+- id: cl-gl-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist eine Verfügbarkeitszone?"
+  optionen:
+    - "Ein Land, in dem die Cloud verfügbar ist"
+    - "Ein physisch getrenntes Rechenzentrum innerhalb einer Region mit eigener Strom- und Kühlversorgung"
+    - "Eine Preisstufe"
+    - "Ein virtuelles Netzwerk"
+  richtig: [1]
+  erklaerung: "Wer über mehrere Zonen verteilt, übersteht den Ausfall eines Rechenzentrums."
+  artikel: "#regionen"
+  tags: [cloud, regionen]
+
+- id: cl-gl-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie verhinderst du am zuverlässigsten, dass Testumgebungen nach dem Test weiter Kosten verursachen?"
+  optionen:
+    - "Eine Erinnerung im Kalender"
+    - "Umgebungen per Infrastructure as Code anlegen und automatisch wieder abbauen, dazu Budgets mit Alarm"
+    - "Nur kleine VMs verwenden"
+    - "Gar nicht, das gehört dazu"
+  richtig: [1]
+  erklaerung: "Was per Code entsteht, lässt sich per Code entfernen – Budgets fangen den Rest ab."
+  artikel: "#kosten"
+  tags: [cloud, kosten]
+
+- id: cl-gl-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu Lasttests in der Cloud stimmen?"
+  optionen:
+    - "Nur gegen eigene Systeme und nach Absprache"
+    - "Autoskalierung kann bei Lasttests hohe Kosten erzeugen – Obergrenzen setzen"
+    - "Viele Anbieter haben Regeln für Last- und Penetrationstests"
+    - "Gegen beliebige Cloud-Dienste erlaubt, weil sie ja skalieren"
+  richtig: [0, 1, 2]
+  erklaerung: "Ein Lasttest gegen fremde Systeme ist technisch kaum von einem DoS-Angriff zu unterscheiden."
+  artikel: "#testen"
+  tags: [cloud, lasttest]
+
+- id: cl-gl-006
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Bei SaaS-Anwendungen wie Microsoft 365 muss sich der Kunde um gar nichts kümmern, auch nicht um Zugriffsrechte."
+  richtig: [1]
+  erklaerung: "Falsch. Konfiguration, Zugriffsrechte und Daten bleiben auch bei SaaS in der Verantwortung des Kunden."
+  artikel: "#verantwortung"
+  tags: [cloud, verantwortung]
+
+- id: cl-gl-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Was sind ephemere Testumgebungen?"
+  optionen:
+    - "Besonders sichere Umgebungen"
+    - "Umgebungen, die z. B. pro Pull Request automatisch angelegt und nach dem Test wieder abgebaut werden"
+    - "Produktionsumgebungen"
+    - "Umgebungen ohne Netzwerk"
+  richtig: [1]
+  erklaerung: "So hat jeder Test eine frische, isolierte Umgebung – und es entstehen keine Dauerkosten."
+  artikel: "#testen"
+  tags: [cloud, testumgebung]
+
+- id: cl-gl-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Azure-Dienst das AWS-Gegenstück zu."
+  paare:
+    - ["Virtual Machines", "EC2"]
+    - ["Blob Storage", "S3"]
+    - ["Azure Functions", "Lambda"]
+    - ["Key Vault", "Secrets Manager"]
+    - ["Activity Log", "CloudTrail"]
+  erklaerung: "Die Konzepte sind überall gleich, nur die Namen unterscheiden sich."
+  artikel: "#anbieter"
+  tags: [cloud, azure, aws]
+
+- id: cl-gl-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Servicemodell ein Beispiel zu."
+  paare:
+    - ["IaaS", "Virtuelle Maschine mit eigenem Betriebssystem"]
+    - ["PaaS", "Verwaltete Datenbank oder App Service"]
+    - ["Serverless", "Funktion, die bei jeder Anfrage ausgeführt wird"]
+    - ["SaaS", "Fertige Anwendung wie Jira Cloud"]
+  erklaerung: "Je weiter rechts im Modell, desto mehr übernimmt der Anbieter."
+  artikel: "#servicemodelle"
+  tags: [cloud, servicemodelle]
+
+- id: cl-gl-010
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Ordne die Servicemodelle danach, wie viel der Anbieter übernimmt – vom wenigsten zum meisten."
+  elemente:
+    - "IaaS"
+    - "PaaS"
+    - "Serverless / FaaS"
+    - "SaaS"
+  erklaerung: "Bei IaaS betreibt der Kunde fast alles oberhalb der Hardware, bei SaaS nur noch Konfiguration und Daten."
+  artikel: "#servicemodelle"
+  tags: [cloud, servicemodelle]
+
+- id: cl-gl-011
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Grundsatz der geteilten Verantwortung."
+  text: "Der Anbieter ist für die Sicherheit ___ Cloud verantwortlich, der Kunde für die Sicherheit ___ der Cloud."
+  luecken:
+    - ["der"]
+    - ["in"]
+  erklaerung: "Daten, Identitäten und Konfiguration liegen immer beim Kunden."
+  artikel: "#verantwortung"
+  tags: [cloud, verantwortung]

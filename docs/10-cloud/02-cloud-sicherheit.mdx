@@ -1,0 +1,132 @@
+---
+title: Identitäten und Cloud-Sicherheit
+description: Identitäten und Rechte in der Cloud (IAM, Rollen, Least Privilege), verwaltete Identitäten und kurzlebige Zugangsdaten statt Schlüsseln – auch für CI-Pipelines –, Netzwerkregeln, öffentliche Speicher als häufigste Lücke, Secrets in Key Vaults, Protokollierung und die typischen Fehlkonfigurationen.
+tags: [cloud, sicherheit, iam]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-cloud-sicherheit.fragen.yaml';
+
+# Identitäten und Cloud-Sicherheit
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, warum in der Cloud die **Identität** die wichtigste Sicherheitsgrenze ist,
+- Rechte nach dem Prinzip der **minimalen Rechte** vergeben,
+- **verwaltete Identitäten** und **kurzlebige Zugangsdaten** statt dauerhafter Schlüssel einsetzen,
+- **Netzwerkregeln** und **Speicherfreigaben** sicher konfigurieren,
+- die **typischen Fehlkonfigurationen** erkennen und prüfen.
+:::
+
+## Die Identität ist die neue Grenze \{#identitaet}
+
+Im eigenen Rechenzentrum schützte vor allem die **Netzwerkgrenze**: Wer nicht im Firmennetz war, kam nicht an die Server.
+In der Cloud sind die Verwaltungsschnittstellen **aus dem Internet erreichbar**. Wer gültige Zugangsdaten hat, kann
+Ressourcen anlegen, Daten lesen oder alles löschen. Deshalb gilt: **Identitäten und Rechte sind die wichtigste
+Schutzschicht** – ganz im Sinne von [Zero Trust](../07-cybersecurity/01-security-grundlagen.mdx#prinzipien).
+
+## Rechte vergeben: IAM \{#iam}
+
+**Identity and Access Management** regelt, **wer** (Benutzer, Gruppe, Anwendung) **was** (Rolle bzw. Berechtigungen) **worauf**
+(Abonnement, Ressourcengruppe, einzelne Ressource) darf.
+
+| Begriff | Azure | AWS |
+|---|---|---|
+| Verzeichnis der Identitäten | Microsoft Entra ID | IAM, IAM Identity Center |
+| Rechtebündel | Rolle (z. B. „Storage Blob Data Reader“) | Policy |
+| Geltungsbereich | Verwaltungsgruppe, Abonnement, Ressourcengruppe, Ressource | Konto, Ressource (über die Policy) |
+| Identität für Programme | **verwaltete Identität**, Dienstprinzipal | **IAM-Rolle** |
+
+Grundregeln:
+
+- **Least Privilege**: Die Testpipeline, die Testberichte hochlädt, bekommt „Daten schreiben“ für **ein** Speicherkonto –
+  nicht „Mitwirkender“ für das ganze Abonnement.
+- **Kleinster Geltungsbereich**: Rechte auf der Ressourcengruppe der Testumgebung, nicht auf allen Umgebungen.
+- **MFA** für alle menschlichen Konten, vor allem für Administratoren; Administratorrechte nur **bei Bedarf und befristet**
+  (z. B. Privileged Identity Management in Azure).
+- **Getrennte Umgebungen**: Test und Produktion in getrennten Abonnements bzw. Konten – ein Fehler im Test erreicht dann
+  nie die Produktion.
+
+## Keine dauerhaften Schlüssel \{#schluessel}
+
+Der häufigste Weg zu einem Cloud-Einbruch sind **geleakte Zugangsschlüssel** – im Git-Repository, in Logs, in
+Konfigurationsdateien. Besser sind Verfahren ganz **ohne** gespeicherte Geheimnisse:
+
+| Statt … | besser … |
+|---|---|
+| Speicherkonto-Schlüssel in der App-Konfiguration | **verwaltete Identität** der App bekommt eine Rolle auf dem Speicher |
+| AWS Access Key auf dem Server | **IAM-Rolle**, die der Server automatisch annimmt |
+| Cloud-Schlüssel als Secret in der CI | **OIDC-Föderation**: die Pipeline erhält bei jedem Lauf ein kurzlebiges Token |
+
+Für GitHub Actions und Azure DevOps ist OIDC heute der empfohlene Weg: Die Cloud vertraut Tokens, die die CI für **ein
+bestimmtes Repository und einen bestimmten Branch** ausstellt. Es gibt nichts, was dauerhaft gestohlen werden könnte.
+
+Wo Geheimnisse unvermeidbar sind (Passwort eines Fremdsystems, API-Schlüssel eines Partners), gehören sie in einen
+**Key Vault** bzw. **Secrets Manager** – mit Zugriff über die verwaltete Identität, Protokollierung und Rotation.
+
+## Netzwerkregeln \{#netzwerk}
+
+Auch in der Cloud gilt [standardmäßig verweigern](../07-cybersecurity/05-systemhaertung.mdx#firewall):
+
+- **Netzwerk-Sicherheitsgruppen** (Azure NSG, AWS Security Groups) erlauben nur benötigte Ports aus benötigten Quellen.
+- **SSH und RDP nie aus dem gesamten Internet** (`0.0.0.0/0` bzw. `*`) – stattdessen VPN, Bastion-Dienst oder Zugriff nur
+  aus dem Firmennetz.
+- **Datenbanken und Speicher** ohne öffentlichen Endpunkt, Zugriff über **Private Endpoints** aus dem eigenen virtuellen Netz.
+
+Genau diese Fehler enthält die unsichere Beispielkonfiguration – siehe [IaC-Scan](./03-infrastructure-as-code.mdx#scan).
+
+## Öffentliche Speicher: die Klassiker \{#speicher}
+
+Öffentlich lesbare Speicher-Container (Azure Blob, AWS S3) mit Kundendaten, Backups oder Logs sind seit Jahren eine der
+häufigsten Ursachen großer Datenlecks. Die Gegenmaßnahmen:
+
+- Öffentlichen Zugriff auf Kontoebene **grundsätzlich abschalten** (`allow_nested_items_to_be_public = false`, bei AWS
+  „Block Public Access“).
+- **Verschlüsselte Übertragung** erzwingen und veraltete TLS-Versionen abschalten.
+- Freigaben über **kurzlebige Links** (SAS mit Ablauf, presigned URLs) statt dauerhaft öffentlicher Container.
+- **Soft Delete** bzw. Versionierung gegen versehentliches oder böswilliges Löschen – auch ein Schutz gegen Ransomware.
+
+## Protokollierung und Überwachung \{#logging}
+
+| Was | Azure | AWS |
+|---|---|---|
+| Wer hat welche Ressource angelegt, geändert, gelöscht? | Activity Log | CloudTrail |
+| Anmeldungen | Entra ID Sign-in Logs | CloudTrail, IAM Identity Center |
+| Sicherheitsbewertung der Konfiguration | Defender for Cloud | Security Hub, Config |
+
+Diese Logs gehören zentral in das [SIEM](../07-cybersecurity/06-erkennung-incident-response.mdx#soc-siem). Typische
+Erkennungsregeln: Anmeldung eines Administrators aus einem ungewöhnlichen Land, ein Speicher wird öffentlich geschaltet,
+eine Netzwerkregel öffnet Port 22 für alle, plötzlich werden viele große VMs angelegt (Krypto-Mining mit gestohlenen
+Zugangsdaten).
+
+Werkzeuge, die die Konfiguration laufend gegen Regeln prüfen, heißen **CSPM** (Cloud Security Posture Management) –
+Defender for Cloud und Security Hub sind Beispiele.
+
+## Die typischen Fehlkonfigurationen \{#fehlkonfigurationen}
+
+| Fehlkonfiguration | Folge |
+|---|---|
+| öffentlich lesbarer Speicher | Datenleck |
+| SSH/RDP aus dem Internet | Brute Force, Übernahme von VMs |
+| Zugangsschlüssel im Repository | Übernahme des Kontos |
+| zu weit gefasste Rechte („Owner“ für die Pipeline) | ein gestohlenes Token reicht für alles |
+| Logging abgeschaltet | Angriff bleibt unbemerkt, keine Spuren für die Analyse |
+| Test und Produktion im selben Konto | Fehler im Test treffen Produktionsdaten |
+
+## Typische Fehler \{#typische-fehler}
+
+- Sich auf die **Netzwerkgrenze** verlassen statt auf Identitäten und Rechte.
+- **Dauerhafte Schlüssel** für Pipelines und Anwendungen.
+- Rechte „erst mal großzügig“ vergeben und **nie zurücknehmen**.
+- **Öffentlichen Zugriff** für einen schnellen Test einschalten – und vergessen.
+- Cloud-Logs **nicht auswerten**.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- In der Cloud ist die **Identität** die wichtigste Grenze: IAM mit **Least Privilege**, kleinem Geltungsbereich und MFA.
+- **Verwaltete Identitäten**, IAM-Rollen und **OIDC** statt dauerhafter Schlüssel; unvermeidbare Geheimnisse in den Key Vault.
+- Netzwerk: standardmäßig verweigern, **kein SSH/RDP aus dem Internet**, Private Endpoints.
+- Speicher: öffentlichen Zugriff abschalten, TLS erzwingen, kurzlebige Links, Soft Delete.
+- **Activity Log / CloudTrail** ins SIEM; CSPM prüft die Konfiguration laufend.
+
+<Quiz fragen={fragen} titel="Quiz: Identitäten und Cloud-Sicherheit" />

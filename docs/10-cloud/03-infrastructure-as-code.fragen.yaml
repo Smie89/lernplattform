@@ -1,0 +1,151 @@
+# Fragen zur Lektion "Infrastructure as Code"
+
+- id: cl-iac-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was zeigt 'terraform plan'?"
+  optionen:
+    - "Es legt die Ressourcen sofort an"
+    - "Es zeigt, was geändert würde, ohne etwas zu ändern"
+    - "Es löscht alle Ressourcen"
+    - "Es installiert Terraform"
+  richtig: [1]
+  erklaerung: "Der Plan ist ein Review-Werkzeug: Ein unerwartetes Löschen fällt vor dem Ausrollen auf."
+  artikel: "#terraform"
+  tags: [cloud, terraform]
+
+- id: cl-iac-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum gehört die Terraform-State-Datei nicht ins Git-Repository?"
+  optionen:
+    - "Weil sie zu groß ist"
+    - "Weil sie oft Geheimnisse enthält und mehrere Personen einen gemeinsamen, geschützten State brauchen"
+    - "Weil Git keine JSON-Dateien speichern kann"
+    - "Sie gehört ins Repository"
+  richtig: [1]
+  erklaerung: "Der State liegt in einem geschützten Remote-Speicher mit Sperre gegen gleichzeitige Änderungen."
+  artikel: "#terraform"
+  tags: [cloud, terraform, secrets]
+
+- id: cl-iac-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist ein Vorteil von Testumgebungen auf Abruf pro Pull Request?"
+  optionen:
+    - "Sie sind immer schneller als lokale Tests"
+    - "Tests stören sich nicht, jeder Stand ist reproduzierbar und Kosten entstehen nur während der Tests"
+    - "Man braucht keine Tests mehr"
+    - "Sie ersetzen die Produktion"
+  richtig: [1]
+  erklaerung: "apply beim Öffnen, destroy beim Schließen des Pull Requests."
+  artikel: "#testumgebungen"
+  tags: [cloud, testumgebung]
+
+- id: cl-iac-004
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum meldete Checkov 'https_traffic_only_enabled = false' nicht?"
+  optionen:
+    - "Weil HTTPS in der Cloud nicht wichtig ist"
+    - "Weil die Regel noch den alten Attributnamen enable_https_traffic_only prüft – der Provider hat ihn in Version 4.0 umbenannt"
+    - "Weil die Datei einen Syntaxfehler hatte"
+    - "Weil Checkov nur AWS kennt"
+  richtig: [1]
+  erklaerung: "Mit dem alten Attributnamen meldet Checkov den Befund korrekt. Scanner hinken neuen Versionen hinterher."
+  artikel: "#luecke"
+  tags: [cloud, checkov, grenzen]
+
+- id: cl-iac-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie gehst du mit einem Scanner-Befund um, der für deinen Fall nicht zutrifft?"
+  optionen:
+    - "Den Scanner abschalten"
+    - "Den Befund einzeln mit Begründung im Code unterdrücken, z. B. #checkov:skip=CKV_AZURE_33:Queue-Dienst wird nicht genutzt"
+    - "Alle Regeln dieser Art pauschal ausschalten"
+    - "Den Befund ignorieren und die Pipeline rot lassen"
+  richtig: [1]
+  erklaerung: "Einzeln, begründet und im Review sichtbar – wie # nosec bei Bandit."
+  artikel: "#ausnahmen"
+  tags: [cloud, checkov]
+
+- id: cl-iac-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Befunde meldete Checkov in unsicher/main.tf?"
+  optionen:
+    - "SSH aus dem Internet erreichbar"
+    - "RDP aus dem Internet erreichbar"
+    - "Veraltete TLS-Version"
+    - "Unverschlüsselter HTTP-Zugriff erlaubt (https_traffic_only_enabled = false)"
+  richtig: [0, 1, 2]
+  erklaerung: "Der HTTP-Zugriff wurde wegen des umbenannten Attributs nicht erkannt – die bekannte Lücke."
+  artikel: "#scan"
+  tags: [cloud, checkov]
+
+- id: cl-iac-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Jemand schaltet einen per Terraform verwalteten Speicher im Portal öffentlich. Was passiert typischerweise?"
+  optionen:
+    - "Nichts, Terraform übernimmt die Änderung automatisch in den Code"
+    - "Der Code und die Wirklichkeit weichen ab – beim nächsten apply wird die Änderung überschrieben, bis dahin bleibt sie bestehen"
+    - "Terraform löscht den Speicher sofort"
+    - "Die Cloud verbietet die Änderung immer"
+  richtig: [1]
+  erklaerung: "Gegen solche Änderungen außerhalb der Pipeline hilft Policy as Code (z. B. Azure Policy)."
+  artikel: "#pipeline"
+  tags: [cloud, iac]
+
+- id: cl-iac-008
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Wenn der IaC-Scan grün ist, ist die Cloud-Konfiguration sicher."
+  richtig: [1]
+  erklaerung: "Falsch. Das Beispiel zeigt eine echte Lücke des Scanners. Reviews, Richtlinien und Prüfungen der echten Umgebung bleiben nötig."
+  artikel: "#luecke"
+  tags: [cloud, grenzen]
+
+- id: cl-iac-009
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Schritte einer IaC-Pipeline in eine sinnvolle Reihenfolge."
+  elemente:
+    - "terraform fmt und validate"
+    - "IaC-Scan, z. B. mit Checkov"
+    - "terraform plan, Ausgabe im Pull Request"
+    - "Review und Freigabe"
+    - "terraform apply"
+  erklaerung: "Schnelle Prüfungen zuerst, Änderungen an der echten Infrastruktur erst nach Freigabe."
+  artikel: "#pipeline"
+  tags: [cloud, pipeline]
+
+- id: cl-iac-010
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem IaC-Werkzeug seinen Einsatzbereich zu."
+  paare:
+    - ["Terraform", "Viele Clouds und Dienste, Sprache HCL"]
+    - ["Bicep", "Nur Azure"]
+    - ["CloudFormation", "Nur AWS, YAML oder JSON"]
+    - ["Pulumi", "Infrastruktur in C#, TypeScript oder Python"]
+  erklaerung: "Die Konzepte – deklarieren, planen, anwenden – sind überall ähnlich."
+  artikel: "#was"
+  tags: [cloud, iac]
+
+- id: cl-iac-011
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die sichere Konfiguration des Speicherkontos."
+  sprache: hcl
+  text: |
+    min_tls_version                 = "___"
+    allow_nested_items_to_be_public = ___
+  luecken:
+    - ["TLS1_2"]
+    - ["false"]
+  exakt: true
+  erklaerung: "TLS 1.2 als Minimum und kein öffentlicher Zugriff auf Container – beides meldete Checkov in unsicher/."
+  artikel: "#scan"
+  tags: [cloud, terraform]

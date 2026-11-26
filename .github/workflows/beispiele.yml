@@ -148,3 +148,22 @@ jobs:
           python-version: "3.12"
       - name: Netzwerk-Tests (Subnetze, HTTP von Hand, TCP, UDP, DNS)
         run: python -m unittest -v
+
+  cloud:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beispiele/cloud
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Checkov installieren
+        run: pip install checkov==3.4.11
+      - name: "IaC-Scan: sichere Konfiguration ohne Befunde"
+        run: checkov -d sicher --framework terraform --compact --quiet
+      - name: "IaC-Scan: unsichere Konfiguration – erwartete Befunde und bekannte Lücke"
+        run: |
+          checkov -d unsicher --framework terraform -o json > checkov.json || true
+          python pruefe_scan.py checkov.json

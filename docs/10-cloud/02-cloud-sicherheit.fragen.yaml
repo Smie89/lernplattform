@@ -1,0 +1,151 @@
+# Fragen zur Lektion "Identitäten und Cloud-Sicherheit"
+
+- id: cl-si-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum gilt in der Cloud die Identität als wichtigste Sicherheitsgrenze?"
+  optionen:
+    - "Weil es in der Cloud kein Netzwerk gibt"
+    - "Weil die Verwaltungsschnittstellen aus dem Internet erreichbar sind – wer gültige Zugangsdaten hat, kann alles tun, was diese erlauben"
+    - "Weil Firewalls in der Cloud verboten sind"
+    - "Weil Identitäten günstiger sind"
+  richtig: [1]
+  erklaerung: "Netzwerkregeln bleiben wichtig, aber gestohlene Zugangsdaten umgehen sie."
+  artikel: "#identitaet"
+  tags: [cloud, iam]
+
+- id: cl-si-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Pipeline lädt Testberichte in ein Speicherkonto hoch. Welche Rechte sind angemessen?"
+  optionen:
+    - "Owner für das ganze Abonnement"
+    - "Mitwirkender für alle Ressourcengruppen"
+    - "Daten schreiben für genau dieses eine Speicherkonto"
+    - "Administratorrechte, damit nichts fehlschlägt"
+  richtig: [2]
+  erklaerung: "Least Privilege und kleinster Geltungsbereich: Ein gestohlenes Token kann dann nur Berichte schreiben."
+  artikel: "#iam"
+  tags: [cloud, least-privilege]
+
+- id: cl-si-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Vorteil von OIDC-Föderation für CI-Pipelines?"
+  optionen:
+    - "Die Pipeline wird schneller"
+    - "Die Pipeline erhält bei jedem Lauf ein kurzlebiges Token – es gibt keinen dauerhaften Schlüssel, der gestohlen werden könnte"
+    - "Man braucht keine Rechte mehr"
+    - "OIDC verschlüsselt den Code"
+  richtig: [1]
+  erklaerung: "Die Cloud vertraut nur Tokens für ein bestimmtes Repository und einen bestimmten Branch."
+  artikel: "#schluessel"
+  tags: [cloud, oidc, ci]
+
+- id: cl-si-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Web-App soll auf einen Speicher zugreifen. Was ist der sicherste Weg?"
+  optionen:
+    - "Den Kontoschlüssel in appsettings.json eintragen"
+    - "Der App eine verwaltete Identität geben und ihr eine passende Rolle auf dem Speicher zuweisen"
+    - "Den Speicher öffentlich machen"
+    - "Den Schlüssel als Umgebungsvariable im Code fest hinterlegen"
+  richtig: [1]
+  erklaerung: "Verwaltete Identitäten kommen ganz ohne gespeichertes Geheimnis aus."
+  artikel: "#schluessel"
+  tags: [cloud, identitaet]
+
+- id: cl-si-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was schützt Cloud-Speicher vor Datenlecks und Datenverlust?"
+  optionen:
+    - "Öffentlichen Zugriff auf Kontoebene abschalten"
+    - "Verschlüsselte Übertragung erzwingen, alte TLS-Versionen abschalten"
+    - "Soft Delete bzw. Versionierung"
+    - "Container dauerhaft öffentlich, damit Tests einfacher sind"
+  richtig: [0, 1, 2]
+  erklaerung: "Für Freigaben besser kurzlebige Links (SAS mit Ablauf, presigned URLs)."
+  artikel: "#speicher"
+  tags: [cloud, speicher]
+
+- id: cl-si-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Erkennungsregel deutet auf gestohlene Cloud-Zugangsdaten hin?"
+  optionen:
+    - "Ein Entwickler meldet sich morgens an"
+    - "Plötzlich werden viele große VMs angelegt, z. B. für Krypto-Mining"
+    - "Ein Testbericht wird hochgeladen"
+    - "Eine Pipeline läuft erfolgreich"
+  richtig: [1]
+  erklaerung: "Das Activity Log bzw. CloudTrail zeigt solche Verwaltungsaktionen – sie gehören ins SIEM."
+  artikel: "#logging"
+  tags: [cloud, logging]
+
+- id: cl-si-007
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "SSH auf einer Test-VM darf ruhig aus dem gesamten Internet erreichbar sein, weil es ja nur eine Testumgebung ist."
+  richtig: [1]
+  erklaerung: "Falsch. Bots finden offene SSH-Ports in Minuten. Zugriff nur über VPN, Bastion oder aus dem Firmennetz."
+  artikel: "#netzwerk"
+  tags: [cloud, netzwerk]
+
+- id: cl-si-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Fehlkonfiguration ihre typische Folge zu."
+  paare:
+    - ["Öffentlich lesbarer Speicher", "Datenleck"]
+    - ["RDP aus dem Internet", "Brute Force und Übernahme der VM"]
+    - ["Zugangsschlüssel im Repository", "Übernahme des Kontos"]
+    - ["Logging abgeschaltet", "Angriff bleibt unbemerkt"]
+    - ["Test und Produktion im selben Konto", "Fehler im Test treffen Produktionsdaten"]
+  erklaerung: "Fast alle großen Cloud-Vorfälle gehen auf solche Konfigurationsfehler zurück."
+  artikel: "#fehlkonfigurationen"
+  tags: [cloud, sicherheit]
+
+- id: cl-si-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne die Begriffe zwischen Azure und AWS zu."
+  paare:
+    - ["Microsoft Entra ID", "IAM / IAM Identity Center"]
+    - ["Verwaltete Identität", "IAM-Rolle"]
+    - ["Defender for Cloud", "Security Hub"]
+    - ["Activity Log", "CloudTrail"]
+  erklaerung: "Die Konzepte sind gleich, die Namen unterscheiden sich."
+  artikel: "#iam"
+  tags: [cloud, azure, aws]
+
+- id: cl-si-010
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Ordne diese Arten, einer Pipeline Cloud-Zugriff zu geben, vom unsichersten zum sichersten."
+  elemente:
+    - "Administrator-Schlüssel im Klartext im Repository"
+    - "Dauerhafter Schlüssel mit vollen Rechten als CI-Secret"
+    - "Dauerhafter Schlüssel mit minimalen Rechten als CI-Secret"
+    - "OIDC-Föderation mit kurzlebigem Token und minimalen Rechten"
+  erklaerung: "Am sichersten: nichts Dauerhaftes speichern und Rechte minimal halten."
+  artikel: "#schluessel"
+  tags: [cloud, ci]
+
+- id: cl-si-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile dieser Netzwerkregel ist das Problem?"
+  sprache: hcl
+  code: |
+    security_rule {
+      name                   = "ssh"
+      access                 = "Allow"
+      destination_port_range = "22"
+      source_address_prefix  = "*"
+    }
+  richtig: [4]
+  erklaerung: "'*' erlaubt SSH aus dem gesamten Internet. Besser: nur ein internes Netz, z. B. 10.20.0.0/16 über VPN."
+  artikel: "#netzwerk"
+  tags: [cloud, netzwerk]

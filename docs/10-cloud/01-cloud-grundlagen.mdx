@@ -1,0 +1,123 @@
+---
+title: Cloud-Grundlagen
+description: Was Cloud Computing ausmacht, die Servicemodelle IaaS, PaaS, SaaS und Serverless, Regionen und Verfügbarkeitszonen, das Modell der geteilten Verantwortung, Kostenfallen, die wichtigsten Dienste von Azure, AWS und Google Cloud im Vergleich und was die Cloud für das Testen bedeutet.
+tags: [cloud, azure, aws, grundlagen]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-cloud-grundlagen.fragen.yaml';
+
+# Cloud-Grundlagen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die **Eigenschaften** von Cloud Computing und die **Servicemodelle** erklären,
+- **Regionen und Verfügbarkeitszonen** einordnen,
+- das **Modell der geteilten Verantwortung** anwenden,
+- typische **Kostenfallen** benennen,
+- die wichtigsten Dienste von **Azure, AWS und Google Cloud** zuordnen,
+- einschätzen, was die Cloud für **Testumgebungen** bedeutet.
+:::
+
+## Was ist Cloud Computing? \{#was}
+
+Rechenleistung, Speicher und Dienste werden **über das Netz** bezogen statt im eigenen Rechenzentrum betrieben. Typisch sind:
+
+- **Selbstbedienung**: Ressourcen per Portal, Kommandozeile oder Code anlegen – in Minuten statt Wochen.
+- **Elastizität**: nach Bedarf hoch- und herunterskalieren.
+- **Nutzungsabhängige Abrechnung**: bezahlt wird, was läuft – pro Sekunde, pro Anfrage, pro Gigabyte.
+- **Gemeinsam genutzte Infrastruktur**: viele Kunden auf derselben Hardware, logisch voneinander getrennt.
+
+## Servicemodelle \{#servicemodelle}
+
+| Modell | Der Anbieter betreibt … | Du betreibst … | Beispiele |
+|---|---|---|---|
+| **IaaS** (Infrastructure as a Service) | Hardware, Netz, Virtualisierung | Betriebssystem, Laufzeit, Anwendung, Daten | virtuelle Maschinen (Azure VM, AWS EC2) |
+| **PaaS** (Platform as a Service) | zusätzlich Betriebssystem und Laufzeit | Anwendung und Daten | Azure App Service, AWS Elastic Beanstalk, verwaltete Datenbanken |
+| **Serverless / FaaS** | alles bis zur Ausführung einzelner Funktionen | nur den Code der Funktion | Azure Functions, AWS Lambda |
+| **SaaS** (Software as a Service) | die komplette Anwendung | Konfiguration und Daten | Microsoft 365, Jira Cloud, GitHub |
+
+Dazu kommen **Container-Plattformen** wie Kubernetes (AKS, EKS, GKE) oder einfachere Container-Dienste – zwischen IaaS und PaaS.
+
+## Regionen und Verfügbarkeitszonen \{#regionen}
+
+- Eine **Region** ist ein geografischer Standort mit mehreren Rechenzentren, z. B. „Germany West Central“ (Frankfurt) oder „West Europe“ (Niederlande).
+- Eine **Verfügbarkeitszone** ist ein physisch getrenntes Rechenzentrum innerhalb einer Region – mit eigener Stromversorgung und Kühlung.
+
+Wer eine Anwendung über **mehrere Zonen** verteilt, übersteht den Ausfall eines Rechenzentrums. Die Wahl der Region betrifft
+auch **Datenschutz**: Personenbezogene Daten in einer Region in der EU zu halten, ist oft eine Anforderung.
+
+## Geteilte Verantwortung \{#verantwortung}
+
+Der wichtigste Grundsatz der Cloud-Sicherheit: Der Anbieter ist für die Sicherheit **der** Cloud verantwortlich, der Kunde
+für die Sicherheit **in** der Cloud. Wo die Grenze liegt, hängt vom Servicemodell ab:
+
+| Verantwortung | IaaS | PaaS | SaaS |
+|---|---|---|---|
+| Rechenzentrum, Hardware, Netz | Anbieter | Anbieter | Anbieter |
+| Betriebssystem, Patches | **Kunde** | Anbieter | Anbieter |
+| Anwendung | **Kunde** | **Kunde** | Anbieter |
+| Konfiguration, Zugriffsrechte | **Kunde** | **Kunde** | **Kunde** |
+| Daten | **Kunde** | **Kunde** | **Kunde** |
+
+**Daten, Identitäten und Konfiguration bleiben immer beim Kunden.** Ein öffentlich lesbarer Speicher mit Kundendaten ist
+kein Fehler des Cloud-Anbieters, sondern eine Fehlkonfiguration des Kunden – und genau das ist die häufigste Ursache von
+Datenlecks in der Cloud.
+
+## Kosten \{#kosten}
+
+| Kostenfalle | Beispiel | Gegenmittel |
+|---|---|---|
+| **Vergessene Ressourcen** | Test-VM läuft nach dem Lasttest wochenlang weiter | Testumgebungen automatisch abbauen, Budgets mit Alarm |
+| **Ausgehender Datenverkehr** (Egress) | große Testberichte werden ständig aus der Cloud heruntergeladen | Daten nah an der Verarbeitung halten |
+| **Überdimensionierung** | größte Datenbankstufe „sicherheitshalber“ | klein starten, messen, anpassen |
+| **Lasttests gegen Autoskalierung** | Last erzeugt 50 Instanzen | Obergrenzen setzen, Lasttests planen und begrenzen |
+
+Für Testumgebungen ist **Infrastructure as Code** der beste Kostenschutz: Was per Code angelegt wird, lässt sich nach dem
+Test genauso einfach wieder entfernen (siehe [Infrastructure as Code](./03-infrastructure-as-code.mdx)).
+
+## Azure, AWS und Google Cloud im Vergleich \{#anbieter}
+
+| Aufgabe | Microsoft Azure | Amazon Web Services | Google Cloud |
+|---|---|---|---|
+| Virtuelle Maschinen | Virtual Machines | EC2 | Compute Engine |
+| Objektspeicher | Blob Storage | S3 | Cloud Storage |
+| Verwaltete SQL-Datenbank | Azure SQL Database | RDS | Cloud SQL |
+| Kubernetes | AKS | EKS | GKE |
+| Serverless-Funktionen | Azure Functions | Lambda | Cloud Functions / Cloud Run |
+| Identitäten und Rechte | Microsoft Entra ID, Azure RBAC | IAM | Cloud IAM |
+| Geheimnisse | Key Vault | Secrets Manager | Secret Manager |
+| Protokoll der Verwaltungsaktionen | Activity Log | CloudTrail | Cloud Audit Logs |
+| Sicherheitsübersicht | Defender for Cloud | Security Hub | Security Command Center |
+
+Die Konzepte sind überall gleich, nur die Namen unterscheiden sich. In Deutschland ist **Azure** in Unternehmen mit
+Microsoft-Umgebung besonders verbreitet, **AWS** ist weltweit Marktführer.
+
+## Was die Cloud für das Testen bedeutet \{#testen}
+
+- **Testumgebungen auf Abruf**: pro Pull Request eine eigene Umgebung anlegen, testen, wieder abbauen („ephemere Umgebungen“).
+- **Skalierbare Lasttests**: Lastgeneratoren in mehreren Regionen – aber nur gegen eigene Systeme und nach Absprache;
+  viele Anbieter haben Regeln für Lasttests und Penetrationstests.
+- **Verwaltete Dienste testen**: Ein Test gegen die echte verwaltete Datenbank zeigt Verhalten, das ein Emulator nicht hat.
+  Für die meisten Tests reichen aber Container lokal oder in der CI ([Testcontainers](../05-docker/05-docker-testautomation.mdx#testcontainers)).
+- **Konfiguration ist testbar**: Rechte, Netzwerkregeln und Speicherfreigaben lassen sich automatisch prüfen – vor dem
+  Ausrollen mit IaC-Scans, danach mit Werkzeugen zur Überwachung der Konfiguration.
+
+## Typische Fehler \{#typische-fehler}
+
+- Annehmen, der **Anbieter** kümmere sich um die Sicherheit der eigenen Daten und Konfiguration.
+- Testumgebungen **von Hand** anlegen – und vergessen.
+- Keine **Budgets und Kostenalarme**.
+- **Personenbezogene Daten** in einer Region außerhalb der EU ohne Prüfung.
+- Lasttests gegen **autoskalierende** Systeme ohne Obergrenze.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Cloud: Selbstbedienung, Elastizität, nutzungsabhängige Abrechnung.
+- Servicemodelle **IaaS, PaaS, Serverless, SaaS** – je höher, desto mehr übernimmt der Anbieter.
+- **Regionen** und **Verfügbarkeitszonen** für Ausfallsicherheit und Datenschutz.
+- **Geteilte Verantwortung**: Daten, Identitäten und Konfiguration liegen immer beim Kunden.
+- Kostenfallen: vergessene Ressourcen, Datenverkehr, Überdimensionierung – IaC und Budgets helfen.
+- Azure, AWS und Google Cloud bieten dieselben Konzepte unter verschiedenen Namen.
+
+<Quiz fragen={fragen} titel="Quiz: Cloud-Grundlagen" />
