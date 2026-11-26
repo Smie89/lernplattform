@@ -1,0 +1,337 @@
+---
+title: Bash-Skripte
+description: Eigene Bash-Skripte schreiben – Shebang, Variablen, Quoting, Parameter, Bedingungen, Schleifen, Funktionen, Exit-Codes, set -euo pipefail und trap. Mit drei getesteten Skripten aus der Testautomation.
+tags: [linux, bash, skripte, ci]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './06-bash-skripte.fragen.yaml';
+
+# Bash-Skripte
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- ein Bash-Skript anlegen und **ausführbar** machen,
+- **Variablen**, **Parameter** und **Kommandosubstitution** verwenden – und richtig **quoten**,
+- **Bedingungen**, **Schleifen** und **Funktionen** schreiben,
+- mit **Exit-Codes** Erfolg und Misserfolg melden,
+- Skripte mit **`set -euo pipefail`** und **`trap`** robust machen,
+- ein Skript schreiben, das die **Anwendung startet, auf sie wartet, Tests ausführt und aufräumt**.
+:::
+
+## Die Beispielskripte \{#beispielskripte}
+
+Diese Lektion erklärt drei echte Skripte aus dem Repository. Sie sind **getestet** – lokal und in der GitHub Action auf Ubuntu ([selbsttest.sh](https://github.com/Smie89/lernplattform/blob/main/beispiele/linux/selbsttest.sh)):
+
+| Skript | Aufgabe |
+|---|---|
+| [log-auswertung.sh](https://github.com/Smie89/lernplattform/blob/main/beispiele/linux/log-auswertung.sh) | wertet ein Testlog aus, Exit-Code 1 bei Fehlern |
+| [warte-auf-dienst.sh](https://github.com/Smie89/lernplattform/blob/main/beispiele/linux/warte-auf-dienst.sh) | wartet, bis eine URL antwortet – mit Timeout |
+| [tests-mit-app.sh](https://github.com/Smie89/lernplattform/blob/main/beispiele/linux/tests-mit-app.sh) | startet den [Mini-Shop](../02-testautomation/01-grundlagen/03-tests-strukturieren.mdx#testanwendung), wartet, testet, räumt auf |
+
+## Das erste Skript \{#erstes-skript}
+
+```bash
+#!/usr/bin/env bash
+# hallo.sh – gibt eine Begrüßung aus
+echo "Hallo, $USER! Heute ist $(date +%A)."
+```
+
+```bash
+chmod +x hallo.sh     # ausführbar machen (siehe Lektion Rechte)
+./hallo.sh            # Hallo, max! Heute ist Thursday.
+```
+
+- Die erste Zeile, der **Shebang** `#!`, sagt dem System, welches Programm das Skript ausführt. `#!/usr/bin/env bash` sucht `bash` im `PATH` und funktioniert deshalb auf mehr Systemen als `#!/bin/bash`.
+- `#` leitet Kommentare ein.
+- Ohne `x`-Recht: `bash hallo.sh`.
+
+## Variablen \{#variablen}
+
+```bash
+name="Mini-Shop"           # KEINE Leerzeichen um das =
+port=5000
+echo "$name läuft auf Port $port"
+echo "${name}-Tests"       # geschweifte Klammern trennen den Namen vom folgenden Text
+
+heute=$(date +%F)          # Kommandosubstitution: Ausgabe eines Befehls speichern
+dateien=$(ls *.log | wc -l)
+
+ende=$(( SECONDS + 60 ))   # Rechnen mit $(( ... )) – nur ganze Zahlen
+```
+
+:::warning[Häufigster Anfängerfehler]
+`name = "Shop"` mit Leerzeichen funktioniert **nicht** – die Shell hält `name` dann für einen Befehl: `name: command not found`.
+:::
+
+Standardwerte und Pflichtwerte – aus [warte-auf-dienst.sh](https://github.com/Smie89/lernplattform/blob/main/beispiele/linux/warte-auf-dienst.sh):
+
+```bash
+url="${1:?Aufruf: $0 <url> [timeout-sekunden]}"   # Pflicht: sonst Abbruch mit dieser Meldung
+timeout="${2:-60}"                                  # optional: Standardwert 60
+```
+
+## Quoting: Anführungszeichen \{#quoting}
+
+| Schreibweise | Wirkung |
+|---|---|
+| `"$datei"` | Variable wird eingesetzt, Leerzeichen bleiben **ein** Argument – **Standard** |
+| `'$datei'` | **keine** Ersetzung, der Text steht wörtlich da |
+| `$datei` (ohne) | Ergebnis wird an Leerzeichen **zerteilt** und Platzhalter wie `*` werden aufgelöst |
+
+```bash
+datei="Mein Bericht.txt"
+rm $datei      # FALSCH: versucht "Mein" und "Bericht.txt" zu löschen
+rm "$datei"    # richtig
+```
+
+Faustregel: **Jede Variable in doppelte Anführungszeichen** – außer du willst ausdrücklich, dass sie zerteilt wird.
+
+## Parameter \{#parameter}
+
+| Variable | Inhalt |
+|---|---|
+| `$0` | Name des Skripts |
+| `$1`, `$2`, … | erster, zweiter … Parameter |
+| `$#` | Anzahl der Parameter |
+| `"$@"` | alle Parameter, jeder einzeln gequotet |
+| `$?` | Exit-Code des letzten Befehls |
+| `$!` | PID des letzten Hintergrundprozesses |
+
+## Bedingungen \{#bedingungen}
+
+```bash
+if [[ $# -ne 1 ]]; then
+  echo "Aufruf: $0 <logdatei>" >&2     # >&2: Meldung auf stderr
+  exit 2
+fi
+```
+
+Wichtige Tests in `[[ … ]]`:
+
+| Test | wahr, wenn … |
+|---|---|
+| `-f "$datei"` | Datei existiert |
+| `-d "$ordner"` | Verzeichnis existiert |
+| `-z "$text"` / `-n "$text"` | Text ist leer / nicht leer |
+| `"$a" == "$b"` / `!=` | Texte gleich / ungleich |
+| `"$text" == *Fehler*` | Text enthält „Fehler“ (Muster) |
+| `$a -eq $b`, `-ne`, `-lt`, `-gt`, `-le`, `-ge` | Zahlenvergleich |
+| `! …`, `&&`, `\|\|` | nicht, und, oder |
+
+Für Zahlen ist `(( … ))` oft lesbarer: `if (( fehler > 0 )); then …`.
+
+Man kann auch direkt auf den **Exit-Code eines Befehls** prüfen:
+
+```bash
+if grep -q "ERROR" testlauf.log; then
+  echo "Es gibt Fehler."
+fi
+
+if ! ./warte-auf-dienst.sh "$url" 60; then
+  echo "Anwendung nicht erreichbar" >&2
+  exit 1
+fi
+```
+
+Mehrere Fälle mit `case`:
+
+```bash
+case "$1" in
+  chrome|chromium) browser="chromium" ;;
+  firefox)         browser="firefox" ;;
+  *)               echo "Unbekannter Browser: $1" >&2; exit 2 ;;
+esac
+```
+
+## Schleifen \{#schleifen}
+
+```bash
+# über eine Liste
+for browser in chromium firefox webkit; do
+  echo "Teste mit $browser"
+done
+
+# über Dateien
+for datei in logs/*.log; do
+  ./log-auswertung.sh "$datei"
+done
+
+# solange eine Bedingung gilt / bis sie gilt
+until curl -sf -o /dev/null "$url"; do
+  sleep 1
+done
+
+# Zeile für Zeile lesen
+grep " ERROR " "$log" | awk '{print $4}' | sort | uniq -c | sort -rn |
+  while read -r anzahl test; do
+    echo "  - $test (${anzahl}x)"
+  done
+```
+
+## Funktionen \{#funktionen}
+
+```bash
+zaehle() {
+  grep -c -- "$1" "$log" || true    # $1 ist hier der erste Parameter der FUNKTION
+}
+
+fehler=$(zaehle " ERROR ")
+```
+
+Funktionen bekommen ihre Parameter wie ein Skript (`$1`, `$2`, `$@`). Ihre „Rückgabe“ ist die **Ausgabe** (per `$( … )` abgreifbar) bzw. der **Exit-Code**. Variablen innerhalb einer Funktion besser mit `local` deklarieren.
+
+## Exit-Codes \{#exit-codes}
+
+Ein Skript meldet sein Ergebnis über `exit`:
+
+```bash
+exit 0    # Erfolg
+exit 1    # Fehler (z. B. Fehler im Log gefunden)
+exit 2    # falscher Aufruf
+```
+
+Ohne `exit` gilt der Code des **letzten Befehls**. Dokumentiere die Codes im Kopf des Skripts – [log-auswertung.sh](https://github.com/Smie89/lernplattform/blob/main/beispiele/linux/log-auswertung.sh) macht das so:
+
+```bash
+# Exit-Code: 0 = keine Fehler im Log, 1 = Fehler gefunden, 2 = falscher Aufruf
+```
+
+Echte Ausgabe:
+
+```text
+$ ./log-auswertung.sh testlauf.log
+Auswertung von testlauf.log
+  Fehler:    3
+  Warnungen: 2
+Fehlgeschlagene Tests:
+  - WarenkorbTest (2x)
+  - BestellungTest (1x)
+$ echo $?
+1
+```
+
+## Robuste Skripte: set -euo pipefail \{#strict-mode}
+
+Standardmäßig **läuft Bash nach einem Fehler einfach weiter**. Das ist in Testskripten gefährlich. Deshalb stehen fast alle Skripte mit dieser Zeile am Anfang:
+
+```bash
+set -euo pipefail
+```
+
+| Option | Wirkung |
+|---|---|
+| `-e` | Skript bricht ab, sobald ein Befehl fehlschlägt |
+| `-u` | Abbruch bei Verwendung einer **nicht gesetzten Variable** (Tippfehler!) |
+| `-o pipefail` | eine Pipe gilt als fehlgeschlagen, wenn **irgendein** Teil fehlschlägt – nicht nur der letzte |
+
+Ohne `-u` würde `rm -rf "$AUSGABE_ORDNR/"` (Tippfehler) zu `rm -rf /`. Ohne `pipefail` wäre `dotnet test | tee lauf.log` immer erfolgreich, weil `tee` erfolgreich ist – **rote Tests würden grün gemeldet**.
+
+:::note[Erwartete Fehler erlauben]
+Manche Befehle liefern absichtlich einen Code ungleich 0, z. B. `grep -c` bei 0 Treffern. Mit `|| true` sagst du `set -e`, dass das in Ordnung ist: `grep -c -- "$1" "$log" || true`.
+:::
+
+## Aufräumen mit trap \{#trap}
+
+`trap` führt eine Funktion aus, wenn das Skript endet – **egal wie**: Erfolg, Fehler, `exit` oder Strg+C.
+
+```bash
+aufraeumen() {
+  kill "$app_pid" 2>/dev/null || true
+  rm -f "$app_log"
+}
+trap aufraeumen EXIT
+```
+
+Damit bleibt nach einem abgebrochenen Testlauf keine Anwendung im Hintergrund hängen und kein Port belegt (siehe [Prozesse – Ports](./04-prozesse-und-dienste.mdx#ports)).
+
+## Praxis: Anwendung starten, testen, aufräumen \{#praxis}
+
+[tests-mit-app.sh](https://github.com/Smie89/lernplattform/blob/main/beispiele/linux/tests-mit-app.sh) bringt alles zusammen:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+port="${PORT:-5000}"
+url="http://localhost:$port"
+skriptordner="$(cd "$(dirname "$0")" && pwd)"
+app_log="$(mktemp)"
+
+# Anwendung im Hintergrund starten; exec sorgt dafür, dass $! die PID der Anwendung ist
+(cd src/Shop.Web && exec dotnet bin/Debug/net10.0/Shop.Web.dll --urls "$url") > "$app_log" 2>&1 &
+app_pid=$!
+
+aufraeumen() {
+  echo "Beende Anwendung (PID $app_pid) ..."
+  kill "$app_pid" 2>/dev/null || true
+  wait "$app_pid" 2>/dev/null || true
+  rm -f "$app_log"
+}
+trap aufraeumen EXIT   # läuft immer am Ende – bei Erfolg, Fehler oder Strg+C
+
+if ! "$skriptordner/warte-auf-dienst.sh" "$url/api/produkte" 60; then
+  echo "Die Anwendung ist nicht gestartet. Letzte Logzeilen:" >&2
+  tail -n 20 "$app_log" >&2
+  exit 1
+fi
+
+if (( $# > 0 )); then
+  "$@"                                             # eigener Testbefehl
+else
+  SHOP_URL="$url" dotnet test tests/Shop.UiTests   # UI-Tests gegen die laufende Anwendung
+fi
+```
+
+Was hier zusammenkommt:
+- **Hintergrundprozess** mit `&` und `$!`
+- **Warten auf einen Zustand** statt `sleep 10` – das Skript [warte-auf-dienst.sh](https://github.com/Smie89/lernplattform/blob/main/beispiele/linux/warte-auf-dienst.sh) fragt jede Sekunde mit `curl -sf` nach
+- **Diagnose bei Fehlern**: die letzten Logzeilen der Anwendung auf stderr
+- **`trap`** räumt immer auf
+- Der **Exit-Code** des Testbefehls ist der Exit-Code des Skripts – die CI sieht rote Tests
+
+Echte Läufe im Ordner `beispiele/shop`:
+
+```text
+$ ../linux/tests-mit-app.sh
+Warte auf http://localhost:5000/api/produkte (max. 60 s) ...
+OK: http://localhost:5000/api/produkte ist erreichbar.
+Bestanden!   : Fehler: 0, erfolgreich: 5, übersprungen: 0, gesamt: 5 - Shop.UiTests.dll
+Beende Anwendung (PID 958) ...
+$ echo $?
+0
+
+$ ../linux/tests-mit-app.sh curl -sf -o /dev/null -w "Status %{http_code}\n" http://localhost:5000/api/gibt-es-nicht
+Warte auf http://localhost:5000/api/produkte (max. 60 s) ...
+OK: http://localhost:5000/api/produkte ist erreichbar.
+Status 404
+Beende Anwendung (PID 971) ...
+$ echo $?
+22
+```
+
+Im zweiten Lauf schlägt der „Test“ fehl (404, `curl -f` liefert Exit-Code 22) – das Skript räumt trotzdem auf und gibt den Fehler-Code weiter.
+
+:::tip[ShellCheck]
+[ShellCheck](https://www.shellcheck.net/) findet typische Fehler in Bash-Skripten: fehlende Anführungszeichen, ungenutzte Variablen, falsche Vergleiche. Installieren mit `sudo apt install shellcheck`, aufrufen mit `shellcheck *.sh`. Die GitHub Action dieser Plattform prüft die Beispielskripte damit.
+:::
+
+## Typische Fehler \{#typische-fehler}
+
+- **Leerzeichen um `=`** bei Zuweisungen.
+- **Variablen ohne Anführungszeichen** – Probleme mit Leerzeichen und Platzhaltern.
+- **Kein `set -euo pipefail`** – Fehler werden ignoriert, Pipes verschlucken rote Tests.
+- **`sleep 30` statt auf einen Zustand warten** – langsam und trotzdem unzuverlässig.
+- **Kein `trap`** – nach Abbruch läuft die Anwendung weiter und belegt den Port.
+- **Windows-Zeilenenden (CRLF)** – `/usr/bin/env: 'bash\r': No such file or directory`. Siehe [Linux in der Testautomation](./07-linux-testautomation.mdx#zeilenenden).
+- **Fehlermeldungen auf stdout** statt mit `>&2` auf stderr.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Skript = **Shebang** `#!/usr/bin/env bash` + Befehle; ausführbar mit `chmod +x`.
+- Variablen ohne Leerzeichen zuweisen, **immer `"$variable"`** verwenden; `${1:-standard}` und `${1:?meldung}` für Parameter.
+- `if [[ … ]]`, `case`, `for`, `while`/`until`, Funktionen mit `$1` und `local`.
+- **Exit-Codes** bewusst setzen und dokumentieren – die CI entscheidet danach.
+- **`set -euo pipefail`** und **`trap aufraeumen EXIT`** machen Skripte robust.
+
+<Quiz fragen={fragen} titel="Quiz: Bash-Skripte" />

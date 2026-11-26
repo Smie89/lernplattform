@@ -1,0 +1,237 @@
+---
+title: Linux – Grundlagen und Dateisystem
+description: Was Linux ist, wie du eine Übungsumgebung bekommst, wie Befehle aufgebaut sind, wie das Dateisystem organisiert ist und wie du Dateien und Verzeichnisse verwaltest.
+tags: [linux, shell, dateisystem, grundlagen]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-linux-grundlagen.fragen.yaml';
+
+# Linux – Grundlagen und Dateisystem
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, was Linux, eine **Distribution** und eine **Shell** sind,
+- dir eine **Übungsumgebung** auf Windows einrichten,
+- den **Aufbau eines Befehls** verstehen und dir selbst **Hilfe** holen,
+- dich im **Dateisystem** zurechtfinden (`/etc`, `/var/log`, `/home` …),
+- mit **absoluten und relativen Pfaden** navigieren,
+- Dateien und Verzeichnisse **anlegen, kopieren, verschieben und löschen**.
+:::
+
+## Warum Linux für Testautomatisierer? \{#warum}
+
+Auch wenn du auf Windows entwickelst – deine Tests landen sehr oft auf Linux:
+
+- **CI-Runner** (GitHub Actions `ubuntu-latest`, GitLab, Jenkins-Agents) laufen meist unter Linux.
+- **Docker-Container** basieren fast immer auf Linux – auch Selenium Grid und Playwright-Images.
+- **Testumgebungen und Server** (Staging, Datenbanken, Webserver) laufen überwiegend auf Linux.
+- Fehler wie „funktioniert lokal, aber nicht in der CI“ haben oft **Linux-typische Ursachen**: Groß-/Kleinschreibung, Dateirechte, Zeilenenden. Mehr dazu in [Linux in der Testautomation](./07-linux-testautomation.mdx).
+
+## Linux, Distribution, Shell \{#begriffe}
+
+| Begriff | Bedeutung |
+|---|---|
+| **Linux** (genauer: der Linux-**Kernel**) | Kern des Betriebssystems: verwaltet Prozesse, Speicher, Dateien, Hardware |
+| **Distribution** | Kernel + Werkzeuge + Paketverwaltung als fertiges System: **Ubuntu**, **Debian**, **Fedora**, **Red Hat Enterprise Linux**, **Alpine** (sehr klein, beliebt in Containern) |
+| **Shell** | Programm, das deine Befehle entgegennimmt und ausführt. Standard ist meist **Bash**, auf macOS **zsh** |
+| **Terminal** | Fenster, in dem die Shell läuft |
+
+Die Befehle in dieser Lektion funktionieren auf praktisch allen Distributionen gleich. Unterschiede gibt es vor allem bei der **Paketverwaltung** (`apt` bei Debian/Ubuntu, `dnf` bei Fedora/RHEL, `apk` bei Alpine).
+
+## Übungsumgebung auf Windows \{#uebungsumgebung}
+
+Lesen allein reicht nicht – probiere jeden Befehl selbst aus. Möglichkeiten unter Windows:
+
+| Möglichkeit | Vorteil | Hinweis |
+|---|---|---|
+| **WSL** (Windows-Subsystem für Linux): `wsl --install` | echtes Ubuntu, sehr komfortabel | braucht aktivierte **Virtualisierung** im BIOS/UEFI |
+| **Docker**: `docker run -it --rm ubuntu:24.04 bash` | in Sekunden ein frisches Linux, nach dem Beenden wieder weg | Docker Desktop nötig (siehe [Docker-Grundlagen](../05-docker/01-docker-grundlagen.mdx)) |
+| **Git Bash** (kommt mit Git für Windows) | sofort da | nur eine Teilmenge: viele Text-Werkzeuge, aber keine echten Linux-Rechte, Prozesse oder Dienste |
+| **Virtuelle Maschine** (VirtualBox, Hyper-V) | komplettes System inkl. Oberfläche | mehr Aufwand |
+
+:::tip[Empfehlung]
+Für den Einstieg ist **WSL** am bequemsten. Lässt es sich nicht aktivieren, nimm einen **Ubuntu-Container**. Für die Text-Werkzeuge aus der [nächsten Lektion](./02-text-und-pipes.mdx) genügt sogar Git Bash.
+:::
+
+## Der Prompt und der Aufbau eines Befehls \{#befehlsaufbau}
+
+Nach dem Start siehst du den **Prompt**, z. B.:
+
+```text
+max@testserver:~$
+```
+
+`max` ist der Benutzer, `testserver` der Rechnername, `~` das aktuelle Verzeichnis (dein Home-Verzeichnis) und `$` zeigt einen normalen Benutzer. Bei **root** (Administrator) steht dort `#`.
+
+Ein Befehl besteht aus **Befehl – Optionen – Argumente**:
+
+```bash
+ls -l -a /var/log
+#  │  └─┬─┘  └──┬──┘
+#  │    │       └ Argument: worauf der Befehl wirkt
+#  │    └ Optionen: wie er es tut (kurz -l, lang --all)
+#  └ Befehl
+```
+
+- Kurze Optionen lassen sich zusammenfassen: `ls -l -a` = `ls -la`.
+- Lange Optionen haben zwei Striche: `ls --all`.
+- **Groß- und Kleinschreibung zählt** – überall: `ls -r` (umgekehrte Reihenfolge) ist etwas anderes als `ls -R` (rekursiv), und `Bericht.txt` ist eine andere Datei als `bericht.txt`.
+
+## Hilfe holen \{#hilfe}
+
+```bash
+ls --help          # Kurzhilfe der meisten Befehle
+man ls             # ausführliches Handbuch (Beenden mit q, Suchen mit /wort)
+type cd            # Ist das ein Programm oder ein eingebauter Shell-Befehl?
+```
+
+:::tip[Nützliche Tastenkürzel]
+- **Tab** vervollständigt Befehle und Pfade – zweimal Tab zeigt alle Möglichkeiten.
+- **↑ / ↓** blättern durch frühere Befehle, **Strg+R** sucht im Verlauf.
+- **Strg+C** bricht den laufenden Befehl ab, **Strg+L** leert den Bildschirm.
+:::
+
+## Die Verzeichnisstruktur \{#verzeichnisstruktur}
+
+Linux hat **keine Laufwerksbuchstaben**. Alles hängt in einem einzigen Baum unter der Wurzel `/`:
+
+```text
+/
+├── home/          Home-Verzeichnisse der Benutzer (/home/max)
+├── root/          Home-Verzeichnis von root
+├── etc/           Konfigurationsdateien (Text!)  z. B. /etc/hosts, /etc/nginx/
+├── var/
+│   └── log/       Logdateien                     z. B. /var/log/syslog
+├── tmp/           temporäre Dateien (werden oft beim Neustart gelöscht)
+├── usr/
+│   └── bin/       Programme für alle Benutzer   z. B. /usr/bin/python3
+├── opt/           zusätzlich installierte Software
+├── dev/           Geräte als Dateien             z. B. /dev/null
+└── proc/          Infos über laufende Prozesse und den Kernel (virtuell)
+```
+
+Für Testautomatisierer besonders wichtig: **`/etc`** (Konfiguration der Testumgebung), **`/var/log`** (Logs bei der Fehlersuche) und **`/tmp`** (temporäre Testdaten).
+
+:::note[„Alles ist eine Datei“]
+Unter Linux werden auch Geräte und Systeminformationen als Dateien dargestellt. `cat /proc/cpuinfo` zeigt die CPU, und alles, was nach `/dev/null` geschrieben wird, verschwindet – praktisch, um Ausgaben zu verwerfen.
+:::
+
+## Pfade: absolut und relativ \{#pfade}
+
+| Schreibweise | Bedeutung | Beispiel |
+|---|---|---|
+| `/…` | **absoluter** Pfad – beginnt an der Wurzel | `/var/log/syslog` |
+| ohne `/` am Anfang | **relativ** zum aktuellen Verzeichnis | `logs/test.log` |
+| `~` | dein Home-Verzeichnis | `~/projekte` = `/home/max/projekte` |
+| `.` | das aktuelle Verzeichnis | `./start.sh` |
+| `..` | das übergeordnete Verzeichnis | `../daten` |
+
+Linux trennt Verzeichnisse mit **`/`**, Windows mit `\`. In Skripten und Testcode deshalb nie `\` fest einbauen – siehe [Linux in der Testautomation](./07-linux-testautomation.mdx#pfade).
+
+## Navigieren \{#navigieren}
+
+```bash
+pwd                 # Wo bin ich? (print working directory) -> /home/max
+ls                  # Inhalt anzeigen
+ls -l               # ausführlich: Rechte, Besitzer, Größe, Datum
+ls -la              # inklusive versteckter Dateien (Name beginnt mit .)
+ls -lh /var/log     # Größen lesbar (K, M, G)
+cd /var/log         # in ein Verzeichnis wechseln (absolut)
+cd ..               # eine Ebene nach oben
+cd                  # zurück ins Home-Verzeichnis (wie cd ~)
+cd -                # zurück ins vorherige Verzeichnis
+```
+
+**Versteckte Dateien** sind einfach Dateien, deren Name mit einem Punkt beginnt, z. B. `.bashrc` oder `.gitignore`. `ls` zeigt sie nur mit `-a`.
+
+## Dateien und Verzeichnisse verwalten \{#dateien-verwalten}
+
+```bash
+mkdir testdaten                 # Verzeichnis anlegen
+mkdir -p projekt/logs/2026      # mit allen fehlenden Zwischenverzeichnissen
+touch notizen.txt               # leere Datei anlegen (oder Zeitstempel aktualisieren)
+
+cp bericht.txt bericht.bak      # Datei kopieren
+cp -r testdaten testdaten-alt   # Verzeichnis rekursiv kopieren
+mv bericht.txt archiv/          # verschieben
+mv alt.txt neu.txt              # umbenennen (= verschieben unter neuem Namen)
+
+rm notizen.txt                  # Datei löschen
+rm -r testdaten-alt             # Verzeichnis mit Inhalt löschen
+rmdir leer                      # nur leere Verzeichnisse löschen
+```
+
+:::danger[Kein Papierkorb]
+`rm` löscht **sofort und endgültig**. Besonders gefährlich: `rm -rf` mit einem Pfad aus einer **leeren Variable** (`rm -rf "$ORDNER/"` wird zu `rm -rf /`). Gewöhne dir an, vor `rm -r` mit `ls` zu prüfen, was betroffen ist, und nutze `rm -i` (fragt nach), wenn du unsicher bist.
+:::
+
+### Platzhalter (Wildcards) \{#wildcards}
+
+Die Shell ersetzt Platzhalter **vor** der Ausführung durch passende Dateinamen:
+
+| Muster | passt auf | Beispiel |
+|---|---|---|
+| `*` | beliebig viele Zeichen | `rm *.log` – alle Logdateien |
+| `?` | genau ein Zeichen | `ls test?.txt` – test1.txt, testA.txt |
+| `[0-9]` | ein Zeichen aus der Menge | `ls bericht-[0-9].pdf` |
+
+```bash
+cp screenshots/*.png /tmp/fehler/
+ls -l testlauf-2026-11-*.log
+```
+
+### Leerzeichen in Dateinamen \{#leerzeichen}
+
+Die Shell trennt Argumente an Leerzeichen. `rm Mein Bericht.txt` versucht, **zwei** Dateien zu löschen: `Mein` und `Bericht.txt`. Lösung: **Anführungszeichen** oder Escapen:
+
+```bash
+rm "Mein Bericht.txt"
+rm Mein\ Bericht.txt
+```
+
+In Skripten gilt deshalb: Variablen **immer in Anführungszeichen** – `"$datei"`. Mehr dazu in [Bash-Skripte](./06-bash-skripte.mdx#quoting).
+
+## Praxis: ein Testprojekt vorbereiten \{#praxis}
+
+```bash
+cd ~
+mkdir -p testlauf/{logs,screenshots,berichte}   # {a,b,c} erzeugt drei Namen
+cd testlauf
+touch logs/testlauf.log
+ls -R
+# .:
+# berichte  logs  screenshots
+#
+# ./berichte:
+#
+# ./logs:
+# testlauf.log
+#
+# ./screenshots:
+
+cp logs/testlauf.log berichte/testlauf-$(date +%F).log   # Datum im Namen, z. B. 2026-11-26
+ls berichte
+cd .. && rm -r testlauf                                  # aufräumen
+```
+
+`$(date +%F)` ist eine **Kommandosubstitution**: Die Shell führt `date +%F` aus und setzt das Ergebnis ein. `&&` führt den zweiten Befehl nur aus, wenn der erste erfolgreich war.
+
+## Typische Fehler \{#typische-fehler}
+
+- **`No such file or directory`** – falscher Pfad, Tippfehler oder falsche **Groß-/Kleinschreibung**. Tab-Vervollständigung hilft.
+- **`cd` in eine Datei** – `Not a directory`.
+- **Leerzeichen im Dateinamen** ohne Anführungszeichen.
+- **`rm -r` ohne Kontrolle** – es gibt keinen Papierkorb.
+- **Windows-Pfade** (`C:\temp\test.txt`) in Befehlen oder Skripten.
+- **Als root arbeiten**, obwohl es nicht nötig ist – Fehler wirken sich dann auf das ganze System aus.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Linux = Kernel; **Distribution** = fertiges System; **Shell** (meist Bash) nimmt Befehle entgegen.
+- Befehl = **Befehl – Optionen – Argumente**; Groß-/Kleinschreibung zählt; Hilfe mit `--help` und `man`.
+- Ein Verzeichnisbaum ab `/`; wichtig: `/home`, `/etc`, `/var/log`, `/tmp`.
+- Pfade **absolut** (`/…`) oder **relativ**; Abkürzungen `~`, `.`, `..`.
+- `pwd`, `ls -la`, `cd`, `mkdir -p`, `touch`, `cp -r`, `mv`, `rm -r` – und `rm` ist endgültig.
+
+<Quiz fragen={fragen} titel="Quiz: Linux – Grundlagen und Dateisystem" />

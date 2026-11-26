@@ -1,3 +1,4 @@
 # Shell-Skript des Maven Wrappers muss LF-Zeilenenden behalten (sonst startet es unter Linux/macOS nicht)
 beispiele/shop-java/mvnw text eol=lf
+*.sh text eol=lf
 *.cmd text eol=crlf

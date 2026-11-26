@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Prozesse und Dienste"
+
+- id: li-pr-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist eine PID?"
+  optionen:
+    - "Die eindeutige Nummer eines laufenden Prozesses"
+    - "Das Passwort eines Benutzers"
+    - "Die Portnummer eines Dienstes"
+    - "Die Paket-ID bei apt"
+  richtig: [0]
+  erklaerung: "Jeder Prozess hat eine Prozess-ID (PID), über die man ihn z. B. mit kill ansprechen kann."
+  artikel: "#prozesse"
+  tags: [linux, prozesse]
+
+- id: li-pr-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Unterschied zwischen 'kill 4211' und 'kill -9 4211'?"
+  optionen:
+    - "Es gibt keinen"
+    - "kill sendet SIGTERM (Prozess kann aufräumen), kill -9 sendet SIGKILL (sofortiger Abbruch)"
+    - "kill -9 beendet neun Prozesse"
+    - "kill pausiert, kill -9 beendet"
+  richtig: [1]
+  erklaerung: "SIGTERM ist eine Bitte, sich sauber zu beenden. SIGKILL beendet den Prozess durch den Kernel ohne Aufräummöglichkeit – nur als letztes Mittel."
+  artikel: "#signale"
+  tags: [linux, signale]
+
+- id: li-pr-003
+  typ: single
+  schwierigkeit: 1
+  frage: "Welches Signal sendet Strg+C im Terminal?"
+  optionen:
+    - "SIGKILL"
+    - "SIGINT"
+    - "SIGHUP"
+    - "SIGSTOP"
+  richtig: [1]
+  erklaerung: "Strg+C sendet SIGINT (Interrupt, Nummer 2) an den Prozess im Vordergrund."
+  artikel: "#signale"
+  tags: [linux, signale]
+
+- id: li-pr-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie startest du die Testanwendung so, dass das Terminal sofort wieder frei ist?"
+  optionen:
+    - "dotnet run --project src/Shop.Web &"
+    - "dotnet run --project src/Shop.Web &&"
+    - "bg dotnet run"
+    - "dotnet run --background"
+  richtig: [0]
+  erklaerung: "Ein & am Ende startet den Befehl im Hintergrund. && ist dagegen eine Verkettung, die auf den Exit-Code wartet."
+  artikel: "#hintergrund"
+  tags: [linux, prozesse]
+
+- id: li-pr-005
+  typ: single
+  schwierigkeit: 1
+  frage: "Welcher Exit-Code bedeutet Erfolg?"
+  optionen:
+    - "1"
+    - "0"
+    - "-1"
+    - "200"
+  richtig: [1]
+  erklaerung: "0 bedeutet Erfolg, jeder andere Wert einen Fehler. Die Variable $? enthält den Code des letzten Befehls."
+  artikel: "#exit-codes"
+  tags: [linux, exit-code]
+
+- id: li-pr-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt 'dotnet build && dotnet test'?"
+  optionen:
+    - "Beide Befehle laufen gleichzeitig"
+    - "dotnet test läuft nur, wenn dotnet build erfolgreich war (Exit-Code 0)"
+    - "dotnet test läuft nur, wenn dotnet build fehlschlägt"
+    - "Die Ausgaben werden zusammengeführt"
+  richtig: [1]
+  erklaerung: "&& führt den zweiten Befehl nur bei Erfolg des ersten aus, || nur bei Misserfolg."
+  artikel: "#exit-codes"
+  tags: [linux, exit-code]
+
+- id: li-pr-007
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "CI-Systeme entscheiden anhand des Exit-Codes, ob ein Schritt erfolgreich war."
+  richtig: [0]
+  erklaerung: "Wahr. Deshalb darf ein Testskript den Exit-Code des Testlaufs nicht verschlucken – sonst erscheint der Build grün, obwohl Tests rot sind."
+  artikel: "#exit-codes"
+  tags: [linux, ci]
+
+- id: li-pr-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Die Testanwendung startet nicht: 'address already in use' auf Port 5000. Wie findest du den Prozess, der den Port belegt?"
+  optionen:
+    - "ps aux | grep 5000"
+    - "ss -ltnp | grep :5000"
+    - "df -h"
+    - "systemctl status 5000"
+  richtig: [1]
+  erklaerung: "ss -ltnp zeigt lauschende TCP-Ports mit zugehörigem Prozess und PID. Alternativ: sudo lsof -i :5000."
+  artikel: "#ports"
+  tags: [linux, netzwerk, ports]
+
+- id: li-pr-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Mit welchem Befehl sorgst du dafür, dass ein Dienst nach einem Neustart des Servers automatisch startet?"
+  optionen:
+    - "sudo systemctl start shop"
+    - "sudo systemctl enable shop"
+    - "sudo systemctl reload shop"
+    - "sudo systemctl status shop"
+  richtig: [1]
+  erklaerung: "start startet nur jetzt, enable aktiviert den automatischen Start beim Booten. Oft kombiniert: systemctl enable --now shop."
+  artikel: "#systemd"
+  tags: [linux, systemd]
+
+- id: li-pr-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Dienst 'shop' steht auf 'Active: failed'. Wie siehst du, warum er abgestürzt ist?"
+  optionen:
+    - "journalctl -u shop -n 100"
+    - "ls /etc/shop"
+    - "kill -9 shop"
+    - "df -h"
+  richtig: [0]
+  erklaerung: "journalctl -u zeigt die Logs eines Dienstes; mit -n die letzten Zeilen, mit -f live."
+  artikel: "#journalctl"
+  tags: [linux, journalctl]
+
+- id: li-pr-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Auf dem Test-Server schlagen plötzlich viele unterschiedliche Dinge fehl: Logs fehlen, die Datenbank verweigert Inserts. Was prüfst du zuerst?"
+  optionen:
+    - "df -h – ob die Festplatte voll ist"
+    - "whoami"
+    - "chmod 777 /"
+    - "Die Uhrzeit"
+  richtig: [0]
+  erklaerung: "Eine volle Festplatte führt zu sehr unterschiedlichen, schwer zuzuordnenden Fehlern. df -h zeigt den freien Platz."
+  artikel: "#ressourcen"
+  tags: [linux, ressourcen]
+
+- id: li-pr-012
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein CI-Agent mit 4 Kernen zeigt dauerhaft 'load average: 9.8'. Was ist eine wahrscheinliche Folge für die Tests?"
+  optionen:
+    - "Keine, die Last spielt für Tests keine Rolle"
+    - "Tests werden langsamer, knappe Timeouts schlagen sporadisch fehl"
+    - "Tests laufen schneller"
+    - "Nur Unit-Tests sind betroffen"
+  richtig: [1]
+  erklaerung: "Liegt die Last deutlich über der Kernzahl, warten Prozesse auf CPU-Zeit. Browser- und API-Tests werden langsamer und können flaky werden."
+  artikel: "#ressourcen"
+  tags: [linux, ressourcen, flaky]

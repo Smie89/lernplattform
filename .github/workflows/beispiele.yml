@@ -29,8 +29,8 @@ jobs:
         run: dotnet test tests/Shop.Api.Tests --no-build
       - name: Browser für UI-Tests installieren
         run: pwsh tests/Shop.UiTests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
-      - name: UI-Tests
-        run: dotnet test tests/Shop.UiTests --no-build
+      - name: UI-Tests gegen die gestartete Anwendung
+        run: ../linux/tests-mit-app.sh   # startet den Shop, wartet, testet, räumt auf
 
   shop-java:
     runs-on: ubuntu-latest
@@ -48,3 +48,15 @@ jobs:
         run: ./mvnw -B test
       - name: API- und UI-Tests
         run: ./mvnw -B verify
+
+  linux-skripte:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beispiele/linux
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck
+        run: shellcheck *.sh
+      - name: Selbsttest der Skripte
+        run: ./selbsttest.sh

@@ -1,0 +1,238 @@
+---
+title: Texte, Pipes und Umleitungen
+description: Logdateien lesen und durchsuchen mit cat, less, tail, grep, sort, uniq, cut, awk und sed, Befehle mit Pipes verketten, Ausgaben umleiten und Dateien mit find suchen.
+tags: [linux, shell, grep, pipes, logs]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-text-und-pipes.fragen.yaml';
+
+# Texte, Pipes und Umleitungen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- Textdateien und Logs **anzeigen** und **live verfolgen**,
+- mit **`grep`** gezielt suchen,
+- mit **Pipes** mehrere kleine Werkzeuge zu einer Auswertung verketten,
+- Ausgaben und Fehlermeldungen **umleiten**,
+- Dateien mit **`find`** suchen,
+- ein **Testlog auswerten**: Welche Tests sind wie oft fehlgeschlagen?
+:::
+
+## Die Beispieldatei \{#beispieldatei}
+
+Alle Beispiele nutzen dieses Testlog. Du findest es als [testlauf.log](https://github.com/Smie89/lernplattform/blob/main/beispiele/linux/testlauf.log) im Repository – lade es herunter oder lege es mit einem Editor an, um mitzumachen. Alle Ausgaben unten sind echte Ausgaben der Befehle.
+
+```text
+2026-11-26 08:00:01 INFO  Testlauf gestartet (Umgebung: staging)
+2026-11-26 08:00:02 INFO  LoginTest bestanden (812 ms)
+2026-11-26 08:00:05 ERROR WarenkorbTest fehlgeschlagen: Timeout nach 30 s
+2026-11-26 08:00:06 WARN  Langsame Antwort von /api/produkte (2300 ms)
+2026-11-26 08:00:09 ERROR BestellungTest fehlgeschlagen: Element #bestellen nicht gefunden
+2026-11-26 08:00:12 INFO  SucheTest bestanden (640 ms)
+2026-11-26 08:00:15 ERROR WarenkorbTest fehlgeschlagen: Timeout nach 30 s
+2026-11-26 08:00:16 WARN  Langsame Antwort von /api/warenkoerbe (1900 ms)
+2026-11-26 08:00:18 INFO  ProfilTest bestanden (455 ms)
+2026-11-26 08:00:20 INFO  Testlauf beendet: 3 bestanden, 3 fehlgeschlagen
+```
+
+## Dateien anzeigen \{#anzeigen}
+
+| Befehl | Wofür |
+|---|---|
+| `cat datei` | ganze Datei ausgeben – gut für kurze Dateien |
+| `less datei` | seitenweise blättern: Leertaste weiter, `/wort` suchen, `n` nächster Treffer, `q` beenden |
+| `head -n 5 datei` | die ersten 5 Zeilen |
+| `tail -n 5 datei` | die letzten 5 Zeilen |
+| `tail -f datei` | Ende anzeigen und **neue Zeilen live** nachladen (Beenden mit Strg+C) |
+
+:::tip[tail -f beim Testen]
+Während ein Test gegen eine Anwendung läuft, kannst du in einem zweiten Terminal deren Log mit `tail -f /var/log/meine-app/app.log` beobachten. So siehst du sofort, welche Fehlermeldung der Server zu deinem Request schreibt.
+:::
+
+## Suchen mit grep \{#grep}
+
+`grep` gibt alle Zeilen aus, die ein Muster enthalten:
+
+```bash
+grep ERROR testlauf.log
+```
+
+```text
+2026-11-26 08:00:05 ERROR WarenkorbTest fehlgeschlagen: Timeout nach 30 s
+2026-11-26 08:00:09 ERROR BestellungTest fehlgeschlagen: Element #bestellen nicht gefunden
+2026-11-26 08:00:15 ERROR WarenkorbTest fehlgeschlagen: Timeout nach 30 s
+```
+
+Die wichtigsten Optionen:
+
+| Option | Bedeutung | Beispiel |
+|---|---|---|
+| `-i` | Groß-/Kleinschreibung ignorieren | `grep -i timeout testlauf.log` |
+| `-c` | nur **Anzahl** der Treffer | `grep -c ERROR testlauf.log` → `3` |
+| `-v` | Zeilen **ohne** das Muster | `grep -v INFO testlauf.log` |
+| `-n` | Zeilennummern anzeigen | `grep -n WARN testlauf.log` |
+| `-r` | rekursiv in allen Dateien eines Verzeichnisses | `grep -r "localhost:5000" src/` |
+| `-l` | nur die **Dateinamen** mit Treffern | `grep -rl "Thread.Sleep" tests/` |
+| `-E` | erweiterte reguläre Ausdrücke, z. B. „oder“ | `grep -E "WARN\|ERROR" testlauf.log` |
+| `-o` | nur den **passenden Teil** ausgeben | `grep -oE "[0-9]+ ms" testlauf.log` |
+| `-A 2` / `-B 2` | 2 Zeilen **nach** / **vor** dem Treffer mit ausgeben | `grep -A 5 "Exception" app.log` |
+
+:::tip[Code durchsuchen]
+`grep -rn "Thread.Sleep" tests/` findet alle festen Wartezeiten in deiner Testsuite – mit Datei und Zeilennummer. Ein schneller Weg, [Flaky-Test-Kandidaten](../02-testautomation/01-grundlagen/02-flaky-tests.mdx#timing) aufzuspüren.
+:::
+
+## Pipes: Werkzeuge verketten \{#pipes}
+
+Das Zeichen **`|`** (Pipe) leitet die **Ausgabe** eines Befehls als **Eingabe** an den nächsten weiter. So entstehen aus kleinen Werkzeugen mächtige Auswertungen:
+
+```bash
+grep -v INFO testlauf.log | wc -l
+```
+
+```text
+5
+```
+
+`grep -v INFO` liefert alle Zeilen ohne INFO, `wc -l` (word count, lines) zählt sie.
+
+Die wichtigsten Bausteine für Pipes:
+
+| Befehl | Aufgabe |
+|---|---|
+| `wc -l` | Zeilen zählen |
+| `sort` | sortieren (`-n` numerisch, `-r` absteigend) |
+| `uniq -c` | aufeinanderfolgende gleiche Zeilen zusammenfassen und zählen – **vorher sortieren!** |
+| `head` / `tail` | erste / letzte Zeilen |
+| `cut -d' ' -f4` | Feld 4 bei Trennzeichen Leerzeichen |
+| `awk '{print $3}'` | Spalte 3 (trennt an beliebig vielen Leerzeichen) |
+| `tr 'a-z' 'A-Z'` | Zeichen ersetzen, hier: in Großbuchstaben |
+| `sed 's/alt/neu/'` | Text ersetzen |
+
+### Beispiel: Wie viele Meldungen pro Level? \{#auswertung-level}
+
+```bash
+awk '{print $3}' testlauf.log | sort | uniq -c | sort -rn
+```
+
+```text
+      5 INFO
+      3 ERROR
+      2 WARN
+```
+
+Schritt für Schritt:
+1. `awk '{print $3}'` – nur die dritte Spalte (das Level)
+2. `sort` – gleiche Werte untereinander
+3. `uniq -c` – zusammenfassen und zählen
+4. `sort -rn` – nach Anzahl absteigend
+
+### Beispiel: Welche Tests sind wie oft fehlgeschlagen? \{#auswertung-tests}
+
+```bash
+grep ERROR testlauf.log | awk '{print $4}' | sort | uniq -c | sort -rn
+```
+
+```text
+      2 WarenkorbTest
+      1 BestellungTest
+```
+
+Das ist eine typische Frage nach einem nächtlichen Testlauf – und mit einer Zeile beantwortet.
+
+:::note[cut oder awk?]
+`cut -d' ' -f4` zählt **jedes einzelne** Leerzeichen als Trenner. In den INFO-Zeilen stehen nach `INFO` zwei Leerzeichen – dort würde `cut` ein leeres Feld liefern. `awk` behandelt mehrere Leerzeichen als einen Trenner und ist für solche Logs deshalb robuster.
+:::
+
+### Beispiel: Werte herausziehen mit sed und grep -o \{#sed}
+
+Testname und Dauer aller bestandenen Tests:
+
+```bash
+grep "bestanden (" testlauf.log | sed -E 's/.*INFO  ([A-Za-z]+) bestanden \(([0-9]+) ms\)/\1 \2/'
+```
+
+```text
+LoginTest 812
+SucheTest 640
+ProfilTest 455
+```
+
+`sed -E 's/MUSTER/ERSATZ/'` ersetzt Text; `( … )` merkt sich Teile, die im Ersatz als `\1`, `\2` wieder eingesetzt werden.
+
+Die langsamste gemessene Dauer im ganzen Log:
+
+```bash
+grep -oE "[0-9]+ ms" testlauf.log | sort -n | tail -1
+```
+
+```text
+2300 ms
+```
+
+## Umleitungen \{#umleitungen}
+
+Jeder Befehl hat drei Datenströme:
+
+| Strom | Nummer | Standard |
+|---|---|---|
+| **stdin** (Eingabe) | 0 | Tastatur |
+| **stdout** (Ausgabe) | 1 | Bildschirm |
+| **stderr** (Fehlermeldungen) | 2 | Bildschirm |
+
+```bash
+grep ERROR testlauf.log > fehler.txt        # Ausgabe in Datei (überschreibt!)
+grep WARN testlauf.log >> fehler.txt        # anhängen
+./tests-starten.sh 2> fehler.log            # nur Fehlermeldungen in Datei
+./tests-starten.sh > alles.log 2>&1         # Ausgabe UND Fehler in dieselbe Datei
+./tests-starten.sh > /dev/null 2>&1         # alles verwerfen
+sort < namen.txt                            # Eingabe aus Datei lesen
+./tests-starten.sh 2>&1 | tee testlauf.log  # anzeigen UND gleichzeitig speichern
+```
+
+:::warning[Reihenfolge bei 2>&1]
+`> alles.log 2>&1` bedeutet: stdout geht in die Datei, dann wird stderr **dorthin umgeleitet, wohin stdout gerade zeigt**. Schreibt man es umgekehrt (`2>&1 > alles.log`), landen die Fehler weiterhin auf dem Bildschirm.
+:::
+
+`tee` ist in CI-Pipelines sehr praktisch: Die Ausgabe erscheint im Build-Log **und** liegt als Datei vor, die man als Artefakt speichern kann.
+
+## Dateien finden mit find \{#find}
+
+```bash
+find . -name "*.log"                       # alle .log-Dateien ab hier (rekursiv)
+find . -iname "*test*"                     # Name ohne Groß-/Kleinschreibung
+find /tmp -type d -name "playwright*"      # nur Verzeichnisse
+find . -name "*.png" -mtime -1             # in den letzten 24 Stunden geändert
+find /var/log -size +100M                  # größer als 100 MB
+find . -name "*.tmp" -delete               # finden UND löschen (Vorsicht!)
+find screenshots -name "*.png" -exec cp {} /tmp/fehler/ \;   # für jeden Treffer einen Befehl
+```
+
+Mit `xargs` lassen sich die Treffer an einen anderen Befehl übergeben:
+
+```bash
+find tests -name "*.cs" | xargs grep -l "Thread.Sleep"
+```
+
+:::warning[Vorsicht mit -delete]
+Prüfe einen `find`-Befehl **immer zuerst ohne** `-delete` oder `-exec rm`. Dann siehst du, welche Dateien betroffen wären.
+:::
+
+## Typische Fehler \{#typische-fehler}
+
+- **`uniq` ohne vorheriges `sort`** – `uniq` fasst nur **aufeinanderfolgende** gleiche Zeilen zusammen.
+- **`>` statt `>>`** – die Datei wird überschrieben statt ergänzt.
+- **`2>&1` an der falschen Stelle** – Fehlermeldungen landen nicht in der Datei.
+- **`cat datei | grep …`** – funktioniert, ist aber unnötig: `grep … datei` liest die Datei selbst.
+- **Sonderzeichen im Muster** wie `|`, `*`, `$` ohne Anführungszeichen – die Shell interpretiert sie, bevor `grep` sie sieht. Muster deshalb in **Anführungszeichen** setzen.
+- **`cut` bei mehreren Leerzeichen** – leere Felder; besser `awk`.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Anzeigen: `cat`, `less`, `head`, `tail`, **`tail -f`** für Live-Logs.
+- Suchen: **`grep`** mit `-i`, `-c`, `-v`, `-n`, `-r`, `-E`, `-o`, `-A/-B`.
+- **Pipes** `|` verketten Werkzeuge: `grep … | awk … | sort | uniq -c | sort -rn`.
+- **Umleitungen**: `>` (überschreiben), `>>` (anhängen), `2>` (Fehler), `> datei 2>&1` (beides), `| tee` (anzeigen und speichern).
+- **`find`** sucht Dateien nach Name, Typ, Alter und Größe – `-delete` nur nach einer Probe ohne.
+
+<Quiz fragen={fragen} titel="Quiz: Texte, Pipes und Umleitungen" />

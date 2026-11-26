@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Texte, Pipes und Umleitungen"
+
+- id: li-tp-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Mit welchem Befehl verfolgst du neue Zeilen einer Logdatei live, während ein Test läuft?"
+  optionen:
+    - "cat -f app.log"
+    - "tail -f app.log"
+    - "head -f app.log"
+    - "less -live app.log"
+  richtig: [1]
+  erklaerung: "tail -f zeigt das Ende der Datei und lädt neue Zeilen fortlaufend nach. Beenden mit Strg+C."
+  artikel: "#anzeigen"
+  tags: [linux, logs]
+
+- id: li-tp-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie zählst du, wie viele Zeilen in testlauf.log 'ERROR' enthalten?"
+  optionen:
+    - "grep -c ERROR testlauf.log"
+    - "grep -v ERROR testlauf.log"
+    - "count ERROR testlauf.log"
+    - "grep -n ERROR testlauf.log"
+  richtig: [0]
+  erklaerung: "-c gibt nur die Anzahl der Trefferzeilen aus. -v würde die Zeilen OHNE ERROR zeigen, -n Zeilennummern."
+  artikel: "#grep"
+  tags: [linux, grep]
+
+- id: li-tp-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Du willst in allen Dateien unter tests/ die Stellen mit 'Thread.Sleep' inklusive Datei und Zeilennummer finden. Welcher Befehl passt?"
+  optionen:
+    - "grep Thread.Sleep tests/"
+    - "grep -rn \"Thread.Sleep\" tests/"
+    - "find tests/ Thread.Sleep"
+    - "grep -c Thread.Sleep tests/*"
+  richtig: [1]
+  erklaerung: "-r durchsucht das Verzeichnis rekursiv, -n zeigt die Zeilennummern. Ohne -r meldet grep, dass tests/ ein Verzeichnis ist."
+  artikel: "#grep"
+  tags: [linux, grep]
+
+- id: li-tp-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Was macht das Zeichen | zwischen zwei Befehlen?"
+  optionen:
+    - "Es führt beide Befehle gleichzeitig, aber unabhängig aus"
+    - "Es leitet die Ausgabe des ersten Befehls als Eingabe an den zweiten weiter"
+    - "Es führt den zweiten Befehl nur aus, wenn der erste fehlschlägt"
+    - "Es schreibt die Ausgabe in eine Datei"
+  richtig: [1]
+  erklaerung: "Die Pipe verbindet stdout des ersten mit stdin des zweiten Befehls – so entstehen Auswertungsketten."
+  artikel: "#pipes"
+  tags: [linux, pipes]
+
+- id: li-tp-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum steht vor 'uniq -c' fast immer ein 'sort'?"
+  optionen:
+    - "uniq funktioniert nur mit Zahlen"
+    - "uniq fasst nur direkt aufeinanderfolgende gleiche Zeilen zusammen"
+    - "sort macht die Ausgabe schneller"
+    - "Ohne sort gibt uniq einen Fehler aus"
+  richtig: [1]
+  erklaerung: "Ohne vorheriges Sortieren würden gleiche Werte, die nicht nebeneinanderstehen, mehrfach gezählt."
+  artikel: "#auswertung-level"
+  tags: [linux, pipes]
+
+- id: li-tp-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Was liefert 'grep ERROR testlauf.log | awk '{print $4}' | sort | uniq -c | sort -rn'?"
+  optionen:
+    - "Alle Fehlerzeilen in Originalreihenfolge"
+    - "Die Namen der fehlgeschlagenen Tests mit Anzahl, häufigste zuerst"
+    - "Die Anzahl aller Zeilen"
+    - "Die Uhrzeiten der Fehler"
+  richtig: [1]
+  erklaerung: "awk holt Spalte 4 (Testname), sort + uniq -c zählt gleiche Namen, sort -rn sortiert nach Anzahl absteigend."
+  artikel: "#auswertung-tests"
+  tags: [linux, pipes, logs]
+
+- id: li-tp-007
+  typ: single
+  schwierigkeit: 3
+  frage: "In einem Log stehen zwischen den Spalten mal ein, mal zwei Leerzeichen. Welches Werkzeug holt Spalte 4 zuverlässig heraus?"
+  optionen:
+    - "cut -d' ' -f4"
+    - "awk '{print $4}'"
+    - "tr -f4"
+    - "head -4"
+  richtig: [1]
+  erklaerung: "awk behandelt beliebig viele Leerzeichen als einen Trenner. cut zählt jedes Leerzeichen und liefert bei doppelten Leerzeichen leere Felder."
+  artikel: "#auswertung-tests"
+  tags: [linux, awk]
+
+- id: li-tp-008
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist der Unterschied zwischen '>' und '>>'?"
+  optionen:
+    - "Es gibt keinen"
+    - "> überschreibt die Datei, >> hängt an"
+    - "> hängt an, >> überschreibt"
+    - ">> leitet Fehlermeldungen um"
+  richtig: [1]
+  erklaerung: "> ersetzt den bisherigen Inhalt, >> ergänzt am Ende. Ein versehentliches > kann ein Log überschreiben."
+  artikel: "#umleitungen"
+  tags: [linux, umleitungen]
+
+- id: li-tp-009
+  typ: single
+  schwierigkeit: 3
+  frage: "Welcher Befehl schreibt normale Ausgabe UND Fehlermeldungen in alles.log?"
+  optionen:
+    - "./tests.sh 2>&1 > alles.log"
+    - "./tests.sh > alles.log 2>&1"
+    - "./tests.sh 2> alles.log"
+    - "./tests.sh | alles.log"
+  richtig: [1]
+  erklaerung: "Erst stdout in die Datei, dann stderr dorthin, wohin stdout zeigt. In der umgekehrten Reihenfolge landen Fehler weiter auf dem Bildschirm."
+  artikel: "#umleitungen"
+  tags: [linux, umleitungen]
+
+- id: li-tp-010
+  typ: single
+  schwierigkeit: 2
+  frage: "In der CI soll die Testausgabe im Build-Log erscheinen UND als Datei gespeichert werden. Was passt?"
+  optionen:
+    - "./tests.sh > testlauf.log"
+    - "./tests.sh 2>&1 | tee testlauf.log"
+    - "./tests.sh > /dev/null"
+    - "cat testlauf.log | ./tests.sh"
+  richtig: [1]
+  erklaerung: "tee gibt alles weiter auf den Bildschirm und schreibt es gleichzeitig in die Datei. Mit 2>&1 kommen auch die Fehlermeldungen mit."
+  artikel: "#umleitungen"
+  tags: [linux, ci]
+
+- id: li-tp-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie findest du alle PNG-Dateien unter screenshots/, die in den letzten 24 Stunden geändert wurden?"
+  optionen:
+    - "find screenshots -name \"*.png\" -mtime -1"
+    - "grep -r png screenshots"
+    - "ls screenshots/*.png -1"
+    - "find *.png --today"
+  richtig: [0]
+  erklaerung: "find sucht rekursiv; -name filtert nach Muster, -mtime -1 nach Änderung innerhalb des letzten Tages."
+  artikel: "#find"
+  tags: [linux, find]
+
+- id: li-tp-012
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Bevor man 'find … -delete' ausführt, sollte man denselben Befehl ohne -delete laufen lassen, um zu sehen, was betroffen wäre."
+  richtig: [0]
+  erklaerung: "Wahr. Gelöschte Dateien sind weg – die Probe ohne -delete zeigt die Trefferliste gefahrlos an."
+  artikel: "#find"
+  tags: [linux, find, sicherheit]

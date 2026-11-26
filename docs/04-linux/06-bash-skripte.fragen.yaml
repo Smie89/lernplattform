@@ -1,0 +1,169 @@
+# Fragen zur Lektion "Bash-Skripte"
+
+- id: li-bs-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Wozu dient die erste Zeile '#!/usr/bin/env bash' in einem Skript?"
+  optionen:
+    - "Sie ist ein Kommentar ohne Wirkung"
+    - "Sie legt fest, welches Programm das Skript ausführt (Shebang)"
+    - "Sie macht das Skript ausführbar"
+    - "Sie lädt die Umgebungsvariablen"
+  richtig: [1]
+  erklaerung: "Der Shebang sagt dem System, mit welchem Interpreter das Skript gestartet wird. env sucht bash im PATH. Ausführbar wird es erst durch chmod +x."
+  artikel: "#erstes-skript"
+  tags: [bash]
+
+- id: li-bs-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Zuweisung ist in Bash korrekt?"
+  optionen:
+    - "port = 5000"
+    - "port=5000"
+    - "$port=5000"
+    - "set port 5000"
+  richtig: [1]
+  erklaerung: "Um das = dürfen keine Leerzeichen stehen. Mit Leerzeichen hält die Shell 'port' für einen Befehl."
+  artikel: "#variablen"
+  tags: [bash, variablen]
+
+- id: li-bs-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt 'timeout=\"${2:-60}\"'?"
+  optionen:
+    - "timeout bekommt den zweiten Parameter oder 60, wenn er fehlt"
+    - "timeout wird um 60 verringert"
+    - "Das Skript bricht ab, wenn der zweite Parameter fehlt"
+    - "timeout bekommt immer 60"
+  richtig: [0]
+  erklaerung: "${var:-standard} liefert einen Standardwert. ${var:?meldung} würde dagegen mit der Meldung abbrechen."
+  artikel: "#variablen"
+  tags: [bash, parameter]
+
+- id: li-bs-004
+  typ: single
+  schwierigkeit: 2
+  frage: "datei=\"Mein Bericht.txt\". Welcher Befehl löscht genau diese Datei?"
+  optionen:
+    - "rm $datei"
+    - "rm \"$datei\""
+    - "rm '$datei'"
+    - "rm ${datei}"
+  richtig: [1]
+  erklaerung: "Doppelte Anführungszeichen setzen die Variable ein und halten sie als ein Argument zusammen. Einfache Anführungszeichen verhindern die Ersetzung ganz."
+  artikel: "#quoting"
+  tags: [bash, quoting]
+
+- id: li-bs-005
+  typ: single
+  schwierigkeit: 1
+  frage: "Was enthält $# in einem Skript?"
+  optionen:
+    - "Den Namen des Skripts"
+    - "Die Anzahl der übergebenen Parameter"
+    - "Den letzten Exit-Code"
+    - "Die PID des Skripts"
+  richtig: [1]
+  erklaerung: "$# ist die Anzahl der Parameter, $0 der Skriptname, $? der letzte Exit-Code, $! die PID des letzten Hintergrundprozesses."
+  artikel: "#parameter"
+  tags: [bash, parameter]
+
+- id: li-bs-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Mit welcher Bedingung prüfst du, ob die Datei in $log existiert?"
+  optionen:
+    - "if [[ -d \"$log\" ]]"
+    - "if [[ -f \"$log\" ]]"
+    - "if [[ -z \"$log\" ]]"
+    - "if [[ $log == true ]]"
+  richtig: [1]
+  erklaerung: "-f prüft auf eine existierende Datei, -d auf ein Verzeichnis, -z auf einen leeren Text."
+  artikel: "#bedingungen"
+  tags: [bash, bedingungen]
+
+- id: li-bs-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Was macht 'until curl -sf -o /dev/null \"$url\"; do sleep 1; done'?"
+  optionen:
+    - "Ruft die URL genau einmal auf"
+    - "Wiederholt den Aufruf jede Sekunde, bis die URL erfolgreich antwortet"
+    - "Wartet immer genau eine Sekunde"
+    - "Läuft endlos, egal was passiert"
+  richtig: [1]
+  erklaerung: "until wiederholt die Schleife, solange der Befehl fehlschlägt. Im echten Skript kommt noch ein Timeout hinzu, damit es nicht endlos wartet."
+  artikel: "#schleifen"
+  tags: [bash, schleifen]
+
+- id: li-bs-008
+  typ: multiple
+  schwierigkeit: 3
+  frage: "Was bewirkt 'set -euo pipefail'?"
+  optionen:
+    - "Abbruch, sobald ein Befehl fehlschlägt"
+    - "Abbruch bei Verwendung einer nicht gesetzten Variable"
+    - "Eine Pipe gilt als fehlgeschlagen, wenn irgendein Teil fehlschlägt"
+    - "Alle Ausgaben werden in eine Logdatei geschrieben"
+  richtig: [0, 1, 2]
+  erklaerung: "-e, -u und -o pipefail machen Skripte robust. Eine Logdatei legt set nicht an."
+  artikel: "#strict-mode"
+  tags: [bash, robustheit]
+
+- id: li-bs-009
+  typ: single
+  schwierigkeit: 3
+  frage: "Ohne pipefail meldet 'dotnet test | tee lauf.log' in der CI Erfolg, obwohl Tests rot sind. Warum?"
+  optionen:
+    - "tee repariert die Tests"
+    - "Der Exit-Code einer Pipe ist ohne pipefail der des letzten Befehls – und tee war erfolgreich"
+    - "dotnet test liefert nie einen Fehlercode"
+    - "Die CI ignoriert Exit-Codes"
+  richtig: [1]
+  erklaerung: "Ohne pipefail zählt nur der letzte Befehl der Pipe. Mit set -o pipefail wird der Fehler von dotnet test weitergegeben."
+  artikel: "#strict-mode"
+  tags: [bash, ci, exit-code]
+
+- id: li-bs-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dient 'trap aufraeumen EXIT' in tests-mit-app.sh?"
+  optionen:
+    - "Es fängt alle Fehlermeldungen ab"
+    - "Die Funktion aufraeumen läuft immer beim Beenden des Skripts – bei Erfolg, Fehler oder Strg+C"
+    - "Es verhindert, dass das Skript beendet wird"
+    - "Es startet die Anwendung neu"
+  richtig: [1]
+  erklaerung: "So wird die Anwendung auch nach fehlgeschlagenen Tests beendet und der Port wieder freigegeben."
+  artikel: "#trap"
+  tags: [bash, trap]
+
+- id: li-bs-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum nutzt log-auswertung.sh 'grep -c -- \"$1\" \"$log\" || true'?"
+  optionen:
+    - "Damit grep schneller ist"
+    - "grep -c liefert bei 0 Treffern Exit-Code 1; mit || true bricht set -e das Skript nicht ab"
+    - "Damit die Ausgabe immer 'true' ist"
+    - "Damit Groß- und Kleinschreibung ignoriert wird"
+  richtig: [1]
+  erklaerung: "0 Treffer sind hier ein gültiges Ergebnis. || true erlaubt diesen erwarteten Fehlercode trotz set -e."
+  artikel: "#strict-mode"
+  tags: [bash, robustheit]
+
+- id: li-bs-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum wartet tests-mit-app.sh mit warte-auf-dienst.sh statt mit 'sleep 30' auf die Anwendung?"
+  optionen:
+    - "sleep gibt es in Bash nicht"
+    - "Es wartet nur so lange wie nötig und bricht mit klarer Meldung ab, wenn die App nicht startet"
+    - "sleep würde die Anwendung beenden"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Auf einen Zustand warten statt auf eine Zeit – schneller, wenn die App früh bereit ist, und zuverlässig, wenn sie länger braucht."
+  artikel: "#praxis"
+  tags: [bash, warten]

@@ -1,0 +1,10 @@
+2026-11-26 08:00:01 INFO  Testlauf gestartet (Umgebung: staging)
+2026-11-26 08:00:02 INFO  LoginTest bestanden (812 ms)
+2026-11-26 08:00:05 ERROR WarenkorbTest fehlgeschlagen: Timeout nach 30 s
+2026-11-26 08:00:06 WARN  Langsame Antwort von /api/produkte (2300 ms)
+2026-11-26 08:00:09 ERROR BestellungTest fehlgeschlagen: Element #bestellen nicht gefunden
+2026-11-26 08:00:12 INFO  SucheTest bestanden (640 ms)
+2026-11-26 08:00:15 ERROR WarenkorbTest fehlgeschlagen: Timeout nach 30 s
+2026-11-26 08:00:16 WARN  Langsame Antwort von /api/warenkoerbe (1900 ms)
+2026-11-26 08:00:18 INFO  ProfilTest bestanden (455 ms)
+2026-11-26 08:00:20 INFO  Testlauf beendet: 3 bestanden, 3 fehlgeschlagen

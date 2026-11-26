@@ -1,0 +1,169 @@
+# Fragen zur Lektion "Linux in der Testautomation"
+
+- id: li-ta-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Test liest 'Testdaten/Kunden.json'. Im Repository heißt die Datei 'TestDaten/kunden.json'. Was passiert?"
+  optionen:
+    - "Auf Windows und Linux funktioniert es"
+    - "Auf Windows funktioniert es, auf Linux gibt es eine FileNotFoundException"
+    - "Auf Linux funktioniert es, auf Windows nicht"
+    - "Der Test wird übersprungen"
+  richtig: [1]
+  erklaerung: "Windows ignoriert Groß-/Kleinschreibung in Dateinamen, Linux nicht."
+  artikel: "#pfade"
+  tags: [linux, ci, pfade]
+
+- id: li-ta-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie setzt du in C# einen Pfad plattformunabhängig zusammen?"
+  optionen:
+    - "\"TestDaten\\\\kunden.json\""
+    - "Path.Combine(\"TestDaten\", \"kunden.json\")"
+    - "\"TestDaten\" + \"\\\\\" + \"kunden.json\""
+    - "@\"C:\\TestDaten\\kunden.json\""
+  richtig: [1]
+  erklaerung: "Path.Combine verwendet das richtige Trennzeichen des Betriebssystems. In Java entsprechend Path.of(\"testdaten\", \"kunden.json\")."
+  artikel: "#pfade"
+  tags: [linux, csharp, pfade]
+
+- id: li-ta-003
+  typ: single
+  schwierigkeit: 2
+  frage: "In der CI erscheint: \"/usr/bin/env: 'bash\\r': No such file or directory\". Was ist die Ursache?"
+  optionen:
+    - "Bash ist nicht installiert"
+    - "Das Skript hat Windows-Zeilenenden (CRLF)"
+    - "Das Skript hat kein Ausführungsrecht"
+    - "Der PATH ist leer"
+  richtig: [1]
+  erklaerung: "Das \\r aus CRLF wird Teil des Shebangs. Lösung: in LF umwandeln und per .gitattributes (*.sh text eol=lf) dauerhaft verhindern."
+  artikel: "#zeilenenden"
+  tags: [linux, zeilenenden]
+
+- id: li-ta-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie verhinderst du dauerhaft, dass Shell-Skripte mit CRLF ausgecheckt werden?"
+  optionen:
+    - "Jedes Mal vor dem Commit dos2unix ausführen"
+    - "Eine .gitattributes mit '*.sh text eol=lf'"
+    - "Skripte nur unter Linux bearbeiten"
+    - "chmod +x auf alle Skripte"
+  richtig: [1]
+  erklaerung: ".gitattributes legt die Zeilenenden pro Dateityp im Repository fest – für alle Entwickler und die CI gleichermaßen."
+  artikel: "#zeilenenden"
+  tags: [linux, git, zeilenenden]
+
+- id: li-ta-005
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie laufen Browser-Tests auf einem CI-Runner ohne Bildschirm?"
+  optionen:
+    - "Gar nicht"
+    - "Headless, z. B. mit Chrome-Option --headless=new; Playwright macht das standardmäßig"
+    - "Nur mit angeschlossenem Monitor"
+    - "Nur unter Windows"
+  richtig: [1]
+  erklaerung: "Headless-Browser rendern ohne sichtbares Fenster. Für Programme, die zwingend ein Fenster brauchen, gibt es xvfb-run."
+  artikel: "#browser"
+  tags: [linux, browser, ci]
+
+- id: li-ta-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Auf einem frischen Ubuntu startet der Playwright-Browser nicht, weil Systembibliotheken fehlen. Was hilft?"
+  optionen:
+    - "playwright install --with-deps chromium"
+    - "chmod 777 auf den Browser"
+    - "Den Test mit sudo ausführen"
+    - "Auf Firefox wechseln"
+  richtig: [0]
+  erklaerung: "--with-deps installiert zusätzlich die benötigten Linux-Pakete (Schriftarten, Grafikbibliotheken usw.)."
+  artikel: "#browser"
+  tags: [linux, playwright]
+
+- id: li-ta-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Chrome stürzt im Docker-Container mit 'session deleted because of page crash' ab. Was ist eine typische Ursache?"
+  optionen:
+    - "Zu wenig Shared Memory (/dev/shm, standardmäßig 64 MB)"
+    - "Falsche Zeitzone"
+    - "Fehlendes Ausführungsrecht"
+    - "CRLF im Dockerfile"
+  richtig: [0]
+  erklaerung: "Abhilfe: --shm-size=2g bzw. shm_size in Compose oder die Chrome-Option --disable-dev-shm-usage."
+  artikel: "#browser"
+  tags: [linux, docker, chrome]
+
+- id: li-ta-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Test erwartet '26.11.2026', bekommt in der CI aber '11/26/2026'. Was ist die beste Lösung?"
+  optionen:
+    - "Beide Formate im Test akzeptieren"
+    - "Kultur bzw. Locale im Test explizit setzen"
+    - "Den Test in der CI deaktivieren"
+    - "Den CI-Runner auf Windows umstellen"
+  richtig: [1]
+  erklaerung: "CI-Runner laufen meist mit englischer Sprache. Setzt der Test die Kultur selbst, ist er überall reproduzierbar."
+  artikel: "#locale"
+  tags: [linux, locale, flaky]
+
+- id: li-ta-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was solltest du in CI-Skripten vermeiden, die Secrets verwenden?"
+  optionen:
+    - "echo $TEST_PASSWORT"
+    - "env oder printenv ausgeben"
+    - "set -x"
+    - "Das Secret als Umgebungsvariable an den Testschritt übergeben"
+  richtig: [0, 1, 2]
+  erklaerung: "Ausgaben und set -x können Secrets ins Log schreiben. Die Übergabe per env an den Schritt ist dagegen der vorgesehene Weg."
+  artikel: "#secrets"
+  tags: [linux, ci, secrets]
+
+- id: li-ta-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum steht beim Hochladen der Screenshots 'if: failure()'?"
+  optionen:
+    - "Damit die Screenshots nur bei Erfolg hochgeladen werden"
+    - "Weil der Schritt sonst nach fehlgeschlagenen Tests übersprungen würde – genau dann braucht man die Dateien"
+    - "Damit der Build immer rot ist"
+    - "Weil upload-artifact sonst nicht funktioniert"
+  richtig: [1]
+  erklaerung: "Standardmäßig laufen weitere Schritte nach einem Fehler nicht mehr. if: failure() führt den Upload gezielt im Fehlerfall aus."
+  artikel: "#artefakte"
+  tags: [linux, ci, artefakte]
+
+- id: li-ta-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bedeutet der Cron-Ausdruck '0 2 * * 1-5'?"
+  optionen:
+    - "Jeden Tag um 00:02"
+    - "Montags bis freitags um 02:00"
+    - "Am 2. jedes Monats"
+    - "Alle 2 Stunden"
+  richtig: [1]
+  erklaerung: "Minute 0, Stunde 2, jeder Tag, jeder Monat, Wochentage 1–5 (Montag bis Freitag). In GitHub Actions gilt die Zeit in UTC."
+  artikel: "#cron"
+  tags: [linux, cron]
+
+- id: li-ta-012
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Skript läuft von Hand, als Cron-Job aber mit 'dotnet: command not found'. Warum?"
+  optionen:
+    - "Cron-Jobs laufen mit minimaler Umgebung; PATH aus ~/.bashrc fehlt"
+    - "Cron unterstützt kein .NET"
+    - "Das Skript hat CRLF"
+    - "Cron-Jobs laufen nur als root"
+  richtig: [0]
+  erklaerung: "Cron liest die Shell-Konfiguration nicht. Absolute Pfade verwenden oder PATH im Skript bzw. in der Crontab setzen."
+  artikel: "#cron"
+  tags: [linux, cron, path]

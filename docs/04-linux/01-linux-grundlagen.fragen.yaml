@@ -1,0 +1,159 @@
+# Fragen zur Lektion "Linux – Grundlagen und Dateisystem"
+
+- id: li-gl-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist eine Linux-Distribution?"
+  optionen:
+    - "Der Linux-Kernel allein"
+    - "Ein fertiges System aus Kernel, Werkzeugen und Paketverwaltung, z. B. Ubuntu oder Debian"
+    - "Ein Terminalprogramm"
+    - "Eine Programmiersprache"
+  richtig: [1]
+  erklaerung: "Der Kernel ist nur der Kern. Eine Distribution bündelt ihn mit Werkzeugen, Paketverwaltung und Konfiguration zu einem nutzbaren System."
+  artikel: "#begriffe"
+  tags: [linux, grundlagen]
+
+- id: li-gl-002
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Warum begegnet dir Linux in der Testautomation häufig, auch wenn du auf Windows entwickelst?"
+  optionen:
+    - "CI-Runner laufen meist unter Linux"
+    - "Docker-Container basieren fast immer auf Linux"
+    - "Testumgebungen und Server laufen oft auf Linux"
+    - "Windows kann keine Tests ausführen"
+  richtig: [0, 1, 2]
+  erklaerung: "CI, Container und Server sind überwiegend Linux-basiert. Windows kann selbstverständlich Tests ausführen."
+  artikel: "#warum"
+  tags: [linux, ci]
+
+- id: li-gl-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Woran erkennst du im Prompt 'root@server:/etc#', dass du als Administrator angemeldet bist?"
+  optionen:
+    - "Am Doppelpunkt"
+    - "Am # am Ende (normale Benutzer haben $)"
+    - "An /etc"
+    - "Gar nicht"
+  richtig: [1]
+  erklaerung: "Das # zeigt root an, $ einen normalen Benutzer. Zusätzlich steht hier natürlich auch 'root' als Benutzername."
+  artikel: "#befehlsaufbau"
+  tags: [linux, shell]
+
+- id: li-gl-004
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Unter Linux sind 'Bericht.txt' und 'bericht.txt' dieselbe Datei."
+  richtig: [1]
+  erklaerung: "Falsch. Linux unterscheidet Groß- und Kleinschreibung bei Datei- und Verzeichnisnamen – eine häufige Ursache für Testfehler, die nur in der CI auftreten."
+  artikel: "#befehlsaufbau"
+  tags: [linux, dateisystem]
+
+- id: li-gl-005
+  typ: single
+  schwierigkeit: 1
+  frage: "Wo findest du unter Linux typischerweise Logdateien?"
+  optionen:
+    - "/etc"
+    - "/var/log"
+    - "/usr/bin"
+    - "/home/log"
+  richtig: [1]
+  erklaerung: "/var/log enthält Logdateien. /etc enthält Konfiguration, /usr/bin Programme."
+  artikel: "#verzeichnisstruktur"
+  tags: [linux, dateisystem]
+
+- id: li-gl-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Du bist in /home/max/projekt. Welcher Pfad zeigt auf /home/max/daten?"
+  optionen:
+    - "./daten"
+    - "../daten"
+    - "/daten"
+    - "~/projekt/daten"
+  richtig: [1]
+  erklaerung: ".. ist das übergeordnete Verzeichnis (/home/max), daher führt ../daten zu /home/max/daten. ~/daten wäre ebenfalls richtig, steht aber nicht zur Auswahl."
+  artikel: "#pfade"
+  tags: [linux, pfade]
+
+- id: li-gl-007
+  typ: single
+  schwierigkeit: 1
+  frage: "Mit welchem Befehl siehst du auch versteckte Dateien wie .gitignore?"
+  optionen:
+    - "ls -h"
+    - "ls -a"
+    - "ls -r"
+    - "ls --versteckt"
+  richtig: [1]
+  erklaerung: "-a (all) zeigt auch Dateien, deren Name mit einem Punkt beginnt. Häufig kombiniert als ls -la."
+  artikel: "#navigieren"
+  tags: [linux, befehle]
+
+- id: li-gl-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Du willst projekt/logs/2026 anlegen, aber 'projekt' existiert noch nicht. Welcher Befehl klappt?"
+  optionen:
+    - "mkdir projekt/logs/2026"
+    - "mkdir -p projekt/logs/2026"
+    - "touch projekt/logs/2026"
+    - "cd projekt/logs/2026"
+  richtig: [1]
+  erklaerung: "-p legt alle fehlenden Zwischenverzeichnisse mit an. Ohne -p meldet mkdir einen Fehler."
+  artikel: "#dateien-verwalten"
+  tags: [linux, befehle]
+
+- id: li-gl-009
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie benennst du alt.txt in neu.txt um?"
+  optionen:
+    - "rename alt.txt neu.txt"
+    - "mv alt.txt neu.txt"
+    - "cp alt.txt neu.txt"
+    - "ren alt.txt neu.txt"
+  richtig: [1]
+  erklaerung: "Umbenennen ist unter Linux Verschieben unter neuem Namen – mit mv. cp würde eine Kopie anlegen und das Original behalten."
+  artikel: "#dateien-verwalten"
+  tags: [linux, befehle]
+
+- id: li-gl-010
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Mit rm gelöschte Dateien landen im Papierkorb und können wiederhergestellt werden."
+  richtig: [1]
+  erklaerung: "Falsch. rm löscht sofort und endgültig. Deshalb vorher mit ls prüfen und bei Unsicherheit rm -i verwenden."
+  artikel: "#dateien-verwalten"
+  tags: [linux, sicherheit]
+
+- id: li-gl-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Was passiert bei 'rm Mein Bericht.txt'?"
+  optionen:
+    - "Die Datei 'Mein Bericht.txt' wird gelöscht"
+    - "rm versucht, die zwei Dateien 'Mein' und 'Bericht.txt' zu löschen"
+    - "Es kommt eine Rückfrage"
+    - "Nichts, Leerzeichen sind verboten"
+  richtig: [1]
+  erklaerung: "Die Shell trennt Argumente an Leerzeichen. Richtig ist rm \"Mein Bericht.txt\" oder rm Mein\\ Bericht.txt."
+  artikel: "#leerzeichen"
+  tags: [linux, shell]
+
+- id: li-gl-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt 'cp screenshots/*.png /tmp/fehler/'?"
+  optionen:
+    - "Kopiert eine Datei mit dem Namen *.png"
+    - "Die Shell ersetzt *.png durch alle PNG-Dateien im Ordner screenshots und kopiert sie"
+    - "Kopiert den ganzen Ordner screenshots"
+    - "Verschiebt alle PNG-Dateien"
+  richtig: [1]
+  erklaerung: "Der Platzhalter * wird von der Shell vor der Ausführung durch alle passenden Dateinamen ersetzt."
+  artikel: "#wildcards"
+  tags: [linux, wildcards]

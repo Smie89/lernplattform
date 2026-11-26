@@ -1,0 +1,209 @@
+---
+title: Pakete, Netzwerk, SSH und Umgebungsvariablen
+description: Software mit apt installieren, Netzwerkverbindungen prüfen mit ip, ping, curl und DNS-Werkzeugen, sicher per SSH auf Server zugreifen und Umgebungsvariablen wie PATH verstehen.
+tags: [linux, apt, netzwerk, curl, ssh, umgebungsvariablen]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './05-pakete-netzwerk-ssh.fragen.yaml';
+
+# Pakete, Netzwerk, SSH und Umgebungsvariablen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- Software mit **`apt`** installieren und aktualisieren,
+- Netzwerkprobleme Schritt für Schritt eingrenzen: **`ip`**, **`ping`**, **DNS**, **`curl`**,
+- mit **`curl`** HTTP-Endpunkte schnell prüfen,
+- dich per **SSH** mit Schlüssel an einem Server anmelden und Dateien kopieren,
+- **Umgebungsvariablen** und **`PATH`** verstehen und setzen.
+:::
+
+## Software installieren mit apt \{#apt}
+
+Auf Debian und Ubuntu verwaltet **`apt`** die Software aus geprüften **Paketquellen**:
+
+```bash
+sudo apt update                  # Paketlisten aktualisieren (immer zuerst!)
+sudo apt install curl jq         # Pakete installieren
+sudo apt upgrade                 # installierte Pakete aktualisieren
+apt search playwright            # Paket suchen
+apt show openjdk-21-jdk          # Infos zu einem Paket
+sudo apt remove jq               # deinstallieren
+```
+
+| Distribution | Paketmanager | Installieren |
+|---|---|---|
+| Debian, Ubuntu | `apt` | `sudo apt install curl` |
+| Fedora, RHEL | `dnf` | `sudo dnf install curl` |
+| Alpine (Container) | `apk` | `apk add curl` |
+
+:::tip[In Dockerfiles]
+In Containern wird `apt update` und `apt install` in **einer** `RUN`-Zeile kombiniert, sonst arbeitet ein späterer Build mit veralteten Paketlisten aus dem Cache:
+`RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*`
+– siehe [Dockerfile](../05-docker/02-dockerfile.mdx).
+:::
+
+## Netzwerk: Schritt für Schritt eingrenzen \{#netzwerk}
+
+Wenn ein Test „die Testumgebung nicht erreicht“, prüft man von unten nach oben:
+
+| Schritt | Frage | Befehl |
+|---|---|---|
+| 1 | Hat der Rechner eine IP-Adresse? | `ip a` (bzw. `ip addr`) |
+| 2 | Wird der Name aufgelöst (DNS)? | `getent hosts staging.example.com`, `dig staging.example.com` |
+| 3 | Ist der Server erreichbar? | `ping -c 3 staging.example.com` |
+| 4 | Ist der **Port** offen? | `nc -zv staging.example.com 443` |
+| 5 | Antwortet die **Anwendung** richtig? | `curl -i https://staging.example.com/health` |
+
+:::note[ping ist nicht alles]
+Viele Server und Firewalls blockieren `ping` (ICMP). Ein fehlgeschlagenes `ping` heißt also nicht zwingend, dass der Server weg ist. Aussagekräftiger für Tests sind Schritt 4 und 5.
+:::
+
+### DNS und /etc/hosts \{#dns}
+
+Namen wie `staging.example.com` werden per **DNS** in IP-Adressen übersetzt. Für Tests lässt sich ein Name lokal überschreiben – in **`/etc/hosts`**:
+
+```text
+127.0.0.1   localhost
+10.0.5.20   staging.shop.intern
+```
+
+Die Datei wird **vor** dem DNS befragt. Praktisch, um eine Testumgebung unter ihrem echten Namen anzusprechen – aber auch eine Fehlerquelle, wenn ein vergessener Eintrag auf einen alten Server zeigt.
+
+## HTTP prüfen mit curl \{#curl}
+
+`curl` ist das Schweizer Taschenmesser für HTTP – ideal, um vor einem Testlauf zu prüfen, ob die API antwortet:
+
+```bash
+curl https://example.com                         # Antwort ausgeben
+curl -i https://example.com                      # inkl. Statuszeile und Header
+curl -I https://example.com                      # nur die Header (HEAD-Request)
+curl -s -o /dev/null -w "%{http_code}\n" https://example.com   # nur den Statuscode, z. B. 200
+curl -L http://example.com                       # Weiterleitungen folgen
+curl -v https://example.com                      # ausführlich: TLS, Header, Verbindung
+
+# POST mit JSON – wie im Mini-Shop
+curl -s -X POST http://localhost:5000/api/warenkoerbe
+curl -s -X POST http://localhost:5000/api/warenkoerbe/<id>/positionen \
+     -H "Content-Type: application/json" \
+     -d '{"produktId":"buch","menge":2}'
+
+# Antwort mit jq formatieren und filtern
+curl -s http://localhost:5000/api/produkte | jq '.[].name'
+```
+
+`\` am Zeilenende setzt den Befehl in der nächsten Zeile fort.
+
+:::tip[curl -f in Skripten]
+Mit **`-f`** (`--fail`) liefert `curl` bei HTTP-Fehlern (400 und höher) einen Exit-Code ungleich 0. So kann ein Skript auf einen fehlerhaften Health-Check reagieren – siehe [Bash-Skripte](./06-bash-skripte.mdx#praxis).
+:::
+
+## SSH: sicher auf Server zugreifen \{#ssh}
+
+Mit **SSH** (Secure Shell) arbeitest du in der Shell eines entfernten Rechners – verschlüsselt.
+
+```bash
+ssh max@staging.shop.intern                  # anmelden
+ssh max@staging.shop.intern "df -h"          # nur einen Befehl ausführen
+exit                                         # Verbindung beenden
+```
+
+### Anmelden mit Schlüssel \{#ssh-schluessel}
+
+Statt Passwörtern nutzt man **Schlüsselpaare**: Der **private** Schlüssel bleibt auf deinem Rechner, der **öffentliche** kommt auf den Server.
+
+```bash
+ssh-keygen -t ed25519 -C "max-laptop"        # Schlüsselpaar erzeugen
+# -> ~/.ssh/id_ed25519      (privat – NIEMALS weitergeben)
+# -> ~/.ssh/id_ed25519.pub  (öffentlich)
+
+ssh-copy-id max@staging.shop.intern          # öffentlichen Schlüssel auf den Server kopieren
+ssh max@staging.shop.intern                  # Anmeldung jetzt ohne Passwort
+```
+
+Auf dem Server landet der öffentliche Schlüssel in `~/.ssh/authorized_keys`. Rechte: `~/.ssh` auf `700`, private Schlüssel auf `600` – siehe [Benutzer und Rechte](./03-benutzer-und-rechte.mdx#oktal).
+
+### ~/.ssh/config \{#ssh-config}
+
+Lange Befehle lassen sich als Kurzname hinterlegen:
+
+```text
+Host staging
+    HostName staging.shop.intern
+    User max
+    IdentityFile ~/.ssh/id_ed25519
+```
+
+Danach genügt `ssh staging`.
+
+### Dateien kopieren \{#scp}
+
+```bash
+scp bericht.html staging:/tmp/                           # Datei auf den Server
+scp staging:/var/log/shop/app.log ./                     # Log vom Server holen
+rsync -av --delete berichte/ staging:/var/www/berichte/  # Verzeichnis abgleichen (nur Änderungen)
+```
+
+:::danger[Private Schlüssel schützen]
+Ein privater Schlüssel gehört **nie** in ein Git-Repository, eine E-Mail oder ein Ticket. In der CI wird er als **Secret** hinterlegt und erst zur Laufzeit in eine Datei geschrieben.
+:::
+
+## Umgebungsvariablen \{#umgebungsvariablen}
+
+Umgebungsvariablen sind benannte Werte, die jeder Prozess von seinem Elternprozess erbt. Viele Programme und Tests werden darüber **konfiguriert**:
+
+```bash
+echo $HOME                         # /home/max
+echo $USER                         # max
+env                                # alle Umgebungsvariablen
+printenv PATH
+
+SHOP_URL=http://localhost:5000      # Shell-Variable (nur in dieser Shell)
+export SHOP_URL                    # ... an gestartete Programme vererben
+export BROWSER=firefox             # in einem Schritt
+
+SHOP_URL=http://staging:5000 dotnet test   # nur für diesen einen Befehl setzen
+unset BROWSER                      # Variable entfernen
+```
+
+Das ist genau der Mechanismus, mit dem die UI-Tests der [Testanwendung](../02-testautomation/01-grundlagen/03-tests-strukturieren.mdx#ui-struktur) per `SHOP_URL` gegen eine andere Umgebung laufen.
+
+### PATH \{#path}
+
+`PATH` enthält die Verzeichnisse, in denen die Shell nach Programmen sucht – getrennt durch `:`.
+
+```bash
+echo $PATH                    # /usr/local/bin:/usr/bin:/bin:/home/max/.dotnet/tools
+which dotnet                  # Wo liegt das Programm, das gestartet würde?
+export PATH="$PATH:$HOME/tools/bin"   # Verzeichnis ergänzen
+```
+
+`command not found` bedeutet: Das Programm ist nicht installiert **oder** sein Verzeichnis steht nicht im `PATH`. Deshalb startet man Skripte im aktuellen Verzeichnis mit `./skript.sh` – das aktuelle Verzeichnis steht aus Sicherheitsgründen nicht im `PATH`.
+
+### Dauerhaft setzen \{#bashrc}
+
+Exporte gelten nur für die aktuelle Shell. Dauerhaft für deinen Benutzer trägt man sie in **`~/.bashrc`** ein und lädt die Datei neu:
+
+```bash
+echo 'export PATH="$PATH:$HOME/tools/bin"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+## Typische Fehler \{#typische-fehler}
+
+- **`apt install` ohne vorheriges `apt update`** – Pakete werden nicht gefunden oder sind veraltet.
+- **Aus `ping` schließen**, dass ein Server down ist – viele blockieren ICMP.
+- **Vergessene Einträge in `/etc/hosts`** leiten Tests auf einen falschen Server.
+- **Private Schlüssel** im Repository oder mit zu offenen Rechten.
+- **Variable gesetzt, aber nicht exportiert** – das gestartete Testprogramm sieht sie nicht.
+- **Passwörter in Umgebungsvariablen ausgeben** (`echo $PASSWORT`, `env` im CI-Log).
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **`apt update && apt install`** auf Debian/Ubuntu; `dnf` bzw. `apk` auf anderen Distributionen.
+- Netzwerk von unten prüfen: **IP → DNS → Erreichbarkeit → Port → HTTP**; `/etc/hosts` überschreibt DNS lokal.
+- **`curl -i`**, `-s -o /dev/null -w "%{http_code}"` und **`-f`** für schnelle HTTP-Prüfungen.
+- **SSH mit Schlüsseln** (`ssh-keygen`, `ssh-copy-id`), Kurzname in `~/.ssh/config`, Dateien mit `scp`/`rsync`.
+- **`export`** vererbt Variablen an Programme; **`PATH`** bestimmt, wo Programme gesucht werden; dauerhaft in `~/.bashrc`.
+
+<Quiz fragen={fragen} titel="Quiz: Pakete, Netzwerk, SSH und Umgebungsvariablen" />

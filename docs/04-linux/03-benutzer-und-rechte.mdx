@@ -1,0 +1,193 @@
+---
+title: Benutzer und Rechte
+description: Benutzer, Gruppen, root und sudo, Dateirechte lesen und mit chmod und chown ändern – und warum Skripte in der CI mit „Permission denied“ scheitern.
+tags: [linux, rechte, chmod, sudo]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './03-benutzer-und-rechte.fragen.yaml';
+
+# Benutzer und Rechte
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, was **Benutzer**, **Gruppen** und **root** sind und wofür **`sudo`** dient,
+- die Rechte in der Ausgabe von **`ls -l`** lesen,
+- Rechte mit **`chmod`** setzen – symbolisch und als **Oktalzahl**,
+- Besitzer mit **`chown`** ändern,
+- typische Fehler wie **„Permission denied“** schnell beheben.
+:::
+
+## Benutzer und Gruppen \{#benutzer}
+
+Linux ist ein **Mehrbenutzersystem**. Jede Datei und jeder Prozess gehört einem **Benutzer** und einer **Gruppe**.
+
+```bash
+whoami          # Wer bin ich?                      -> max
+id              # Benutzer-ID, Gruppen               -> uid=1000(max) gid=1000(max) groups=1000(max),27(sudo),999(docker)
+groups          # nur die Gruppen
+```
+
+- Benutzer stehen in `/etc/passwd`, Gruppen in `/etc/group` (Passwörter verschlüsselt in `/etc/shadow`, nur für root lesbar).
+- Auch **Dienste** laufen unter eigenen Benutzern, z. B. `www-data` für den Webserver oder `postgres` für die Datenbank – so kann ein Fehler in einem Dienst nicht das ganze System beschädigen.
+- Gruppen vergeben Rechte an mehrere Benutzer gleichzeitig: Wer in der Gruppe **`docker`** ist, darf Docker ohne `sudo` benutzen.
+
+## root und sudo \{#sudo}
+
+**root** (Benutzer-ID 0) darf **alles**: jede Datei lesen und löschen, jeden Prozess beenden, Software installieren.
+
+Statt sich als root anzumelden, führt man einzelne Befehle mit **`sudo`** („superuser do“) aus:
+
+```bash
+apt install curl              # Fehler: Permission denied
+sudo apt install curl         # als root ausführen (fragt nach DEINEM Passwort)
+sudo -u postgres psql         # als ein anderer Benutzer ausführen
+```
+
+:::warning[Grundsatz: so wenig Rechte wie möglich]
+- Nur die Befehle mit `sudo` ausführen, die es wirklich brauchen.
+- **Nicht** dauerhaft als root arbeiten – ein Tippfehler wirkt sich dann auf das ganze System aus.
+- Tests und Testanwendungen **nicht als root** laufen lassen: Sonst bemerkt man nicht, wenn die Anwendung später (als normaler Benutzer) eine Datei nicht schreiben darf.
+:::
+
+## Rechte lesen \{#rechte-lesen}
+
+```bash
+ls -l
+```
+
+```text
+-rwxr-xr-- 1 max tester 1024 Nov 26 08:00 start.sh
+drwxr-x--- 2 max tester 4096 Nov 26 08:00 testdaten
+```
+
+So liest man die erste Spalte:
+
+```text
+ -    rwx    r-x    r--
+ │     │      │      └── andere (others)    : lesen
+ │     │      └───────── Gruppe (tester)    : lesen, ausführen
+ │     └──────────────── Besitzer (max)     : lesen, schreiben, ausführen
+ └────────────────────── Typ: - Datei, d Verzeichnis, l Link
+```
+
+Danach folgen Anzahl der Links, **Besitzer** (`max`), **Gruppe** (`tester`), Größe, Datum und Name.
+
+### Was r, w, x bedeuten \{#rwx}
+
+| Recht | bei einer **Datei** | bei einem **Verzeichnis** |
+|---|---|---|
+| `r` (read) | Inhalt lesen | Inhalt **auflisten** (`ls`) |
+| `w` (write) | Inhalt ändern | Dateien darin **anlegen, umbenennen, löschen** |
+| `x` (execute) | als Programm/Skript **ausführen** | **hineinwechseln** (`cd`) und auf Dateien darin zugreifen |
+
+:::note[Verzeichnisse brauchen x]
+Ohne `x` auf einem Verzeichnis kommst du an keine Datei darin heran – selbst wenn die Datei selbst lesbar ist. Und: Ob man eine Datei **löschen** darf, hängt vom `w`-Recht des **Verzeichnisses** ab, nicht der Datei.
+:::
+
+## Rechte als Zahl (oktal) \{#oktal}
+
+Jedes Recht hat einen Wert: **r = 4**, **w = 2**, **x = 1**. Pro Gruppe werden sie addiert:
+
+| Zahl | Rechte | typische Verwendung |
+|---|---|---|
+| 7 | `rwx` (4+2+1) | Besitzer eines Skripts |
+| 6 | `rw-` (4+2) | Besitzer einer normalen Datei |
+| 5 | `r-x` (4+1) | andere dürfen Skript ausführen / Verzeichnis betreten |
+| 4 | `r--` | nur lesen |
+| 0 | `---` | kein Zugriff |
+
+Drei Ziffern = Besitzer, Gruppe, andere:
+
+| Oktal | Bedeutung | Beispiel |
+|---|---|---|
+| `755` | `rwxr-xr-x` | Skripte, Programme, Verzeichnisse |
+| `644` | `rw-r--r--` | normale Dateien |
+| `600` | `rw-------` | private Dateien, **SSH-Schlüssel** |
+| `700` | `rwx------` | privates Verzeichnis, z. B. `~/.ssh` |
+| `777` | `rwxrwxrwx` | alle dürfen alles – **fast nie richtig** |
+
+## Rechte ändern mit chmod \{#chmod}
+
+```bash
+chmod +x start.sh          # für alle ausführbar machen
+chmod u+x start.sh         # nur für den Besitzer (u = user)
+chmod g-w bericht.txt      # Gruppe (g) darf nicht mehr schreiben
+chmod o-r geheim.txt       # andere (o) dürfen nicht mehr lesen
+chmod 755 start.sh         # oktal: rwxr-xr-x
+chmod 600 ~/.ssh/id_ed25519
+chmod -R 755 skripte/      # rekursiv für alles darin
+```
+
+Symbolisch: **u** (user/Besitzer), **g** (group), **o** (others), **a** (all) – kombiniert mit **+** (hinzufügen), **-** (entfernen), **=** (genau setzen).
+
+## Besitzer ändern mit chown \{#chown}
+
+```bash
+sudo chown max bericht.txt              # neuer Besitzer
+sudo chown max:tester bericht.txt       # Besitzer und Gruppe
+sudo chown -R www-data:www-data /var/www/shop   # rekursiv
+```
+
+Besitzer ändern darf nur **root** – deshalb `sudo`.
+
+## Praxis: „Permission denied“ beim Skriptstart \{#permission-denied}
+
+Der Klassiker in der CI:
+
+```text
+$ ./tests-starten.sh
+bash: ./tests-starten.sh: Permission denied
+```
+
+**Ursache:** Dem Skript fehlt das `x`-Recht. Das passiert oft, wenn es unter **Windows** angelegt und eingecheckt wurde – Windows kennt kein Ausführungsrecht.
+
+**Lösung lokal:**
+
+```bash
+chmod +x tests-starten.sh
+```
+
+**Lösung dauerhaft im Git-Repository** (damit es auch in der CI ausführbar ist):
+
+```bash
+git update-index --chmod=+x tests-starten.sh
+git commit -m "Testskript ausführbar machen"
+```
+
+Mit `git ls-files -s tests-starten.sh` kannst du prüfen: Der Modus `100755` bedeutet ausführbar, `100644` nicht.
+
+:::tip[Notlösung]
+`bash tests-starten.sh` startet ein Skript auch ohne `x`-Recht – die Shell liest es dann nur als Text ein. Für die CI ist das gesetzte Recht im Repository aber die saubere Lösung.
+:::
+
+Weitere typische Fälle:
+
+| Meldung | Ursache | Lösung |
+|---|---|---|
+| `Permission denied` beim Schreiben in `/var/log/…` oder `/etc/…` | Systemverzeichnis gehört root | Mit `sudo` oder in ein eigenes Verzeichnis schreiben |
+| `Permissions 0644 for 'id_ed25519' are too open` | SSH lehnt lesbare private Schlüssel ab | `chmod 600 ~/.ssh/id_ed25519` |
+| `permission denied … docker.sock` | Benutzer nicht in Gruppe `docker` | `sudo usermod -aG docker $USER`, danach neu anmelden |
+| Anwendung kann Upload-Ordner nicht beschreiben | Ordner gehört einem anderen Benutzer | `chown` auf den Dienstbenutzer, nicht `chmod 777` |
+
+## Standardrechte: umask \{#umask}
+
+Neue Dateien bekommen nicht `777`, sondern werden durch die **umask** eingeschränkt. Typisch ist `0022`: Neue Dateien erhalten `644`, neue Verzeichnisse `755`. Mit `umask` lässt sich der aktuelle Wert anzeigen.
+
+## Typische Fehler \{#typische-fehler}
+
+- **`chmod 777`** als „Lösung“ – öffnet die Datei für jeden Benutzer und jeden kompromittierten Dienst. Stattdessen den **richtigen Besitzer** setzen.
+- **Alles mit `sudo`** ausführen – danach gehören Dateien root, und der normale Benutzer kann sie nicht mehr ändern.
+- **Skript ohne `x`-Recht** im Repository – lokal unter Windows unbemerkt, in der CI „Permission denied“.
+- **`x` auf dem Verzeichnis vergessen** – Dateien darin sind nicht erreichbar.
+- **Private Schlüssel zu offen** – SSH verweigert den Dienst.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Jede Datei hat **Besitzer**, **Gruppe** und Rechte für **Besitzer / Gruppe / andere**.
+- **r/w/x** bedeuten bei Verzeichnissen: auflisten / Dateien anlegen und löschen / hineinwechseln.
+- Oktal: **r=4, w=2, x=1** → `755` für Skripte und Verzeichnisse, `644` für Dateien, `600` für Schlüssel.
+- `chmod` ändert Rechte, `chown` den Besitzer (nur mit `sudo`).
+- **Permission denied** beim Skript → `chmod +x` bzw. `git update-index --chmod=+x`; niemals `chmod 777` als Standardlösung.
+
+<Quiz fragen={fragen} titel="Quiz: Benutzer und Rechte" />

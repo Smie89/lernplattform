@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Pakete, Netzwerk, SSH und Umgebungsvariablen"
+
+- id: li-nw-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was solltest du vor 'sudo apt install curl' ausführen?"
+  optionen:
+    - "sudo apt update"
+    - "sudo apt remove curl"
+    - "sudo reboot"
+    - "Nichts"
+  richtig: [0]
+  erklaerung: "apt update lädt die aktuellen Paketlisten. Ohne werden Pakete evtl. nicht gefunden oder in veralteter Version installiert."
+  artikel: "#apt"
+  tags: [linux, apt]
+
+- id: li-nw-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher Paketmanager wird in Alpine-basierten Containern verwendet?"
+  optionen:
+    - "apt"
+    - "dnf"
+    - "apk"
+    - "npm"
+  richtig: [2]
+  erklaerung: "Alpine nutzt apk (z. B. apk add curl). apt gehört zu Debian/Ubuntu, dnf zu Fedora/RHEL."
+  artikel: "#apt"
+  tags: [linux, apt, docker]
+
+- id: li-nw-003
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Wenn 'ping staging.example.com' keine Antwort bekommt, ist der Server sicher nicht erreichbar."
+  richtig: [1]
+  erklaerung: "Falsch. Viele Server und Firewalls blockieren ICMP (ping). Aussagekräftiger sind eine Port-Prüfung (nc -zv) und ein HTTP-Request (curl)."
+  artikel: "#netzwerk"
+  tags: [linux, netzwerk]
+
+- id: li-nw-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Tests erreichen 'staging.shop.intern' auf einem Rechner unter einer anderen IP als auf allen anderen. Was prüfst du?"
+  optionen:
+    - "/etc/hosts – dort könnte ein lokaler Eintrag den DNS überschreiben"
+    - "/var/log/syslog"
+    - "Die Rechte von /tmp"
+    - "Die Anzahl der CPU-Kerne"
+  richtig: [0]
+  erklaerung: "/etc/hosts wird vor dem DNS befragt. Ein vergessener Eintrag leitet den Namen auf eine falsche IP."
+  artikel: "#dns"
+  tags: [linux, dns]
+
+- id: li-nw-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher Befehl gibt nur den HTTP-Statuscode von https://example.com/health aus?"
+  optionen:
+    - "curl -i https://example.com/health"
+    - "curl -s -o /dev/null -w \"%{http_code}\" https://example.com/health"
+    - "ping https://example.com/health"
+    - "curl -v https://example.com/health"
+  richtig: [1]
+  erklaerung: "-s unterdrückt den Fortschritt, -o /dev/null verwirft den Inhalt, -w gibt den Statuscode aus."
+  artikel: "#curl"
+  tags: [linux, curl]
+
+- id: li-nw-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum nutzt man 'curl -f' in Skripten?"
+  optionen:
+    - "Damit curl schneller ist"
+    - "Damit curl bei HTTP-Fehlern (ab 400) einen Exit-Code ungleich 0 liefert"
+    - "Damit Weiterleitungen gefolgt wird"
+    - "Damit die Ausgabe formatiert wird"
+  richtig: [1]
+  erklaerung: "Ohne -f ist curl auch bei 404 oder 500 'erfolgreich' (Exit-Code 0). Mit -f kann ein Skript auf Fehlerantworten reagieren."
+  artikel: "#curl"
+  tags: [linux, curl, skripte]
+
+- id: li-nw-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu SSH-Schlüsseln sind richtig?"
+  optionen:
+    - "Der öffentliche Schlüssel kommt auf den Server (authorized_keys)"
+    - "Der private Schlüssel bleibt auf deinem Rechner und wird nie weitergegeben"
+    - "Der private Schlüssel gehört ins Git-Repository, damit die CI ihn findet"
+    - "ssh-keygen -t ed25519 erzeugt ein Schlüsselpaar"
+  richtig: [0, 1, 3]
+  erklaerung: "Private Schlüssel gehören nie ins Repository. In der CI werden sie als Secret hinterlegt."
+  artikel: "#ssh-schluessel"
+  tags: [linux, ssh, sicherheit]
+
+- id: li-nw-008
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie holst du die Datei /var/log/shop/app.log vom Server 'staging' in dein aktuelles Verzeichnis?"
+  optionen:
+    - "scp staging:/var/log/shop/app.log ./"
+    - "cp staging:/var/log/shop/app.log ./"
+    - "ssh staging cp app.log"
+    - "curl staging/app.log"
+  richtig: [0]
+  erklaerung: "scp kopiert über SSH; die Schreibweise host:pfad bezeichnet eine Datei auf dem entfernten Rechner."
+  artikel: "#scp"
+  tags: [linux, ssh, scp]
+
+- id: li-nw-009
+  typ: single
+  schwierigkeit: 3
+  frage: "Du setzt in der Shell 'SHOP_URL=http://staging:5000' und startest dotnet test. Die Tests sehen die Variable nicht. Warum?"
+  optionen:
+    - "Variablen funktionieren nur in Bash-Skripten"
+    - "Die Variable wurde nicht exportiert und wird deshalb nicht an gestartete Programme vererbt"
+    - "dotnet liest keine Umgebungsvariablen"
+    - "Die URL ist falsch geschrieben"
+  richtig: [1]
+  erklaerung: "Erst export macht eine Shell-Variable zur Umgebungsvariable. Alternativ: SHOP_URL=… dotnet test in einer Zeile."
+  artikel: "#umgebungsvariablen"
+  tags: [linux, umgebungsvariablen]
+
+- id: li-nw-010
+  typ: single
+  schwierigkeit: 2
+  frage: "'playwright: command not found', obwohl das Programm installiert ist. Was ist die wahrscheinlichste Ursache?"
+  optionen:
+    - "Das Installationsverzeichnis steht nicht im PATH"
+    - "Die Festplatte ist voll"
+    - "Der Prozess wurde mit kill -9 beendet"
+    - "Die Datei hat zu viele Rechte"
+  richtig: [0]
+  erklaerung: "Die Shell sucht Programme nur in den Verzeichnissen aus PATH. which zeigt, was gefunden wird; export PATH=\"$PATH:...\" ergänzt Verzeichnisse."
+  artikel: "#path"
+  tags: [linux, path]
+
+- id: li-nw-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum startet man ein Skript im aktuellen Verzeichnis mit ./start.sh statt nur start.sh?"
+  optionen:
+    - "Weil das aktuelle Verzeichnis aus Sicherheitsgründen nicht im PATH steht"
+    - "Weil ./ das Skript schneller macht"
+    - "Weil ./ root-Rechte gibt"
+    - "Das ist nur unter Windows nötig"
+  richtig: [0]
+  erklaerung: "Ohne Pfadangabe sucht die Shell nur im PATH. ./ gibt den Pfad explizit an."
+  artikel: "#path"
+  tags: [linux, path]

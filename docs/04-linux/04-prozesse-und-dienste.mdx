@@ -1,0 +1,211 @@
+---
+title: Prozesse und Dienste
+description: Prozesse anzeigen und beenden, Signale, Vorder- und Hintergrund, Exit-Codes, belegte Ports finden, Dienste mit systemd steuern, Logs mit journalctl lesen und Ressourcen überwachen.
+tags: [linux, prozesse, systemd, journalctl]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './04-prozesse-und-dienste.fragen.yaml';
+
+# Prozesse und Dienste
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- laufende **Prozesse** anzeigen und gezielt **beenden**,
+- die wichtigsten **Signale** (`SIGTERM`, `SIGKILL`, `SIGINT`) unterscheiden,
+- Programme im **Hintergrund** starten,
+- **Exit-Codes** auswerten,
+- herausfinden, **welcher Prozess einen Port belegt**,
+- **Dienste** mit `systemctl` steuern und ihre Logs mit `journalctl` lesen,
+- **Speicher, Festplatte und Last** prüfen.
+:::
+
+## Prozesse anzeigen \{#prozesse}
+
+Jedes laufende Programm ist ein **Prozess** mit einer eindeutigen Nummer, der **PID**.
+
+```bash
+ps aux                       # alle Prozesse aller Benutzer
+ps aux | grep chrome         # nur Chrome-Prozesse
+pgrep -fl dotnet             # PIDs und Befehlszeilen, die "dotnet" enthalten
+top                          # Live-Ansicht, sortiert nach CPU (Beenden mit q)
+htop                         # komfortablere Variante (muss oft nachinstalliert werden)
+```
+
+Ein Ausschnitt aus `ps aux`:
+
+```text
+USER   PID  %CPU %MEM    VSZ   RSS TTY  STAT START  TIME COMMAND
+max   4211  12.5  3.1 912344 251220 ?   Sl   08:00  0:42 /usr/bin/dotnet Shop.Web.dll
+max   4380  35.0  6.4 2984112 520004 ?  Sl   08:01  1:10 /opt/google/chrome/chrome --headless=new
+```
+
+Wichtige Spalten: **PID**, **%CPU**, **%MEM**, **START** (seit wann) und **COMMAND** (womit gestartet).
+
+:::tip[Hängengebliebene Browser]
+Nach abgebrochenen Testläufen bleiben oft `chrome`- oder `chromedriver`-Prozesse übrig und blockieren Speicher. `pgrep -fl chrome` zeigt sie, `pkill -f chromedriver` beendet sie. Die eigentliche Ursache ist meist ein Teardown ohne `Quit()` – siehe [Selenium WebDriver](../02-testautomation/04-browser/02-selenium-webdriver.mdx#erster-test).
+:::
+
+## Prozesse beenden: Signale \{#signale}
+
+Prozesse werden über **Signale** beendet. `kill` schickt ein Signal an eine PID:
+
+```bash
+kill 4211              # SIGTERM (15): "Bitte beende dich" – Standard
+kill -9 4211           # SIGKILL (9): sofort abwürgen
+pkill -f Shop.Web      # Signal an alle Prozesse, deren Befehlszeile passt
+killall chrome         # alle Prozesse mit diesem Namen
+```
+
+| Signal | Nummer | Bedeutung |
+|---|---|---|
+| `SIGTERM` | 15 | **freundliche** Aufforderung: Der Prozess kann aufräumen (Dateien schließen, Verbindungen beenden) |
+| `SIGINT` | 2 | wie **Strg+C** im Terminal |
+| `SIGKILL` | 9 | **sofortiger Abbruch** durch den Kernel – kein Aufräumen möglich |
+| `SIGHUP` | 1 | „Terminal geschlossen“; viele Dienste lesen damit ihre Konfiguration neu ein |
+
+:::warning[kill -9 nur als letztes Mittel]
+Erst `kill` (SIGTERM) versuchen und ein paar Sekunden warten. `kill -9` lässt keine Chance zum Aufräumen: Temporäre Dateien bleiben liegen, Datenbanken müssen sich beim nächsten Start reparieren.
+:::
+
+## Vorder- und Hintergrund \{#hintergrund}
+
+Normalerweise blockiert ein Befehl das Terminal, bis er fertig ist. Mit **`&`** läuft er im Hintergrund:
+
+```bash
+dotnet run --project src/Shop.Web &      # im Hintergrund starten
+jobs                                     # Hintergrundjobs dieses Terminals
+fg %1                                    # Job 1 wieder in den Vordergrund
+# Strg+Z hält einen laufenden Befehl an, bg setzt ihn im Hintergrund fort
+
+nohup ./langer-testlauf.sh > lauf.log 2>&1 &   # läuft weiter, auch wenn das Terminal geschlossen wird
+echo $!                                        # PID des zuletzt gestarteten Hintergrundprozesses
+```
+
+In Skripten nutzt man das, um z. B. die Anwendung zu starten, die Tests auszuführen und die Anwendung danach wieder zu beenden – siehe [Bash-Skripte](./06-bash-skripte.mdx#praxis).
+
+## Exit-Codes \{#exit-codes}
+
+Jeder Befehl liefert beim Beenden einen **Exit-Code**: **0 = Erfolg**, alles andere = Fehler. Die Variable **`$?`** enthält den Code des letzten Befehls:
+
+```bash
+grep -q ERROR testlauf.log
+echo $?          # 0 – gefunden
+grep -q FATAL testlauf.log
+echo $?          # 1 – nicht gefunden
+```
+
+Darauf bauen Verkettungen auf:
+
+```bash
+dotnet build && dotnet test          # test nur, wenn build erfolgreich war
+dotnet test || echo "Tests rot!"     # echo nur, wenn test fehlschlug
+```
+
+:::note[Warum das für Tests wichtig ist]
+CI-Systeme entscheiden **allein am Exit-Code**, ob ein Schritt grün oder rot ist. `dotnet test`, `mvn verify` und `npx playwright test` liefern bei fehlgeschlagenen Tests einen Code ungleich 0. Ein Skript, das diesen Code „verschluckt“, lässt den Build grün erscheinen, obwohl Tests rot sind.
+:::
+
+## Wer belegt den Port? \{#ports}
+
+Ein typischer Fehler beim Start einer Testanwendung:
+
+```text
+Failed to bind to address http://127.0.0.1:5000: address already in use.
+```
+
+```bash
+ss -ltnp                     # alle lauschenden TCP-Ports mit Prozess
+ss -ltnp | grep :5000        # nur Port 5000
+sudo lsof -i :5000           # Alternative: welcher Prozess nutzt Port 5000?
+```
+
+```text
+LISTEN 0  512  127.0.0.1:5000  0.0.0.0:*  users:(("dotnet",pid=4211,fd=210))
+```
+
+Hier läuft noch eine alte Instanz (PID 4211) – meist von einem abgebrochenen Testlauf. `kill 4211` gibt den Port frei.
+
+## Dienste mit systemd \{#systemd}
+
+Dauerhaft laufende Programme (Webserver, Datenbanken, CI-Agents) werden als **Dienste** von **systemd** verwaltet. systemd startet sie beim Booten, startet sie bei Absturz neu und sammelt ihre Logs.
+
+```bash
+systemctl status nginx           # läuft der Dienst? letzte Logzeilen
+sudo systemctl start nginx       # starten
+sudo systemctl stop nginx        # stoppen
+sudo systemctl restart nginx     # neu starten
+sudo systemctl reload nginx      # Konfiguration neu laden, ohne Unterbrechung (wenn unterstützt)
+sudo systemctl enable nginx      # beim Booten automatisch starten
+systemctl list-units --type=service --state=failed   # alle fehlgeschlagenen Dienste
+```
+
+Ausschnitt aus `systemctl status`:
+
+```text
+● shop.service - Mini-Shop Testumgebung
+     Loaded: loaded (/etc/systemd/system/shop.service; enabled)
+     Active: failed (Result: exit-code) since Thu 2026-11-26 07:58:12 UTC
+    Process: 3120 ExecStart=/usr/bin/dotnet /opt/shop/Shop.Web.dll (code=exited, status=1/FAILURE)
+```
+
+`Active: failed` und `status=1` sagen: Der Dienst ist mit einem Fehler beendet worden. Warum, steht im Journal.
+
+### Logs mit journalctl \{#journalctl}
+
+```bash
+journalctl -u shop                     # alle Logs des Dienstes shop
+journalctl -u shop -n 50               # die letzten 50 Zeilen
+journalctl -u shop -f                  # live verfolgen (wie tail -f)
+journalctl -u shop --since "10 min ago"
+journalctl -u shop --since today -p err   # nur Fehler von heute
+journalctl -b -p err                   # alle Fehler seit dem letzten Booten
+```
+
+:::tip[Fehlersuche in der Testumgebung]
+Wenn Tests gegen eine Testumgebung plötzlich alle mit „Connection refused“ scheitern:
+1. `systemctl status <dienst>` – läuft er überhaupt?
+2. `journalctl -u <dienst> -n 100` – warum ist er abgestürzt?
+3. `ss -ltnp` – lauscht er auf dem erwarteten Port?
+:::
+
+## Ressourcen prüfen \{#ressourcen}
+
+```bash
+free -h                 # Arbeitsspeicher (h = human readable)
+df -h                   # freier Platz pro Dateisystem
+du -sh /var/log         # wie groß ist ein Verzeichnis?
+du -sh * | sort -h      # Größen aller Einträge, sortiert
+uptime                  # Laufzeit und Last (load average)
+nproc                   # Anzahl der CPU-Kerne
+```
+
+```text
+$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        50G   49G  1.0G  98% /
+```
+
+Eine **volle Festplatte** ist eine häufige und schwer erkennbare Ursache für merkwürdige Fehler: Logs werden nicht geschrieben, Datenbanken verweigern Inserts, Browser stürzen ab. Typische Platzfresser auf Test-Servern: alte Logs, Screenshots und Videos, Docker-Images (`docker system df`).
+
+Die **Last** (`load average: 3.52, 2.10, 1.05` – Durchschnitt über 1, 5 und 15 Minuten) sollte dauerhaft nicht über der Anzahl der Kerne (`nproc`) liegen. Ist der CI-Agent überlastet, werden Tests langsamer – und [Timeouts flaky](../02-testautomation/01-grundlagen/02-flaky-tests.mdx#umgebung).
+
+## Typische Fehler \{#typische-fehler}
+
+- **Sofort `kill -9`** statt erst `kill` – keine Chance zum Aufräumen.
+- **Verwaiste Browser-/Treiberprozesse** nach abgebrochenen Tests blockieren Speicher und Ports.
+- **„address already in use“** – alte Instanz läuft noch; mit `ss -ltnp` finden.
+- **Exit-Code ignoriert** – ein Skript meldet Erfolg, obwohl Tests fehlgeschlagen sind.
+- **Volle Festplatte** übersehen – `df -h` prüfen.
+- **Dienst gestartet, aber nicht `enable`d** – nach einem Neustart des Servers ist er weg.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Prozesse anzeigen mit `ps aux`, `pgrep -fl`, `top`; beenden mit `kill` (SIGTERM) – `kill -9` nur als letztes Mittel.
+- `&` startet im Hintergrund, `jobs`/`fg`/`bg` steuern, `nohup` überlebt das Schließen des Terminals.
+- **Exit-Code 0 = Erfolg**; `$?`, `&&` und `||` werten ihn aus – CI-Systeme entscheiden danach.
+- Belegte Ports mit **`ss -ltnp`** finden.
+- Dienste: `systemctl status/start/stop/restart/enable`; Logs: **`journalctl -u dienst -f`**.
+- Ressourcen: `free -h`, **`df -h`**, `du -sh`, `uptime`.
+
+<Quiz fragen={fragen} titel="Quiz: Prozesse und Dienste" />

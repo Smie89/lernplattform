@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Benutzer und Rechte"
+
+- id: li-re-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Wofür dient sudo?"
+  optionen:
+    - "Es meldet den Benutzer ab"
+    - "Es führt einen einzelnen Befehl mit root-Rechten aus"
+    - "Es zeigt die Rechte einer Datei an"
+    - "Es installiert Software ohne Internet"
+  richtig: [1]
+  erklaerung: "sudo ('superuser do') führt einen Befehl als root oder als anderer Benutzer aus, ohne dass man dauerhaft als root arbeitet."
+  artikel: "#sudo"
+  tags: [linux, sudo]
+
+- id: li-re-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum sollten Tests und Testanwendungen nicht als root laufen?"
+  optionen:
+    - "root ist langsamer"
+    - "Fehlende Rechte, die später im Betrieb auffallen würden, bleiben unbemerkt – und Fehler wirken sich auf das ganze System aus"
+    - "root darf keine Netzwerkverbindungen öffnen"
+    - "Das ist gesetzlich verboten"
+  richtig: [1]
+  erklaerung: "Als root funktioniert jeder Dateizugriff. Läuft die Anwendung im Betrieb als normaler Benutzer, scheitert sie dort an Rechten, die der Test nie geprüft hat."
+  artikel: "#sudo"
+  tags: [linux, sicherheit]
+
+- id: li-re-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bedeutet '-rwxr-xr--' bei einer Datei?"
+  optionen:
+    - "Besitzer: rwx, Gruppe: r-x, andere: r--"
+    - "Besitzer: r--, Gruppe: r-x, andere: rwx"
+    - "Alle dürfen alles"
+    - "Es ist ein Verzeichnis"
+  richtig: [0]
+  erklaerung: "Nach dem Typzeichen (- für Datei) folgen drei Blöcke: Besitzer, Gruppe, andere."
+  artikel: "#rechte-lesen"
+  tags: [linux, rechte]
+
+- id: li-re-004
+  typ: single
+  schwierigkeit: 3
+  frage: "Was bewirkt das x-Recht bei einem Verzeichnis?"
+  optionen:
+    - "Man kann es als Programm ausführen"
+    - "Man darf hineinwechseln und auf die Dateien darin zugreifen"
+    - "Man darf Dateien darin löschen"
+    - "Es hat bei Verzeichnissen keine Bedeutung"
+  richtig: [1]
+  erklaerung: "Bei Verzeichnissen steht x für 'betreten'. Ohne x sind auch lesbare Dateien darin nicht erreichbar."
+  artikel: "#rwx"
+  tags: [linux, rechte]
+
+- id: li-re-005
+  typ: single
+  schwierigkeit: 3
+  frage: "Wovon hängt ab, ob du eine Datei löschen darfst?"
+  optionen:
+    - "Vom w-Recht der Datei selbst"
+    - "Vom w-Recht (und x) des Verzeichnisses, in dem sie liegt"
+    - "Nur davon, ob du root bist"
+    - "Vom r-Recht der Datei"
+  richtig: [1]
+  erklaerung: "Löschen ändert das Verzeichnis (dessen Einträge), nicht die Datei. Deshalb zählt das Schreibrecht des Verzeichnisses."
+  artikel: "#rwx"
+  tags: [linux, rechte]
+
+- id: li-re-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Oktalzahl entspricht rwxr-xr-x?"
+  optionen:
+    - "644"
+    - "755"
+    - "777"
+    - "700"
+  richtig: [1]
+  erklaerung: "rwx = 4+2+1 = 7, r-x = 4+1 = 5. Also 755 – typisch für Skripte und Verzeichnisse."
+  artikel: "#oktal"
+  tags: [linux, chmod]
+
+- id: li-re-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Rechte sollte ein privater SSH-Schlüssel haben?"
+  optionen:
+    - "777"
+    - "644"
+    - "600"
+    - "755"
+  richtig: [2]
+  erklaerung: "600 = nur der Besitzer darf lesen und schreiben. Ist der Schlüssel für andere lesbar, verweigert SSH seine Verwendung."
+  artikel: "#oktal"
+  tags: [linux, ssh, rechte]
+
+- id: li-re-008
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie machst du start.sh für den Besitzer ausführbar, ohne andere Rechte zu ändern?"
+  optionen:
+    - "chmod u+x start.sh"
+    - "chmod 777 start.sh"
+    - "chown +x start.sh"
+    - "sudo start.sh"
+  richtig: [0]
+  erklaerung: "u+x fügt nur dem Besitzer (user) das Ausführungsrecht hinzu. 777 würde allen alle Rechte geben."
+  artikel: "#chmod"
+  tags: [linux, chmod]
+
+- id: li-re-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein unter Windows erstelltes Skript scheitert in der Linux-CI mit 'Permission denied'. Wie behebst du das dauerhaft?"
+  optionen:
+    - "In der CI vor jedem Lauf chmod 777 auf das ganze Repository"
+    - "git update-index --chmod=+x skript.sh und committen"
+    - "Das Skript umbenennen"
+    - "Die CI als root laufen lassen"
+  richtig: [1]
+  erklaerung: "Git speichert das Ausführungsrecht (Modus 100755). Unter Windows muss man es explizit setzen, dann ist das Skript bei jedem Checkout ausführbar."
+  artikel: "#permission-denied"
+  tags: [linux, git, ci]
+
+- id: li-re-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Die Testanwendung (Benutzer www-data) kann nicht in /var/www/shop/uploads schreiben. Was ist die richtige Lösung?"
+  optionen:
+    - "chmod 777 /var/www/shop/uploads"
+    - "sudo chown www-data:www-data /var/www/shop/uploads"
+    - "Die Anwendung als root starten"
+    - "Den Ordner löschen"
+  richtig: [1]
+  erklaerung: "Der Dienstbenutzer soll Besitzer des Ordners sein. 777 öffnet ihn für jeden, root-Betrieb ist ein Sicherheitsrisiko."
+  artikel: "#permission-denied"
+  tags: [linux, chown, sicherheit]
+
+- id: li-re-011
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "chmod 777 ist eine gute Standardlösung, wenn eine Datei nicht beschrieben werden kann."
+  richtig: [1]
+  erklaerung: "Falsch. 777 gibt jedem Benutzer und jedem kompromittierten Dienst Vollzugriff. Richtig ist, Besitzer und Rechte gezielt zu setzen."
+  artikel: "#typische-fehler"
+  tags: [linux, sicherheit]

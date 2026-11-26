@@ -1,0 +1,247 @@
+---
+title: Linux in der Testautomation
+description: Warum Tests lokal grün und in der Linux-CI rot sind – Groß-/Kleinschreibung, Pfade, Zeilenenden, Dateirechte, Browser ohne Bildschirm, Zeitzone und Sprache, Secrets, Artefakte und zeitgesteuerte Testläufe.
+tags: [linux, ci, testautomation, github-actions]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './07-linux-testautomation.fragen.yaml';
+
+# Linux in der Testautomation
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die typischen Ursachen für **„lokal grün, in der CI rot“** erkennen,
+- Tests **plattformunabhängig** schreiben (Pfade, Groß-/Kleinschreibung, Zeilenenden),
+- **Browser-Tests** auf Linux ohne Bildschirm ausführen,
+- Testläufe gegen **Zeitzone und Sprache** absichern,
+- **Secrets**, **Artefakte** und **zeitgesteuerte Läufe** in der CI richtig einsetzen.
+:::
+
+## Lokal grün, CI rot \{#lokal-gruen-ci-rot}
+
+Du entwickelst auf Windows, die Tests laufen auf einem Linux-Runner. Die häufigsten Ursachen für Unterschiede:
+
+| Ursache | Symptom in der CI | Abschnitt |
+|---|---|---|
+| Groß-/Kleinschreibung | `FileNotFoundException`, 404 auf statische Dateien | [Pfade](#pfade) |
+| `\` in Pfaden | Datei nicht gefunden, merkwürdige Dateinamen | [Pfade](#pfade) |
+| Windows-Zeilenenden | `bash\r: No such file or directory` | [Zeilenenden](#zeilenenden) |
+| fehlendes Ausführungsrecht | `Permission denied` | [Rechte](#rechte) |
+| kein Bildschirm, fehlende Bibliotheken | Browser startet nicht | [Browser](#browser) |
+| andere Zeitzone/Sprache | Datum `11/26/2026` statt `26.11.2026`, Tests um Mitternacht rot | [Zeitzone und Sprache](#locale) |
+| fehlende Umgebungsvariablen | Tests laufen gegen `localhost` statt Testumgebung | [Secrets](#secrets) |
+
+## Pfade und Groß-/Kleinschreibung \{#pfade}
+
+Windows ignoriert Groß-/Kleinschreibung in Dateinamen, Linux **nicht**:
+
+```csharp
+// Datei im Repository: TestDaten/kunden.json
+var json = File.ReadAllText("Testdaten/Kunden.json");   // Windows: ok – Linux: FileNotFoundException
+```
+
+Und Windows akzeptiert `\` als Trenner, Linux nicht:
+
+```csharp
+// ❌ nur auf Windows
+var pfad = "TestDaten\\kunden.json";
+
+// ✅ plattformunabhängig
+var pfad = Path.Combine("TestDaten", "kunden.json");
+```
+
+```java
+// ✅ Java
+var pfad = Path.of("testdaten", "kunden.json");
+```
+
+:::tip[Gegenmittel]
+- Dateinamen **exakt** so schreiben, wie sie im Repository stehen (am einfachsten: nur Kleinbuchstaben).
+- Pfade immer mit `Path.Combine` (C#) bzw. `Path.of` (Java) zusammensetzen.
+- Tests regelmäßig **auch auf Linux** laufen lassen – in der CI oder lokal im Container.
+:::
+
+Achtung bei **Git unter Windows**: Benennt man nur die Groß-/Kleinschreibung einer Datei um (`Kunden.json` → `kunden.json`), bemerkt Git das oft nicht. Sicher geht es mit `git mv Kunden.json kunden.json`.
+
+## Zeilenenden: CRLF und LF \{#zeilenenden}
+
+Windows beendet Zeilen mit **CR LF** (`\r\n`), Linux nur mit **LF** (`\n`). Für Bash ist das zusätzliche `\r` Teil des Textes:
+
+```text
+$ ./tests-starten.sh
+/usr/bin/env: 'bash\r': No such file or directory
+```
+
+Der Shebang lautet dann `bash\r` – ein Programm, das es nicht gibt. Auch Variablen bekommen unsichtbare `\r` angehängt, und Vergleiche schlagen fehl.
+
+**Erkennen:**
+
+```bash
+file tests-starten.sh
+# tests-starten.sh: Bourne-Again shell script, ASCII text executable, with CRLF line terminators
+```
+
+**Beheben:**
+
+```bash
+sed -i 's/\r$//' tests-starten.sh       # oder: dos2unix tests-starten.sh
+```
+
+**Dauerhaft verhindern** mit einer `.gitattributes` im Repository – genau so macht es diese Plattform für den Maven Wrapper:
+
+```text
+*.sh    text eol=lf
+mvnw    text eol=lf
+*.cmd   text eol=crlf
+```
+
+Damit checkt Git Shell-Skripte auf **jedem** System mit LF aus, Windows-Batchdateien mit CRLF.
+
+## Rechte im Repository \{#rechte}
+
+Windows kennt kein Ausführungsrecht. Ein dort angelegtes Skript ist in der Linux-CI deshalb oft nicht ausführbar (`Permission denied`). Lösung: das Recht **in Git** setzen – siehe [Benutzer und Rechte](./03-benutzer-und-rechte.mdx#permission-denied):
+
+```bash
+git update-index --chmod=+x tests-starten.sh
+git ls-files -s tests-starten.sh     # 100755 = ausführbar
+```
+
+## Browser-Tests ohne Bildschirm \{#browser}
+
+CI-Runner und Container haben **keinen Bildschirm**. Browser-Tests laufen dort **headless**:
+
+| Werkzeug | Headless |
+|---|---|
+| Playwright | Standard – nichts zu tun |
+| Selenium + Chrome | `--headless=new` in den `ChromeOptions` |
+| Anwendungen, die zwingend ein Fenster brauchen | virtueller Bildschirm: `xvfb-run dotnet test` |
+
+Browser brauchen außerdem **Systembibliotheken** (Schriftarten, Grafik, Audio). Auf einem frischen Linux fehlen sie oft:
+
+```bash
+# Playwright installiert Browser UND die nötigen Linux-Pakete
+pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps chromium     # .NET
+npx playwright install --with-deps chromium                            # Node
+```
+
+Genau so macht es der Job der [Beispielprojekte](https://github.com/Smie89/lernplattform/blob/main/.github/workflows/beispiele.yml) auf `ubuntu-latest`.
+
+:::warning[Chrome in Docker: /dev/shm]
+Docker gibt Containern standardmäßig nur **64 MB Shared Memory** (`/dev/shm`). Chrome braucht mehr und stürzt sonst mit „session deleted because of page crash“ ab. Lösung: `docker run --shm-size=2g …` bzw. `shm_size: 2gb` in Compose (siehe [Docker in der Testautomation](../05-docker/05-docker-testautomation.mdx)) oder die Chrome-Option `--disable-dev-shm-usage`.
+:::
+
+**Schriftarten**: Fehlen Schriften, sehen Screenshots auf Linux anders aus als auf Windows – visuelle Vergleichstests schlagen fehl. Referenz-Screenshots deshalb **auf derselben Plattform** erzeugen, auf der verglichen wird (am besten im Container).
+
+## Zeitzone und Sprache \{#locale}
+
+CI-Runner laufen meist in **UTC** und mit **englischer** Sprache (`C.UTF-8` oder `en_US.UTF-8`). Tests, die Datum, Uhrzeit oder Zahlen formatieren, verhalten sich dort anders:
+
+```bash
+date                                  # Thu Nov 26 07:00:00 UTC 2026
+TZ=Europe/Berlin date                 # Thu Nov 26 08:00:00 CET 2026
+locale                                # aktuelle Spracheinstellungen
+```
+
+Zwei Wege, damit umzugehen:
+
+1. **Im Test festlegen** (besser): Kultur bzw. `Locale` explizit setzen und die Uhr injizieren – siehe [Flaky Tests – Umgebung](../02-testautomation/01-grundlagen/02-flaky-tests.mdx#umgebung). Der Mini-Shop macht das in den UI-Tests mit `Locale = "de-DE"` (Playwright) bzw. `--lang=de-DE` (Selenium).
+2. **In der CI festlegen**: Umgebungsvariablen für den Job setzen.
+
+```yaml
+env:
+  TZ: Europe/Berlin
+  LANG: de_DE.UTF-8
+```
+
+## Umgebungsvariablen und Secrets \{#secrets}
+
+Tests bekommen URLs und Zugangsdaten über **Umgebungsvariablen** (siehe [Umgebungsvariablen](./05-pakete-netzwerk-ssh.mdx#umgebungsvariablen)). Zugangsdaten kommen in der CI aus **Secrets**:
+
+```yaml
+- name: UI-Tests gegen Staging
+  run: dotnet test tests/Shop.UiTests
+  env:
+    SHOP_URL: https://staging.shop.example.com
+    TEST_PASSWORT: ${{ secrets.TEST_PASSWORT }}
+```
+
+:::danger[Secrets nicht ausgeben]
+- Nie `echo $TEST_PASSWORT`, `env` oder `printenv` im CI-Log.
+- Vorsicht mit **`set -x`** (gibt jeden Befehl mit eingesetzten Werten aus) in Skripten, die Secrets verwenden.
+- GitHub maskiert bekannte Secrets im Log – aber nicht, wenn sie umgewandelt (z. B. Base64-kodiert) ausgegeben werden.
+:::
+
+## Artefakte bei Fehlschlag sichern \{#artefakte}
+
+Nach dem Lauf wird der Runner gelöscht – mit allen Screenshots, Traces und Logs. Deshalb sichert man sie als **Artefakt**, und zwar gerade dann, wenn Tests **fehlschlagen**:
+
+```yaml
+- name: UI-Tests
+  run: dotnet test tests/Shop.UiTests --logger trx --results-directory testergebnisse
+
+- name: Testergebnisse hochladen
+  if: failure()                     # nur, wenn ein vorheriger Schritt fehlgeschlagen ist
+  uses: actions/upload-artifact@v4
+  with:
+    name: testergebnisse
+    path: |
+      testergebnisse/
+      **/screenshots/*.png
+```
+
+`if: failure()` ist wichtig: Ohne würde der Schritt nach roten Tests übersprungen – genau dann, wenn man die Dateien braucht.
+
+## Zeitgesteuerte Testläufe \{#cron}
+
+Lange Regressionssuiten laufen oft **nachts**. Die Zeitangabe nutzt die **cron-Syntax**:
+
+```text
+┌──────── Minute        (0–59)
+│ ┌────── Stunde        (0–23)
+│ │ ┌──── Tag im Monat  (1–31)
+│ │ │ ┌── Monat         (1–12)
+│ │ │ │ ┌ Wochentag     (0–6, 0 = Sonntag)
+│ │ │ │ │
+0 2 * * 1-5     → montags bis freitags um 02:00
+```
+
+In GitHub Actions (Zeit in **UTC**):
+
+```yaml
+on:
+  schedule:
+    - cron: "0 2 * * 1-5"
+```
+
+Auf einem eigenen Linux-Server mit `crontab -e`:
+
+```text
+0 2 * * 1-5  cd /opt/tests && ./nacht-regression.sh >> /var/log/nacht-regression.log 2>&1
+```
+
+:::note[cron hat eine minimale Umgebung]
+Ein Cron-Job läuft **nicht** mit deiner Shell-Konfiguration: `PATH` ist sehr kurz, `~/.bashrc` wird nicht gelesen. Im Skript deshalb absolute Pfade verwenden oder `PATH` selbst setzen – sonst gibt es nachts `command not found`, obwohl es von Hand funktioniert.
+:::
+
+## Checkliste: Tests laufen nur lokal \{#checkliste}
+
+1. **Fehlermeldung genau lesen** – oft verrät sie die Ursache direkt (`\r`, `Permission denied`, `FileNotFoundException`).
+2. **Pfade und Dateinamen**: Groß-/Kleinschreibung? `\` statt `Path.Combine`?
+3. **Skripte**: Zeilenenden (`file skript.sh`) und Ausführungsrecht (`git ls-files -s`)?
+4. **Browser**: headless? Abhängigkeiten installiert (`--with-deps`)? Im Container genug `/dev/shm`?
+5. **Zeit und Sprache**: Formatierungen, Zeitzone, Datumsgrenzen?
+6. **Umgebungsvariablen und Secrets**: gesetzt und exportiert? Gegen welche URL laufen die Tests wirklich?
+7. **Ressourcen**: Festplatte voll, Agent überlastet, Port belegt? (siehe [Prozesse und Dienste](./04-prozesse-und-dienste.mdx#ressourcen))
+8. **Lokal nachstellen**: dieselben Befehle im Linux-Container ausführen, z. B. `docker run -it --rm -v "$PWD":/src -w /src mcr.microsoft.com/dotnet/sdk:10.0 bash`.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Linux unterscheidet **Groß-/Kleinschreibung** und nutzt `/` – Pfade mit `Path.Combine`/`Path.of` bauen.
+- **CRLF** zerstört Shell-Skripte – mit `.gitattributes` (`*.sh text eol=lf`) verhindern.
+- **Ausführungsrechte** in Git setzen: `git update-index --chmod=+x`.
+- Browser in der CI **headless**, mit Abhängigkeiten (`--with-deps`) und genug `/dev/shm` im Container.
+- **Zeitzone und Sprache** im Test festlegen; CI-Runner laufen meist in UTC und Englisch.
+- **Secrets** nie ausgeben, **Artefakte** mit `if: failure()` sichern, nächtliche Läufe mit **cron** planen.
+
+<Quiz fragen={fragen} titel="Quiz: Linux in der Testautomation" />
