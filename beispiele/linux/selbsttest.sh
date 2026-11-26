@@ -3,7 +3,7 @@
 # Aufruf: ./selbsttest.sh
 set -uo pipefail   # bewusst ohne -e: Fehlschläge werden gezählt, nicht sofort abgebrochen
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit 1
 fehlschlaege=0
 
 pruefe() {   # pruefe <beschreibung> <erwarteter-exit-code> <befehl...>
@@ -16,7 +16,7 @@ pruefe() {   # pruefe <beschreibung> <erwarteter-exit-code> <befehl...>
     echo "OK    $beschreibung"
   else
     echo "FEHLER $beschreibung (Exit-Code $code, erwartet $erwartet)"
-    echo "$ausgabe" | sed 's/^/        /'
+    while IFS= read -r zeile; do echo "        $zeile"; done <<< "$ausgabe"
     fehlschlaege=$((fehlschlaege + 1))
   fi
   LETZTE_AUSGABE="$ausgabe"
