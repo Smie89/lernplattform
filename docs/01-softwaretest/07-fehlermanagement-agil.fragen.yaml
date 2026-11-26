@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Fehlermanagement und agiles Testen"
+
+- id: st-fm-001
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Was gehört in einen guten Fehlerbericht?"
+  optionen:
+    - "Schritte zum Nachstellen"
+    - "Erwartetes und tatsächliches Ergebnis"
+    - "Version und Umgebung"
+    - "Eine Einschätzung, welcher Entwickler schuld ist"
+  richtig: [0, 1, 2]
+  erklaerung: "Der Bericht beschreibt sachlich das Verhalten, damit der Fehler nachgestellt und behoben werden kann – nicht, wer ihn verursacht hat."
+  artikel: "#fehlerbericht"
+  tags: [softwaretest, fehlerbericht]
+
+- id: st-fm-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Welcher Titel für einen Fehlerbericht ist am besten?"
+  optionen:
+    - "Bestellung kaputt"
+    - "Doppelklick auf 'Bestellen' erzeugt zwei Bestellungen und bucht doppelt ab"
+    - "Dringend!!!"
+    - "Fehler im Shop"
+  richtig: [1]
+  erklaerung: "Ein guter Titel beschreibt Auslöser und Auswirkung so, dass man das Problem schon in der Fehlerliste versteht."
+  artikel: "#fehlerbericht"
+  tags: [softwaretest, fehlerbericht]
+
+- id: st-fm-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist 'In 5 von 10 Versuchen' besser als 'manchmal'?"
+  optionen:
+    - "Weil es länger ist"
+    - "Weil es die Häufigkeit messbar macht und hilft, den Erfolg der Korrektur zu prüfen"
+    - "Weil 'manchmal' verboten ist"
+    - "Es ist nicht besser"
+  richtig: [1]
+  erklaerung: "Eine konkrete Häufigkeit zeigt, wie zuverlässig der Fehler auftritt – und nach der Korrektur, ob er wirklich verschwunden ist (10 von 10 Mal korrekt)."
+  artikel: "#fehlerbericht"
+  tags: [softwaretest, fehlerbericht]
+
+- id: st-fm-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Firmenname auf der Startseite ist falsch geschrieben. Wie sind Schweregrad und Priorität typischerweise?"
+  optionen:
+    - "Schweregrad kritisch, Priorität niedrig"
+    - "Schweregrad gering, Priorität hoch"
+    - "Beide kritisch"
+    - "Beide gering"
+  richtig: [1]
+  erklaerung: "Die Funktion ist nicht beeinträchtigt (geringer Schweregrad), aber der Fehler ist peinlich und sofort sichtbar (hohe Priorität)."
+  artikel: "#schweregrad-prioritaet"
+  tags: [softwaretest, schweregrad]
+
+- id: st-fm-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Fehlernachtest für einen als 'behoben' gemeldeten Fehler schlägt fehl. Welchen Status bekommt der Fehler?"
+  optionen:
+    - "Geschlossen"
+    - "Wiedereröffnet"
+    - "Duplikat"
+    - "Abgelehnt"
+  richtig: [1]
+  erklaerung: "Besteht der Nachtest nicht, geht der Fehler zurück an die Entwicklung (wiedereröffnet)."
+  artikel: "#lebenszyklus"
+  tags: [softwaretest, lebenszyklus]
+
+- id: st-fm-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum wurde für SHOP-1 zuerst ein Test geschrieben, der den Fehler zeigt, und erst danach korrigiert?"
+  optionen:
+    - "Damit der Build rot ist"
+    - "Um den Fehler zuverlässig zu reproduzieren, die Korrektur zu belegen und einen dauerhaften Regressionstest zu haben"
+    - "Weil die Korrektur sonst nicht kompiliert"
+    - "Das war nicht nötig"
+  richtig: [1]
+  erklaerung: "Rot vor der Korrektur, grün danach: Der Test beweist, dass er den Fehler erkennt – und schützt künftig vor einer Wiederkehr."
+  artikel: "#lebenszyklus"
+  tags: [softwaretest, regressionstest, tdd]
+
+- id: st-fm-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum reicht es bei SHOP-1 nicht, nur den Button während der Bestellung zu deaktivieren?"
+  optionen:
+    - "Weil Buttons nicht deaktiviert werden können"
+    - "Weil zwei Tabs, Netzwerk-Retries oder Skripte die API trotzdem doppelt aufrufen können – die Regel muss der Server durchsetzen"
+    - "Weil die Oberfläche nicht getestet werden kann"
+    - "Es reicht völlig"
+  richtig: [1]
+  erklaerung: "Geschäftsregeln müssen serverseitig gelten. Die Oberfläche verbessert zusätzlich die Bedienung."
+  artikel: "#lebenszyklus"
+  tags: [softwaretest, fehlerbehebung]
+
+- id: st-fm-008
+  typ: single
+  schwierigkeit: 1
+  frage: "Was bedeutet Shift-Left?"
+  optionen:
+    - "Tests werden ans Projektende verschoben"
+    - "Testaktivitäten finden so früh wie möglich statt"
+    - "Das Testteam sitzt links vom Entwicklungsteam"
+    - "Nur Unit-Tests werden durchgeführt"
+  richtig: [1]
+  erklaerung: "Anforderungen reviewen, Akzeptanzkriterien mit Beispielen, Tests vor oder mit dem Code – Fehler werden früher und günstiger gefunden."
+  artikel: "#shift-left"
+  tags: [softwaretest, agil]
+
+- id: st-fm-009
+  typ: single
+  schwierigkeit: 2
+  frage: "In welcher Reihenfolge arbeitet man bei TDD?"
+  optionen:
+    - "Code – Test – Refactor"
+    - "Rot (fehlschlagender Test) – Grün (minimaler Code) – Refactor"
+    - "Refactor – Rot – Grün"
+    - "Test – Release – Code"
+  richtig: [1]
+  erklaerung: "Erst ein Test, der fehlschlägt, dann genau so viel Code, dass er grün wird, dann aufräumen."
+  artikel: "#tdd-bdd"
+  tags: [softwaretest, tdd]
+
+- id: st-fm-010
+  typ: single
+  schwierigkeit: 2
+  frage: "In welchem Format werden BDD-Szenarien typischerweise beschrieben?"
+  optionen:
+    - "Arrange – Act – Assert"
+    - "Given – When – Then (Angenommen – Wenn – Dann)"
+    - "Input – Process – Output"
+    - "Plan – Do – Check – Act"
+  richtig: [1]
+  erklaerung: "Given-When-Then beschreibt Verhalten in Fachsprache. Werkzeuge wie Reqnroll (.NET) oder Cucumber (Java) führen solche Szenarien als Tests aus."
+  artikel: "#tdd-bdd"
+  tags: [softwaretest, bdd]
+
+- id: st-fm-011
+  typ: single
+  schwierigkeit: 3
+  frage: "In welchem Testquadranten wurde SHOP-1 gefunden?"
+  optionen:
+    - "Q1 – Unit-Tests"
+    - "Q2 – funktionale Story-Tests"
+    - "Q3 – exploratives Testen (fachlich, Produkt kritisierend)"
+    - "Q4 – Last- und Sicherheitstests"
+  richtig: [2]
+  erklaerung: "Der Fehler wurde durch eine Fehlerhypothese beim explorativen Testen gefunden – Quadrant 3."
+  artikel: "#testquadranten"
+  tags: [softwaretest, agil, testquadranten]
+
+- id: st-fm-012
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "In agilen Teams sind ausschließlich die Tester für die Qualität verantwortlich."
+  richtig: [1]
+  erklaerung: "Falsch. Im Whole-Team-Ansatz tragen Entwicklung, Test und Fachbereich gemeinsam Verantwortung für Qualität."
+  artikel: "#shift-left"
+  tags: [softwaretest, agil]

@@ -72,6 +72,17 @@ public class BestellServiceTests
         _zahlung.DidNotReceiveWithAnyArgs().Abbuchen(default!, default);
     }
 
+    // Ergänzt, nachdem die Abdeckungsmessung gezeigt hat, dass dieser Zweig ungetestet war.
+    [TestCase("")]
+    [TestCase("   ")]
+    public void Bestellen_ohne_Kundennamen_wirft_Exception(string name)
+    {
+        var warenkorb = EinWarenkorb().Mit(TestProdukte.Buch).Bauen();
+
+        Assert.Throws<ArgumentException>(() => _service.Bestellen(warenkorb, new Kunde(name, IstStammkunde: false)));
+        _zahlung.DidNotReceiveWithAnyArgs().Abbuchen(default!, default);
+    }
+
     [Test]
     public void Bestellnummer_enthaelt_das_Bestelldatum()
     {

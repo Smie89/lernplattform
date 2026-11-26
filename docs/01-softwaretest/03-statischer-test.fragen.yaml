@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Statischer Test"
+
+- id: st-sa-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was kennzeichnet einen statischen Test?"
+  optionen:
+    - "Die Software wird mit festen Testdaten ausgeführt"
+    - "Das Arbeitsergebnis wird geprüft, ohne die Software auszuführen"
+    - "Es wird nur die Performanz gemessen"
+    - "Er findet nur im Abnahmetest statt"
+  richtig: [1]
+  erklaerung: "Statische Tests (Reviews, statische Analyse) prüfen Dokumente und Code ohne Ausführung."
+  artikel: "#statisch-dynamisch"
+  tags: [softwaretest, statischer-test]
+
+- id: st-sa-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Was findet ein statischer Test, was ein dynamischer nicht direkt liefert?"
+  optionen:
+    - "Fehlerwirkungen im laufenden System"
+    - "Fehlerzustände direkt, z. B. die widersprüchliche Stelle in einer Anforderung"
+    - "Antwortzeiten unter Last"
+    - "Abstürze bei Speichermangel"
+  richtig: [1]
+  erklaerung: "Statische Tests zeigen direkt auf den Mangel. Dynamische Tests zeigen das Fehlverhalten, dessen Ursache dann noch gesucht werden muss."
+  artikel: "#statisch-dynamisch"
+  tags: [softwaretest, statischer-test]
+
+- id: st-sa-003
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Welche Arbeitsergebnisse kann man reviewen?"
+  optionen:
+    - "Anforderungen und User Stories"
+    - "Quellcode"
+    - "Testfälle"
+    - "Verträge und Benutzerhandbücher"
+  richtig: [0, 1, 2, 3]
+  erklaerung: "Reviews eignen sich für alle lesbaren Arbeitsergebnisse – besonders wertvoll bei Anforderungen, weil Fehler dort am teuersten werden."
+  artikel: "#statisch-dynamisch"
+  tags: [softwaretest, review]
+
+- id: st-sa-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Reviewart ist am formalsten und nutzt Checklisten, Metriken und feste Rollen?"
+  optionen:
+    - "Informelles Review"
+    - "Walkthrough"
+    - "Technisches Review"
+    - "Inspektion"
+  richtig: [3]
+  erklaerung: "Die Inspektion hat den strengsten Ablauf mit definierten Rollen, Checklisten und Metriken; der Autor darf nicht moderieren."
+  artikel: "#reviewarten"
+  tags: [softwaretest, review]
+
+- id: st-sa-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Bei welcher Reviewart führt der Autor selbst durch das Dokument?"
+  optionen:
+    - "Inspektion"
+    - "Walkthrough"
+    - "Statische Analyse"
+    - "Technisches Review"
+  richtig: [1]
+  erklaerung: "Im Walkthrough stellt der Autor sein Arbeitsergebnis vor – gut für Wissensverteilung und gemeinsames Verständnis."
+  artikel: "#reviewarten"
+  tags: [softwaretest, review]
+
+- id: st-sa-006
+  typ: single
+  schwierigkeit: 2
+  frage: "In welchem Schritt eines Reviews werden typischerweise die meisten Mängel gefunden?"
+  optionen:
+    - "Planung"
+    - "Individuelles Review"
+    - "Fehlerbehebung"
+    - "Review-Start"
+  richtig: [1]
+  erklaerung: "Jeder Gutachter prüft zunächst allein und gründlich. Die gemeinsame Sitzung dient vor allem dazu, Befunde zu bewerten und zu entscheiden."
+  artikel: "#ablauf"
+  tags: [softwaretest, review]
+
+- id: st-sa-007
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie sollte ein Befund im Review formuliert sein?"
+  optionen:
+    - "'Du hast schon wieder die Grenzfälle vergessen.'"
+    - "'In Abschnitt 2 ist nicht festgelegt, ob der Rabatt bei genau 100 € gilt.'"
+    - "'Das ist schlecht.'"
+    - "'Bitte alles neu schreiben.'"
+  richtig: [1]
+  erklaerung: "Befunde beziehen sich sachlich und konkret auf das Dokument, nie auf die Person."
+  artikel: "#ablauf"
+  tags: [softwaretest, review]
+
+- id: st-sa-008
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Mängel hat die Anforderung 'Kunden bekommen ab einem Bestellwert über 100 € einen Rabatt von 10 %. Stammkunden bekommen mehr.'?"
+  optionen:
+    - "Unklar, ob der Rabatt bei genau 100,00 € gilt"
+    - "'mehr' ist nicht quantifiziert"
+    - "Es ist nicht definiert, wer Stammkunde ist"
+    - "Sie ist zu kurz, um getestet zu werden"
+  richtig: [0, 1, 2]
+  erklaerung: "Mehrdeutige Grenze, unvollständige Regel, undefinierter Begriff. Die Kürze selbst ist kein Mangel – Präzision ist entscheidend."
+  artikel: "#praxis-review"
+  tags: [softwaretest, anforderungen]
+
+- id: st-sa-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist es günstig, den Fehler '> statt >=' schon im Anforderungsreview zu finden?"
+  optionen:
+    - "Weil Reviews automatisch Code erzeugen"
+    - "Weil dann noch kein Code, keine Tests und keine Dokumentation auf der falschen Annahme aufbauen"
+    - "Weil dynamische Tests Grenzwerte nicht finden können"
+    - "Weil Reviews kostenlos sind"
+  richtig: [1]
+  erklaerung: "Je später ein Fehler gefunden wird, desto mehr Arbeitsergebnisse müssen korrigiert werden – frühes Testen spart Zeit und Geld."
+  artikel: "#praxis-review"
+  tags: [softwaretest, frueh-testen]
+
+- id: st-sa-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist ein Beispiel für statische Analyse?"
+  optionen:
+    - "ShellCheck prüft Bash-Skripte auf typische Fehler"
+    - "Ein Lasttest mit 200 Nutzern"
+    - "Ein UI-Test mit Playwright"
+    - "Ein Benutzerakzeptanztest"
+  richtig: [0]
+  erklaerung: "Statische Analysewerkzeuge wie Linter, Analyzer und SonarQube untersuchen Code, ohne ihn auszuführen."
+  artikel: "#statische-analyse"
+  tags: [softwaretest, statische-analyse]
+
+- id: st-sa-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Was gibt die zyklomatische Komplexität einer Methode an?"
+  optionen:
+    - "Die Anzahl der Codezeilen"
+    - "Die Anzahl unabhängiger Pfade durch die Methode"
+    - "Die Laufzeit in Millisekunden"
+    - "Die Anzahl der Aufrufer"
+  richtig: [1]
+  erklaerung: "Je mehr Verzweigungen, desto mehr Pfade – und desto schwerer ist die Methode zu verstehen und vollständig zu testen."
+  artikel: "#statische-analyse"
+  tags: [softwaretest, metriken]
+
+- id: st-sa-012
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Die Ergebnisse von Reviews eignen sich gut, um die Leistung einzelner Entwickler zu bewerten."
+  richtig: [1]
+  erklaerung: "Falsch. Das zerstört die offene Atmosphäre, die Reviews brauchen – Autoren würden Mängel verstecken statt sie finden zu lassen."
+  artikel: "#ablauf"
+  tags: [softwaretest, review]

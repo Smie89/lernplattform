@@ -1,0 +1,169 @@
+# Fragen zur Lektion "Black-Box-Testverfahren"
+
+- id: st-bb-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist die Grundidee der Äquivalenzklassenbildung?"
+  optionen:
+    - "Jeden möglichen Wert testen"
+    - "Werte, die gleich behandelt werden, zusammenfassen und je Klasse einen Vertreter testen"
+    - "Nur Werte an den Grenzen testen"
+    - "Zufällige Werte testen"
+  richtig: [1]
+  erklaerung: "Findet ein Vertreter keinen Fehler, finden die anderen Werte derselben Klasse vermutlich auch keinen – das spart viele Testfälle."
+  artikel: "#aequivalenzklassen"
+  tags: [softwaretest, aequivalenzklassen]
+
+- id: st-bb-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Erlaubt sind 1 bis 99 Stück. Wie viele Äquivalenzklassen ergeben sich mindestens für ganzzahlige Eingaben?"
+  optionen:
+    - "1"
+    - "2"
+    - "3"
+    - "99"
+  richtig: [2]
+  erklaerung: "Kleiner als 1 (ungültig), 1 bis 99 (gültig), größer als 99 (ungültig). Nicht-ganzzahlige Eingaben wären eine weitere ungültige Klasse."
+  artikel: "#aequivalenzklassen"
+  tags: [softwaretest, aequivalenzklassen]
+
+- id: st-bb-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum testet man ungültige Äquivalenzklassen einzeln?"
+  optionen:
+    - "Weil sie seltener vorkommen"
+    - "Damit nicht ein ungültiger Wert die Prüfung eines anderen verdeckt (Fehlermaskierung)"
+    - "Weil das System sonst abstürzt"
+    - "Das ist nicht nötig"
+  richtig: [1]
+  erklaerung: "Enthält ein Testfall mehrere ungültige Werte, weiß man nicht, welcher die Ablehnung ausgelöst hat – die Prüfung der anderen wird nie erreicht."
+  artikel: "#aequivalenzklassen"
+  tags: [softwaretest, aequivalenzklassen]
+
+- id: st-bb-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Werte prüft die 2-Wert-Grenzwertanalyse für den gültigen Bereich 1 bis 99?"
+  optionen:
+    - "1 und 99"
+    - "0, 1, 99, 100"
+    - "0, 1, 2, 98, 99, 100"
+    - "-1, 50, 101"
+  richtig: [1]
+  erklaerung: "Jede Grenze und ihr nächster Nachbar in der angrenzenden Klasse. Die 3-Wert-Variante nimmt zusätzlich 2 und 98 dazu."
+  artikel: "#grenzwerte"
+  tags: [softwaretest, grenzwerte]
+
+- id: st-bb-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Werte prüft die 3-Wert-Grenzwertanalyse für den gültigen Bereich 1 bis 99?"
+  optionen:
+    - "0, 1, 99, 100"
+    - "0, 1, 2, 98, 99, 100"
+    - "1, 50, 99"
+    - "1, 2, 98, 99"
+  richtig: [1]
+  erklaerung: "Zu jedem Grenzwert werden beide Nachbarn geprüft: 0, 1, 2 an der unteren und 98, 99, 100 an der oberen Grenze."
+  artikel: "#grenzwerte"
+  tags: [softwaretest, grenzwerte]
+
+- id: st-bb-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Rabatt gilt ab 100,00 € (Cent-genau). Welche Werte sind die 2-Wert-Grenzwerte?"
+  optionen:
+    - "99 € und 100 €"
+    - "99,99 € und 100,00 €"
+    - "100,00 € und 100,01 €"
+    - "50 € und 150 €"
+  richtig: [1]
+  erklaerung: "Bei Cent-Genauigkeit ist 99,99 € der größte Wert ohne Rabatt und 100,00 € der kleinste mit Rabatt."
+  artikel: "#grenzwerte"
+  tags: [softwaretest, grenzwerte]
+
+- id: st-bb-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Die API-Tests prüfen das Zahlungslimit (500 €) nur mit 628,20 €. Welcher Fehler würde dadurch NICHT gefunden?"
+  optionen:
+    - "Der Zahlungsdienst lehnt alle Beträge ab"
+    - "Es wird 'betrag < Limit' statt 'betrag <= Limit' geprüft"
+    - "Der Zahlungsdienst genehmigt alle Beträge"
+    - "Die API liefert 500 statt 422"
+  richtig: [1]
+  erklaerung: "Der Unterschied zeigt sich nur bei genau 500,00 €. Dafür braucht es Grenzwerttests mit 500,00 € und 500,01 €."
+  artikel: "#grenzwerte-im-code"
+  tags: [softwaretest, grenzwerte]
+
+- id: st-bb-008
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie viele Regeln hat eine vollständige Entscheidungstabelle mit drei Ja/Nein-Bedingungen?"
+  optionen:
+    - "3"
+    - "6"
+    - "8"
+    - "9"
+  richtig: [2]
+  erklaerung: "2 hoch Anzahl der Bedingungen: 2³ = 8 Kombinationen. Mit 'egal'-Einträgen (–) lassen sie sich oft zusammenfassen."
+  artikel: "#entscheidungstabellen"
+  tags: [softwaretest, entscheidungstabelle]
+
+- id: st-bb-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Laut Entscheidungstabelle: Zwischensumme ≥ 100 € = Nein, Stammkunde = Ja. Welcher Rabatt gilt?"
+  optionen:
+    - "0 %"
+    - "5 %"
+    - "10 %"
+    - "15 %"
+  richtig: [1]
+  erklaerung: "Stammkunden erhalten 5 % – auch unter 100 €. Getestet mit 50 € → 47,50 €."
+  artikel: "#entscheidungstabellen"
+  tags: [softwaretest, entscheidungstabelle]
+
+- id: st-bb-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bedeutet ein '–' in einer Bedingungszeile einer Entscheidungstabelle?"
+  optionen:
+    - "Die Bedingung ist falsch"
+    - "Der Wert der Bedingung ist für diese Regel egal"
+    - "Die Regel wird nicht getestet"
+    - "Ein Fehler in der Tabelle"
+  richtig: [1]
+  erklaerung: "Ist der Warenkorb leer, spielt z. B. keine Rolle, ob ein Name angegeben ist – die Bestellung wird immer abgelehnt."
+  artikel: "#entscheidungstabellen-reduziert"
+  tags: [softwaretest, entscheidungstabelle]
+
+- id: st-bb-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Für welche Situation eignet sich der Zustandsübergangstest am besten?"
+  optionen:
+    - "Ein Eingabefeld für das Alter"
+    - "Ein Bestellablauf, bei dem dieselbe Aktion je nach Status unterschiedlich wirkt"
+    - "Eine Rabattregel mit zwei Bedingungen"
+    - "Die Antwortzeit einer API"
+  richtig: [1]
+  erklaerung: "Zustandsübergangstests prüfen Abläufe: Ein leerer Warenkorb lässt sich nicht bestellen, ein gefüllter schon."
+  artikel: "#zustaende"
+  tags: [softwaretest, zustaende]
+
+- id: st-bb-012
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum sollte man beim Zustandsübergangstest auch ungültige Übergänge testen, z. B. 'bestellen' im Zustand LEER?"
+  optionen:
+    - "Weil gültige Übergänge nie Fehler enthalten"
+    - "Um Fehler zu finden, bei denen das System etwas Unerlaubtes zulässt"
+    - "Weil es die Testdauer verkürzt"
+    - "Das ist nicht sinnvoll"
+  richtig: [1]
+  erklaerung: "Ein System, das einen leeren Warenkorb bestellen lässt, besteht alle Tests gültiger Übergänge – und hat trotzdem einen Fehler."
+  artikel: "#zustaende"
+  tags: [softwaretest, zustaende]

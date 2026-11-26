@@ -1,0 +1,163 @@
+---
+title: Grundlagen des Softwaretests
+description: Warum testen? Fehlhandlung, Fehlerzustand und Fehlerwirkung, Testziele, die sieben Grundsätze des Testens, Verifizierung und Validierung sowie der Testprozess – orientiert am ISTQB Foundation Level.
+tags: [softwaretest, grundlagen, istqb]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-grundlagen-softwaretest.fragen.yaml';
+
+# Grundlagen des Softwaretests
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, **warum** getestet wird und was Testen leisten kann,
+- **Fehlhandlung, Fehlerzustand und Fehlerwirkung** unterscheiden,
+- **Testen und Debuggen** sowie **Verifizierung und Validierung** auseinanderhalten,
+- die **sieben Grundsätze** des Testens an Beispielen erklären,
+- die **Aktivitäten des Testprozesses** und wichtige Begriffe wie **Testbasis** und **Testorakel** einordnen.
+:::
+
+:::note[ISTQB]
+Die Begriffe dieses Bereichs folgen dem **ISTQB® Certified Tester Foundation Level** (CTFL) und dem deutschsprachigen Glossar des German Testing Board. Die Lektionen sind eine Einführung in eigenen Worten mit Praxisbezug – zur Prüfungsvorbereitung gehört zusätzlich der offizielle Lehrplan.
+:::
+
+## Warum testen? \{#warum-testen}
+
+Software wird von Menschen gemacht, und Menschen machen Fehler. Tests finden diese Fehler, **bevor** sie Kunden, Geld oder im Extremfall Menschenleben kosten.
+
+Testen dient dazu,
+- **Fehlerwirkungen auszulösen** und **Fehlerzustände zu finden**,
+- **Vertrauen** in die Qualität zu schaffen (oder begründetes Misstrauen),
+- **Informationen für Entscheidungen** zu liefern: Kann das Release raus?
+- **Risiken zu senken** – fachlich, rechtlich, finanziell,
+- die Erfüllung von **Anforderungen, Verträgen und Normen** nachzuweisen.
+
+:::tip[Test liefert Informationen]
+Ein Tester „macht keine Qualität“ – er **misst** sie und **macht sie sichtbar**. Die Entscheidung, ob mit bekannten Fehlern ausgeliefert wird, treffen Projekt- oder Produktverantwortliche auf Basis dieser Informationen.
+:::
+
+## Fehlhandlung, Fehlerzustand, Fehlerwirkung \{#fehlerbegriffe}
+
+Im Alltag sagt man zu allem „Fehler“ oder „Bug“. Die Fachsprache unterscheidet drei Stufen:
+
+```text
+ Fehlhandlung (error)       Ein Mensch irrt sich
+        │                   z. B. versteht die Entwicklerin die Rabattregel falsch
+        ▼
+ Fehlerzustand (defect)     Der Irrtum steckt im Produkt
+        │                   z. B. im Code steht "> 100" statt ">= 100"
+        ▼
+ Fehlerwirkung (failure)    Das System verhält sich falsch, wenn der Fehlerzustand ausgeführt wird
+                            z. B. bei genau 100,00 € gibt es keinen Rabatt
+```
+
+| Begriff | Englisch | Wo? | Wer findet es? |
+|---|---|---|---|
+| **Fehlhandlung** | error / mistake | im Kopf eines Menschen | – |
+| **Fehlerzustand** (Defekt) | defect / fault / bug | im Code, in der Anforderung, im Design | **statischer Test** (Review), Debugging |
+| **Fehlerwirkung** | failure | sichtbares Fehlverhalten beim Ausführen | **dynamischer Test** |
+
+Wichtig:
+- Nicht jeder Fehlerzustand führt zu einer Fehlerwirkung – der fehlerhafte Code muss erst **ausgeführt** werden, oft nur unter **bestimmten Bedingungen** (genau 100,00 €).
+- Fehlerzustände können auch in **Anforderungen** oder **Testfällen** stecken, nicht nur im Code.
+- Fehlerwirkungen können auch durch **Umgebungsbedingungen** entstehen (Strahlung, volle Festplatte, falsche Konfiguration).
+- Die **Grundursache** (root cause) ist der eigentliche Auslöser der Fehlhandlung, z. B. eine missverständliche Anforderung oder Zeitdruck. Wer sie beseitigt, verhindert ähnliche Fehler in Zukunft.
+
+## Testen und Debuggen \{#debuggen}
+
+| Testen | Debuggen |
+|---|---|
+| zeigt **Fehlerwirkungen** (oder findet Fehlerzustände statisch) | **lokalisiert, analysiert und behebt** die Ursache |
+| meist Aufgabe von Testern | meist Aufgabe der Entwicklung |
+| danach: **Fehlernachtest** (Bestätigungstest) – ist der Fehler behoben? | danach: **Regressionstest** – ist sonst nichts kaputtgegangen? |
+
+## Verifizierung und Validierung \{#verifizierung-validierung}
+
+| | Frage | Beispiel |
+|---|---|---|
+| **Verifizierung** | Bauen wir das Produkt **richtig**? Erfüllt es die **Spezifikation**? | Gibt es ab 100 € genau 10 % Rabatt, wie spezifiziert? |
+| **Validierung** | Bauen wir das **richtige** Produkt? Erfüllt es die **Bedürfnisse** der Nutzer? | Wollen die Kunden überhaupt einen Mengenrabatt – oder lieber kostenlosen Versand? |
+
+Ein Produkt kann perfekt verifiziert sein und trotzdem an den Nutzern vorbeigehen.
+
+## Qualitätssicherung und Testen \{#qs-test}
+
+- **Qualitätssicherung (QS)** ist **prozessorientiert** und **vorbeugend**: gute Prozesse, Schulungen, Standards, damit Fehler gar nicht erst entstehen.
+- **Testen** ist **produktorientiert** und eine Form der **Qualitätssteuerung**: Es prüft das konkrete Produkt.
+
+Testen ist also ein Teil der Qualitätsarbeit, aber nicht alles.
+
+## Die sieben Grundsätze des Testens \{#grundsaetze}
+
+| # | Grundsatz | Was er bedeutet | Beispiel |
+|---|---|---|---|
+| 1 | **Testen zeigt die Anwesenheit von Fehlern, nicht ihre Abwesenheit** | Tests können Fehler finden, aber nie beweisen, dass keine mehr da sind | Alle 43 Tests des Mini-Shops waren grün – und trotzdem steckte ein [Doppelklick-Fehler](./05-white-box-erfahrungsbasiert.mdx#doppelklick) darin |
+| 2 | **Vollständiges Testen ist nicht möglich** | Alle Kombinationen zu testen ist praktisch nie machbar – man muss **auswählen** | Ein Feld mit 1–99 Stück × 5 Produkte × Stammkunde ja/nein … |
+| 3 | **Frühes Testen spart Zeit und Geld** | Je früher ein Fehler gefunden wird, desto billiger ist er („Shift-Left“) | Ein Review der Anforderung findet die missverständliche Rabattregel, bevor eine Zeile Code existiert |
+| 4 | **Fehler treten gehäuft auf** | Wenige Komponenten enthalten die meisten Fehler | Die Bezahlung macht 70 % der Fehlerberichte aus – dort genauer testen |
+| 5 | **Tests nutzen sich ab** („Pestizid-Paradoxon“) | Dieselben Tests finden irgendwann keine neuen Fehler mehr | Testfälle regelmäßig überarbeiten, neue Daten, exploratives Testen |
+| 6 | **Testen ist kontextabhängig** | Medizingerät ≠ Webshop ≠ Prototyp | Für einen Prototyp reicht ein Smoke-Test, eine Herzpumpe braucht formale Nachweise |
+| 7 | **Trugschluss „keine Fehler = brauchbares System“** | Ein fehlerfreies System kann trotzdem nutzlos sein | Fehlerfrei umgesetzt – aber an den Bedürfnissen vorbei (Validierung!) |
+
+:::tip[Grundsatz 2 in der Praxis]
+Weil nicht alles getestet werden kann, braucht man **Testentwurfsverfahren** (Lektion [Black-Box-Testverfahren](./04-black-box-testverfahren.mdx)) und **risikobasiertes Testen** (Lektion [Testmanagement](./06-testmanagement.mdx#risikobasiert)), um die wichtigsten Testfälle auszuwählen.
+:::
+
+## Der Testprozess \{#testprozess}
+
+Testen ist mehr als „Tests ausführen“. Der Testprozess umfasst diese Aktivitäten – in der Praxis überlappen sie und werden oft wiederholt:
+
+| Aktivität | Leitfrage | Ergebnis (Beispiele) |
+|---|---|---|
+| **Testplanung** | Was testen wir, wie, mit wem, bis wann? | Testkonzept, Zeitplan |
+| **Testüberwachung und -steuerung** | Liegen wir im Plan? Was müssen wir ändern? | Fortschrittsberichte, Maßnahmen |
+| **Testanalyse** | **Was** ist zu testen? | Testbedingungen, gefundene Mängel in der Testbasis |
+| **Testentwurf** | **Wie** wird getestet? | Testfälle, Testdaten-Anforderungen |
+| **Testrealisierung** | Ist alles für die Durchführung bereit? | Testskripte, Testdaten, Testumgebung |
+| **Testdurchführung** | Tests ausführen, Ergebnisse vergleichen | Testprotokolle, **Fehlerberichte** |
+| **Testabschluss** | Was haben wir gelernt? | Abschlussbericht, archivierte Testmittel, Lessons Learned |
+
+### Wichtige Begriffe \{#begriffe}
+
+| Begriff | Bedeutung | Beispiel Mini-Shop |
+|---|---|---|
+| **Testbasis** | Alles, woraus Tests abgeleitet werden | Anforderung „ab 100 € 10 % Rabatt“ |
+| **Testbedingung** | Ein prüfbarer Aspekt der Testbasis | „Rabatt genau an der Grenze 100 €“ |
+| **Testfall** | Vorbedingungen, Eingaben, **erwartetes Ergebnis**, Nachbedingungen | Zwischensumme 100,00 €, kein Stammkunde → Endpreis 90,00 € |
+| **Testorakel** | Quelle des erwarteten Ergebnisses | die Spezifikation, ein Altsystem, ein Experte |
+| **Testmittel** (testware) | Alle Arbeitsergebnisse des Testens | Testfälle, Testdaten, Skripte, Berichte |
+| **Testobjekt** | Das, was getestet wird | der `Rabattrechner` oder der ganze Shop |
+
+:::warning[Ohne erwartetes Ergebnis kein Testfall]
+„Bestellung mit 100 € ausprobieren“ ist kein Testfall. Erst „… **Endpreis muss 90,00 € sein**“ macht daraus einen. Ohne Orakel kann niemand entscheiden, ob der Test bestanden ist.
+:::
+
+## Rückverfolgbarkeit \{#rueckverfolgbarkeit}
+
+Gute Testmittel lassen sich **rückverfolgen**: Zu jeder Anforderung weiß man, welche Testfälle sie prüfen – und umgekehrt. So beantwortet man Fragen wie:
+- Ist jede Anforderung durch mindestens einen Test abgedeckt?
+- Welche Tests müssen wir wiederholen, wenn sich die Rabattregel ändert?
+- Welche Anforderungen sind von einem roten Test betroffen?
+
+In automatisierten Tests hilft schon ein **sprechender Testname** oder eine Kategorie mit der Anforderungsnummer.
+
+## Typische Fehler \{#typische-fehler}
+
+- **„Alles grün, also fehlerfrei“** – widerspricht Grundsatz 1.
+- **Erst am Ende testen** – Fehler werden teuer (Grundsatz 3).
+- **Immer dieselben Tests** über Jahre – sie finden nichts Neues mehr (Grundsatz 5).
+- **Testfälle ohne erwartetes Ergebnis**.
+- **Nur verifizieren, nicht validieren** – die Spezifikation erfüllt, die Nutzer verfehlt.
+- **Fehlerwirkung und Fehlerzustand verwechseln** – im Fehlerbericht steht dann die vermutete Codestelle statt des beobachteten Verhaltens.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Fehlhandlung** (Mensch) → **Fehlerzustand** (im Produkt) → **Fehlerwirkung** (sichtbares Fehlverhalten).
+- Testen **zeigt** Fehlerwirkungen, Debuggen **behebt** ihre Ursachen.
+- **Verifizierung**: Produkt richtig gebaut? **Validierung**: richtiges Produkt gebaut?
+- Die **sieben Grundsätze** – vor allem: Testen zeigt nur die Anwesenheit von Fehlern, vollständiges Testen ist unmöglich, früh testen lohnt sich.
+- Testprozess: **Planung, Überwachung/Steuerung, Analyse, Entwurf, Realisierung, Durchführung, Abschluss**.
+- Ein Testfall braucht immer ein **erwartetes Ergebnis** aus einem **Testorakel**.
+
+<Quiz fragen={fragen} titel="Quiz: Grundlagen des Softwaretests" />

@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Teststufen und Testarten"
+
+- id: st-ts-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Teststufe prüft einzelne Klassen oder Methoden isoliert von ihren Abhängigkeiten?"
+  optionen:
+    - "Komponententest"
+    - "Integrationstest"
+    - "Systemtest"
+    - "Abnahmetest"
+  richtig: [0]
+  erklaerung: "Der Komponententest (Unit-Test) prüft kleinste Einheiten isoliert; Abhängigkeiten werden durch Testdoubles ersetzt."
+  artikel: "#komponententest"
+  tags: [softwaretest, teststufen]
+
+- id: st-ts-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Shop soll mit einem externen Zahlungsanbieter zusammenarbeiten. Welche Teststufe prüft das?"
+  optionen:
+    - "Komponententest"
+    - "Systemintegrationstest"
+    - "Benutzerakzeptanztest"
+    - "Smoke-Test"
+  richtig: [1]
+  erklaerung: "Das Zusammenspiel mit anderen Systemen prüft der Systemintegrationstest; Komponentenintegrationstests betreffen Teile innerhalb eines Systems."
+  artikel: "#integrationstest"
+  tags: [softwaretest, integrationstest]
+
+- id: st-ts-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum vermeidet man eine Big-Bang-Integration?"
+  optionen:
+    - "Weil sie zu viele Testfälle erzeugt"
+    - "Weil bei einem Fehler kaum festzustellen ist, welche Schnittstelle schuld ist"
+    - "Weil sie nur mit Java funktioniert"
+    - "Weil sie keine Testdoubles erlaubt"
+  richtig: [1]
+  erklaerung: "Werden alle Komponenten auf einmal integriert, ist die Fehlerursache schwer zu lokalisieren. Inkrementelle Strategien grenzen das Problem ein."
+  artikel: "#integrationstest"
+  tags: [softwaretest, integrationstest]
+
+- id: st-ts-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Betrieb prüft vor dem Go-live, ob Backup und Wiederherstellung funktionieren. Welche Form des Abnahmetests ist das?"
+  optionen:
+    - "Benutzerakzeptanztest"
+    - "Betrieblicher Abnahmetest"
+    - "Beta-Test"
+    - "Komponententest"
+  richtig: [1]
+  erklaerung: "Der betriebliche Abnahmetest prüft Aspekte wie Backup, Wiederherstellung, Installation und Überwachung."
+  artikel: "#abnahmetest"
+  tags: [softwaretest, abnahmetest]
+
+- id: st-ts-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist die wichtigste Aussage des V-Modells für den Test?"
+  optionen:
+    - "Tests finden erst nach dem Programmieren statt"
+    - "Zu jeder Entwicklungsstufe gehört eine Teststufe, deren Tests früh vorbereitet werden"
+    - "Es gibt nur zwei Teststufen"
+    - "Abnahmetests sind optional"
+  richtig: [1]
+  erklaerung: "Der Abnahmetest entsteht schon mit den Anforderungen, der Systemtest mit dem Systementwurf usw. Das deckt Unklarheiten früh auf."
+  artikel: "#v-modell"
+  tags: [softwaretest, v-modell]
+
+- id: st-ts-006
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Ein Performanztest ist eine eigene Teststufe zwischen Integrations- und Systemtest."
+  richtig: [1]
+  erklaerung: "Falsch. Performanztest ist eine (nicht-funktionale) Testart, die auf verschiedenen Teststufen vorkommen kann."
+  artikel: "#stufe-oder-art"
+  tags: [softwaretest, testarten]
+
+- id: st-ts-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche der folgenden Tests sind nicht-funktional?"
+  optionen:
+    - "95 % der Anfragen an /api/produkte müssen unter 500 ms beantwortet werden"
+    - "Kann ein Kunde den Warenkorb eines anderen Kunden einsehen?"
+    - "Ab 100 € wird 10 % Rabatt abgezogen"
+    - "Ist der Shop vollständig per Tastatur bedienbar?"
+  richtig: [0, 1, 3]
+  erklaerung: "Performanz, Sicherheit und Barrierefreiheit sind Qualitätsmerkmale (nicht-funktional). Die Rabattregel ist eine funktionale Anforderung."
+  artikel: "#nicht-funktional"
+  tags: [softwaretest, iso25010]
+
+- id: st-ts-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist die Anforderung 'Der Shop muss schnell sein' schlecht testbar?"
+  optionen:
+    - "Weil Performanz nicht getestet werden kann"
+    - "Weil kein messbares Kriterium angegeben ist"
+    - "Weil sie funktional ist"
+    - "Weil nur Entwickler sie prüfen können"
+  richtig: [1]
+  erklaerung: "Testbar wird sie erst mit Zahlen, z. B. '95 % der Anfragen unter 500 ms bei 200 gleichzeitigen Nutzern'."
+  artikel: "#nicht-funktional"
+  tags: [softwaretest, anforderungen]
+
+- id: st-ts-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Fehler 'kein Rabatt bei genau 100 €' wurde behoben. Welcher Test prüft, ob genau dieser Fehler weg ist?"
+  optionen:
+    - "Regressionstest"
+    - "Fehlernachtest (Bestätigungstest)"
+    - "Smoke-Test"
+    - "Lasttest"
+  richtig: [1]
+  erklaerung: "Der Fehlernachtest wiederholt den fehlgeschlagenen Fall. Ob dabei etwas anderes kaputtgegangen ist, zeigt der Regressionstest."
+  artikel: "#nach-aenderungen"
+  tags: [softwaretest, regressionstest]
+
+- id: st-ts-010
+  typ: single
+  schwierigkeit: 1
+  frage: "Was prüft ein Smoke-Test?"
+  optionen:
+    - "Alle Grenzwerte"
+    - "Ob das System grundsätzlich lauffähig und weiter testbar ist"
+    - "Die Sicherheit gegen Angriffe"
+    - "Die Codeabdeckung"
+  richtig: [1]
+  erklaerung: "Ein Smoke-Test ist eine schnelle Prüfung der wichtigsten Funktionen, z. B. nach einem Deployment. Schlägt er fehl, lohnt sich der ausführliche Test nicht."
+  artikel: "#nach-aenderungen"
+  tags: [softwaretest, smoke-test]
+
+- id: st-ts-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher Teststufe entsprechen die API-Tests des Mini-Shops, die Controller, Fachlogik und Speicher zusammen prüfen?"
+  optionen:
+    - "Komponententest"
+    - "Integrationstest"
+    - "Abnahmetest"
+    - "Statischer Test"
+  richtig: [1]
+  erklaerung: "Sie prüfen das Zusammenspiel mehrerer Komponenten über die Schnittstelle – ein (Komponenten-)Integrationstest."
+  artikel: "#integrationstest"
+  tags: [softwaretest, teststufen]
+
+- id: st-ts-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Worauf basiert ein White-Box-Test?"
+  optionen:
+    - "Auf der internen Struktur, z. B. dem Code"
+    - "Nur auf der Spezifikation"
+    - "Auf der Erfahrung des Testers"
+    - "Auf den Wünschen des Kunden"
+  richtig: [0]
+  erklaerung: "White-Box-Tests leiten Testfälle aus der internen Struktur ab und messen z. B., welche Anweisungen und Zweige durchlaufen wurden."
+  artikel: "#black-white-box"
+  tags: [softwaretest, white-box]

@@ -55,14 +55,22 @@ public static class ShopApi
             (Guid id, BestellAnfrage anfrage, IWarenkorbSpeicher speicher, BestellService service) =>
             {
                 if (speicher.Finde(id) is not { } warenkorb) return NichtGefunden("Warenkorb");
-                if (warenkorb.IstLeer) return Results.Problem("Der Warenkorb ist leer.", statusCode: 400);
-                if (string.IsNullOrWhiteSpace(anfrage.KundenName))
-                    return Results.Problem("Bitte einen Namen angeben.", statusCode: 400);
 
-                var ergebnis = service.Bestellen(warenkorb, new Kunde(anfrage.KundenName.Trim(), anfrage.Stammkunde));
+                BestellErgebnis ergebnis;
+                // SHOP-1: Prüfen, bestellen und entfernen muss pro Warenkorb atomar sein.
+                // Sonst kommen gleichzeitige Requests (Doppelklick) alle durch und erzeugen mehrere Bestellungen.
+                lock (warenkorb)
+                {
+                    if (speicher.Finde(id) is null) return NichtGefunden("Warenkorb");   // schon bestellt
+                    if (warenkorb.IstLeer) return Results.Problem("Der Warenkorb ist leer.", statusCode: 400);
+                    if (string.IsNullOrWhiteSpace(anfrage.KundenName))
+                        return Results.Problem("Bitte einen Namen angeben.", statusCode: 400);
+
+                    ergebnis = service.Bestellen(warenkorb, new Kunde(anfrage.KundenName.Trim(), anfrage.Stammkunde));
+                    if (ergebnis.Erfolgreich) speicher.Entfernen(id);
+                }
+
                 if (!ergebnis.Erfolgreich) return Results.Problem(ergebnis.Fehler, statusCode: 422);
-
-                speicher.Entfernen(id);
                 var b = ergebnis.Bestellung!;
                 return Results.Created($"/api/bestellungen/{b.Bestellnummer}",
                     new BestellAntwort(b.Bestellnummer, b.Kunde.Name, b.Zwischensumme, b.Endpreis));

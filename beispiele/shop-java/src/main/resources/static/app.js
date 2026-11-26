@@ -81,6 +81,9 @@ async function start() {
 
   $('bestellformular').onsubmit = async (e) => {
     e.preventDefault();
+    const knopf = $('bestellformular').querySelector('button');
+    if (knopf.disabled) return;          // SHOP-1: Doppelklick darf nicht zweimal bestellen
+    knopf.disabled = true;
     zeigeFehler('');
     $('bestaetigung').hidden = true;
     try {
@@ -94,6 +97,8 @@ async function start() {
       await neuerWarenkorb();
     } catch (err) {
       zeigeFehler(err.message);
+    } finally {
+      knopf.disabled = false;
     }
   };
 

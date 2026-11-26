@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Testmanagement und risikobasiertes Testen"
+
+- id: st-tm-001
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Welche Fragen beantwortet ein Testkonzept?"
+  optionen:
+    - "Was wird getestet und was nicht?"
+    - "Welche Teststufen und Verfahren werden eingesetzt?"
+    - "Wann ist der Test beendet?"
+    - "Welche Programmiersprache verwendet die Entwicklung?"
+  richtig: [0, 1, 2]
+  erklaerung: "Das Testkonzept beschreibt Umfang, Vorgehen, Ressourcen, Zeitplan und Endekriterien. Die Programmiersprache ist eine Entwicklungsentscheidung."
+  artikel: "#testkonzept"
+  tags: [softwaretest, testkonzept]
+
+- id: st-tm-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches ist ein gutes, messbares Endekriterium?"
+  optionen:
+    - "Es wurde ausreichend getestet"
+    - "Keine offenen Fehler der Schwere 'kritisch' und alle geplanten Tests durchgeführt"
+    - "Das Team hat ein gutes Gefühl"
+    - "Die Testphase ist vorbei"
+  richtig: [1]
+  erklaerung: "Endekriterien müssen objektiv prüfbar sein. 'Ausreichend' oder 'gutes Gefühl' sind es nicht."
+  artikel: "#kriterien"
+  tags: [softwaretest, endekriterien]
+
+- id: st-tm-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches ist ein typisches Eingangskriterium für den Systemtest?"
+  optionen:
+    - "Alle Fehler sind behoben"
+    - "Die Testumgebung ist verfügbar und der Smoke-Test ist grün"
+    - "Der Abschlussbericht ist geschrieben"
+    - "Der Kunde hat abgenommen"
+  richtig: [1]
+  erklaerung: "Eingangskriterien legen fest, wann man sinnvoll mit dem Test beginnen kann – z. B. lauffähiger Build, verfügbare Umgebung, vorhandene Testdaten."
+  artikel: "#kriterien"
+  tags: [softwaretest, eingangskriterien]
+
+- id: st-tm-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Drei-Punkt-Schätzung: optimistisch 4 h, wahrscheinlich 6 h, pessimistisch 14 h. Was ist das Ergebnis?"
+  optionen:
+    - "6 h"
+    - "7 h"
+    - "8 h"
+    - "24 h"
+  richtig: [1]
+  erklaerung: "(4 + 4 × 6 + 14) / 6 = 42 / 6 = 7 h."
+  artikel: "#schaetzung"
+  tags: [softwaretest, schaetzung]
+
+- id: st-tm-005
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie wird ein Risiko bewertet?"
+  optionen:
+    - "Anzahl der Testfälle × Dauer"
+    - "Eintrittswahrscheinlichkeit × Schadensausmaß"
+    - "Codezeilen × Komplexität"
+    - "Anzahl Entwickler × Sprintlänge"
+  richtig: [1]
+  erklaerung: "Ein Risiko ist umso höher, je wahrscheinlicher der Fehler und je größer sein Schaden ist."
+  artikel: "#risikobasiert"
+  tags: [softwaretest, risiko]
+
+- id: st-tm-006
+  typ: single
+  schwierigkeit: 2
+  frage: "'Die Testumgebung wird erst zwei Wochen vor dem Release fertig.' Was für ein Risiko ist das?"
+  optionen:
+    - "Ein Produktrisiko"
+    - "Ein Projektrisiko"
+    - "Gar kein Risiko"
+    - "Ein Fehlerzustand"
+  richtig: [1]
+  erklaerung: "Projektrisiken betreffen Planung, Ressourcen und Rahmenbedingungen. Produktrisiken betreffen mögliche Fehler im Produkt selbst."
+  artikel: "#risikobasiert"
+  tags: [softwaretest, risiko]
+
+- id: st-tm-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Was folgt aus der risikobasierten Priorisierung, wenn die Testzeit knapp wird?"
+  optionen:
+    - "Alle Tests werden gleichmäßig gekürzt"
+    - "Die Tests der höchsten Risiken wurden zuerst durchgeführt und sind erledigt"
+    - "Es wird gar nicht mehr getestet"
+    - "Nur die einfachsten Tests werden durchgeführt"
+  richtig: [1]
+  erklaerung: "Hohe Risiken werden zuerst getestet. Fehlt am Ende Zeit, betrifft das nur geringere Risiken – und das Restrisiko ist bekannt."
+  artikel: "#risikomatrix"
+  tags: [softwaretest, risiko]
+
+- id: st-tm-008
+  typ: single
+  schwierigkeit: 2
+  frage: "In der Risikomatrix: Wahrscheinlichkeit 2, Schaden 3. Wahrscheinlichkeit 2, Schaden 1. Welches Risiko wird intensiver getestet?"
+  optionen:
+    - "Das mit Schaden 1"
+    - "Das mit Schaden 3 (Risikowert 6 gegenüber 2)"
+    - "Beide gleich"
+    - "Keines von beiden"
+  richtig: [1]
+  erklaerung: "2 × 3 = 6 ist deutlich höher als 2 × 1 = 2 – mehr Verfahren, mehr Teststufen, früher in der Reihenfolge."
+  artikel: "#risikomatrix"
+  tags: [softwaretest, risiko]
+
+- id: st-tm-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Unterschied zwischen Testüberwachung und Teststeuerung?"
+  optionen:
+    - "Es gibt keinen"
+    - "Überwachen vergleicht Fortschritt mit dem Plan, Steuern ergreift Maßnahmen bei Abweichungen"
+    - "Steuern ist die Aufgabe der Entwicklung"
+    - "Überwachung findet nur am Projektende statt"
+  richtig: [1]
+  erklaerung: "Überwachung liefert die Informationen (Metriken), Steuerung reagiert darauf – z. B. mit Umpriorisierung oder zusätzlichen Ressourcen."
+  artikel: "#ueberwachung"
+  tags: [softwaretest, ueberwachung]
+
+- id: st-tm-010
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Die Anzahl gefundener Fehler pro Tester ist eine gute Kennzahl, um Tester zu bewerten."
+  richtig: [1]
+  erklaerung: "Falsch. Das führt zu vielen trivialen Fehlerberichten. Metriken sollen Entscheidungen unterstützen, nicht Personen bewerten."
+  artikel: "#ueberwachung"
+  tags: [softwaretest, metriken]
+
+- id: st-tm-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist die wichtigste Information in einem Testbericht für die Freigabeentscheidung – neben den Ergebnissen?"
+  optionen:
+    - "Die Namen aller Tester"
+    - "Was nicht getestet wurde und welche Restrisiken bestehen"
+    - "Die Anzahl der Codezeilen"
+    - "Die verwendete IDE"
+  richtig: [1]
+  erklaerung: "Nur wer die Restrisiken kennt, kann eine fundierte Entscheidung treffen, ob ausgeliefert wird."
+  artikel: "#testbericht"
+  tags: [softwaretest, testbericht]
+
+- id: st-tm-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist Konfigurationsmanagement für den Test wichtig?"
+  optionen:
+    - "Weil Tests sonst langsamer laufen"
+    - "Weil nur so klar ist, welche Version von Code, Testfällen, Daten und Umgebung getestet wurde"
+    - "Weil es gesetzlich vorgeschrieben ist"
+    - "Weil es die Testfälle automatisch erzeugt"
+  richtig: [1]
+  erklaerung: "Ohne eindeutige Versionen sind Testergebnisse nicht reproduzierbar und nicht nachvollziehbar."
+  artikel: "#konfiguration"
+  tags: [softwaretest, konfigurationsmanagement]

@@ -1,0 +1,164 @@
+# Fragen zur Lektion "White-Box-Test und erfahrungsbasiertes Testen"
+
+- id: st-wb-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was misst die Zweigüberdeckung?"
+  optionen:
+    - "Den Anteil der ausgeführten Codezeilen"
+    - "Den Anteil der durchlaufenen Entscheidungsausgänge (z. B. if wahr/falsch)"
+    - "Den Anteil der erfüllten Anforderungen"
+    - "Die Anzahl der Testfälle"
+  richtig: [1]
+  erklaerung: "Jede Entscheidung hat mindestens zwei Ausgänge. Die Zweigüberdeckung zählt, wie viele davon durch Tests durchlaufen wurden."
+  artikel: "#zweigueberdeckung"
+  tags: [softwaretest, white-box]
+
+- id: st-wb-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Code: 'if (stammkunde) satz += 0.05m;'. Es gibt nur einen Test mit stammkunde = true. Wie hoch sind Anweisungs- und Zweigüberdeckung dieser Stelle?"
+  optionen:
+    - "Anweisungen 100 %, Zweige 100 %"
+    - "Anweisungen 100 %, Zweige 50 %"
+    - "Anweisungen 50 %, Zweige 50 %"
+    - "Anweisungen 50 %, Zweige 100 %"
+  richtig: [1]
+  erklaerung: "Alle Anweisungen werden ausgeführt, aber der Zweig 'Bedingung falsch' wurde nie durchlaufen."
+  artikel: "#zweigueberdeckung"
+  tags: [softwaretest, white-box]
+
+- id: st-wb-003
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "100 % Zweigüberdeckung schließt 100 % Anweisungsüberdeckung ein."
+  richtig: [0]
+  erklaerung: "Wahr. Wer alle Zweige durchläuft, führt dabei auch alle Anweisungen aus – umgekehrt gilt das nicht."
+  artikel: "#zweigueberdeckung"
+  tags: [softwaretest, white-box]
+
+- id: st-wb-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Die Unit-Tests des Mini-Shops decken InMemoryWarenkorbSpeicher zu 0 % ab. Wie ist das zu bewerten?"
+  optionen:
+    - "Kritisch – sofort Unit-Tests ergänzen"
+    - "Unkritisch – Unit-Tests ersetzen die Klasse bewusst durch Testdoubles, die API-Tests führen sie aus"
+    - "Ein Fehler des Messwerkzeugs"
+    - "Die Klasse ist überflüssig"
+  richtig: [1]
+  erklaerung: "Abdeckung muss pro Teststufe betrachtet werden. Infrastrukturklassen werden typischerweise in Integrationstests geprüft."
+  artikel: "#messen"
+  tags: [softwaretest, coverage]
+
+- id: st-wb-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was war der echte Befund der Abdeckungsmessung im BestellService?"
+  optionen:
+    - "Die Klasse wurde gar nicht getestet"
+    - "Der Zweig 'Kundenname fehlt' war von keinem Unit-Test abgedeckt"
+    - "Die Rabattberechnung war falsch"
+    - "Es gab keinen Befund"
+  richtig: [1]
+  erklaerung: "Der Bericht zeigte 1 von 2 Zweigen in dieser Zeile. Mit dem ergänzten Test stieg die Zweigüberdeckung auf 100 %."
+  artikel: "#messen"
+  tags: [softwaretest, coverage]
+
+- id: st-wb-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Tests mit 250 € und 50 € erreichen 100 % Zweigüberdeckung für 'zwischensumme >= 100'. Welcher Fehler bleibt trotzdem unentdeckt?"
+  optionen:
+    - "Kein Rabatt bei 250 €"
+    - "'>' statt '>=' – erkennbar nur bei genau 100,00 €"
+    - "Rabatt bei 50 €"
+    - "Ein Absturz bei negativen Beträgen"
+  richtig: [1]
+  erklaerung: "Beide Mutanten liefern für 250 und 50 dasselbe Ergebnis. Nur ein Grenzwerttest mit genau 100,00 € unterscheidet sie."
+  artikel: "#grenzen"
+  tags: [softwaretest, coverage, grenzwerte]
+
+- id: st-wb-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was kann Codeabdeckung NICHT zeigen?"
+  optionen:
+    - "Ob die Asserts sinnvoll sind"
+    - "Ob Funktionen fehlen, die die Anforderung verlangt"
+    - "Welche Codezeilen nie ausgeführt wurden"
+    - "Ob Fehler bei gleichzeitigen Zugriffen auftreten"
+  richtig: [0, 1, 3]
+  erklaerung: "Abdeckung zeigt nur, welcher Code ausgeführt wurde – genau das ist ihr Nutzen. Über die Qualität der Prüfungen, fehlende Funktionen und Nebenläufigkeit sagt sie nichts."
+  artikel: "#grenzen"
+  tags: [softwaretest, coverage]
+
+- id: st-wb-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Was macht ein Mutationstest?"
+  optionen:
+    - "Er erzeugt zufällige Testdaten"
+    - "Er baut automatisch kleine Fehler in den Code ein und prüft, ob die Tests sie finden"
+    - "Er misst die Zweigüberdeckung"
+    - "Er ändert die Testfälle automatisch"
+  richtig: [1]
+  erklaerung: "Überlebt eine Mutation (z. B. >= zu >), fehlt ein Test. Werkzeuge: Stryker.NET, PIT."
+  artikel: "#grenzen"
+  tags: [softwaretest, mutationstest]
+
+- id: st-wb-009
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist intuitive Testfallermittlung (error guessing)?"
+  optionen:
+    - "Testfälle werden zufällig ausgewählt"
+    - "Testfälle werden aus der Erfahrung abgeleitet, welche Fehler wahrscheinlich sind"
+    - "Testfälle werden aus dem Code generiert"
+    - "Der Kunde rät, ob die Software funktioniert"
+  richtig: [1]
+  erklaerung: "Tester nutzen Wissen über typische Fehler – z. B. leere Eingaben, Sonderzeichen, Doppelklicks – und testen gezielt darauf."
+  artikel: "#error-guessing"
+  tags: [softwaretest, erfahrungsbasiert]
+
+- id: st-wb-010
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum hat keiner der 43 vorhandenen Tests den Doppelklick-Fehler gefunden?"
+  optionen:
+    - "Weil die Tests falsch programmiert waren"
+    - "Weil weder die Spezifikation noch die Codeabdeckung auf gleichzeitige Requests hinweisen – das deckt erst eine Fehlerhypothese auf"
+    - "Weil der Fehler nur unter Linux auftritt"
+    - "Weil die Abdeckung unter 100 % lag"
+  richtig: [1]
+  erklaerung: "Systematische Verfahren leiten Tests aus Spezifikation oder Code ab. Nebenläufigkeit taucht dort nicht auf – erfahrungsbasiertes Testen ergänzt diese Lücke."
+  artikel: "#doppelklick"
+  tags: [softwaretest, erfahrungsbasiert]
+
+- id: st-wb-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Die curl-Versuche fanden keine doppelte Bestellung, der Browser schon. Welche Lehre folgt daraus?"
+  optionen:
+    - "curl ist für Tests ungeeignet"
+    - "'Nicht reproduziert' heißt nicht 'nicht vorhanden' – die Testbedingungen müssen der echten Nutzung entsprechen"
+    - "Browser-Tests sind immer besser als API-Tests"
+    - "Der Fehler war zufällig und kann ignoriert werden"
+  richtig: [1]
+  erklaerung: "Der Browser sendet beide Requests praktisch gleichzeitig, curl-Prozesse leicht zeitversetzt. Erst realistische Bedingungen machten den Fehler sichtbar."
+  artikel: "#doppelklick"
+  tags: [softwaretest, erfahrungsbasiert]
+
+- id: st-wb-012
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was gehört zu einer explorativen Test-Session?"
+  optionen:
+    - "Eine Charta mit dem Ziel der Session"
+    - "Ein fester Zeitrahmen"
+    - "Notizen zu Tests, Beobachtungen und Fehlern"
+    - "Ein vollständiges Drehbuch mit allen Schritten im Voraus"
+  richtig: [0, 1, 2]
+  erklaerung: "Exploratives Testen ist strukturiert, aber nicht vorgeschrieben: Entwurf und Durchführung passieren gleichzeitig, gesteuert durch das Gelernte."
+  artikel: "#explorativ"
+  tags: [softwaretest, explorativ]

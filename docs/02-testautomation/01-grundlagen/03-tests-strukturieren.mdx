@@ -20,7 +20,7 @@ Nach dieser Lektion kannst du …
 
 ## Die Testanwendung \{#testanwendung}
 
-Zu dieser Lektion gibt es eine **echte, lauffähige Anwendung**: einen kleinen **Mini-Shop** mit Warenkorb, Rabattregeln und Bestellung – plus **41 Tests** auf drei Ebenen. Alle Codebeispiele unten stammen aus diesem Projekt. Die Lektion erklärt die **C#-Version**; die [Java-Version](#java) ist genauso aufgebaut.
+Zu dieser Lektion gibt es eine **echte, lauffähige Anwendung**: einen kleinen **Mini-Shop** mit Warenkorb, Rabattregeln und Bestellung – plus **44 Tests** auf drei Ebenen. Alle Codebeispiele unten stammen aus diesem Projekt. Die Lektion erklärt die **C#-Version**; die [Java-Version](#java) ist genauso aufgebaut.
 
 👉 **Quellcode:** [github.com/Smie89/lernplattform/tree/main/beispiele/shop](https://github.com/Smie89/lernplattform/tree/main/beispiele/shop)
 
@@ -251,7 +251,7 @@ public class ApiUmgebung
 }
 ```
 
-Die Anwendung wird **einmal** im Arbeitsspeicher gestartet, nicht für jeden der 15 Tests neu. NUnit führt einen `[SetUpFixture]` für alle Tests in seinem **Namespace und darunter** aus.
+Die Anwendung wird **einmal** im Arbeitsspeicher gestartet, nicht für jeden der 16 Tests neu. NUnit führt einen `[SetUpFixture]` für alle Tests in seinem **Namespace und darunter** aus.
 
 **2. Basisklasse – nur Technik** ([ApiTest.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Api.Tests/Infrastruktur/ApiTest.cs))
 
@@ -380,8 +380,8 @@ Die Basisklasse `ShopUiTest` setzt Basis-URL, Sprache und Fenstergröße und öf
 Ein lehrreiches Experiment mit der Testanwendung: Im `Rabattrechner` wird absichtlich `>=` durch `>` ersetzt. Ab genau 100,00 € gibt es dann keinen Rabatt mehr.
 
 ```text
-Shop.Core.Tests   Fehler: 2   erfolgreich: 19   ← Endpreis_wendet_Rabattregeln_an(100, …) rot
-Shop.Api.Tests    Fehler: 0   erfolgreich: 15
+Shop.Core.Tests   Fehler: 2   erfolgreich: 21   ← Endpreis_wendet_Rabattregeln_an(100, …) rot
+Shop.Api.Tests    Fehler: 0   erfolgreich: 16
 Shop.UiTests      Fehler: 0   erfolgreich: 5
 ```
 
@@ -394,14 +394,14 @@ Das ist kein Mangel der API- und UI-Tests, sondern **genau die Aufgabenteilung**
 
 ## In Java: dieselbe Testanwendung \{#java}
 
-Den Mini-Shop gibt es auch als **Java-Version** mit Spring Boot – gleiche Regeln, gleiche REST-API, gleiche Oberfläche und ebenfalls **41 Tests**, getestet mit JUnit 5, AssertJ, Mockito, REST Assured und Selenium.
+Den Mini-Shop gibt es auch als **Java-Version** mit Spring Boot – gleiche Regeln, gleiche REST-API, gleiche Oberfläche und ebenfalls **44 Tests**, getestet mit JUnit 5, AssertJ, Mockito, REST Assured und Selenium.
 
 👉 **Quellcode:** [github.com/Smie89/lernplattform/tree/main/beispiele/shop-java](https://github.com/Smie89/lernplattform/tree/main/beispiele/shop-java)
 
 ```powershell
 cd lernplattform/beispiele/shop-java
-./mvnw test      # 21 Unit-Tests (Surefire)
-./mvnw verify    # zusätzlich 15 API- und 5 UI-Tests (Failsafe), benötigt Google Chrome
+./mvnw test      # 23 Unit-Tests (Surefire)
+./mvnw verify    # zusätzlich 16 API- und 5 UI-Tests (Failsafe), benötigt Google Chrome
 ```
 
 Maven muss nicht installiert sein: Der **Maven Wrapper** (`mvnw`) lädt die passende Version beim ersten Aufruf selbst – ein JDK 21 genügt.
@@ -494,7 +494,7 @@ class BestellungUiIT extends UiTestBasis {
 }
 ```
 
-Die **Gegenprobe** (`>=` → `>` im `Rabattrechner`) liefert in Java dasselbe Ergebnis: 2 von 21 Unit-Tests werden rot, alle 20 API- und UI-Tests bleiben grün.
+Die **Gegenprobe** (`>=` → `>` im `Rabattrechner`) liefert in Java dasselbe Ergebnis: 2 von 23 Unit-Tests werden rot, alle API- und UI-Tests bleiben grün.
 
 ## Checkliste \{#checkliste}
 

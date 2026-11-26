@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Grundlagen des Softwaretests"
+
+- id: st-gl-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Entwicklerin versteht die Rabattregel falsch und programmiert '> 100' statt '>= 100'. Was ist der falsche Code?"
+  optionen:
+    - "Eine Fehlhandlung"
+    - "Ein Fehlerzustand (Defekt)"
+    - "Eine Fehlerwirkung"
+    - "Ein Testorakel"
+  richtig: [1]
+  erklaerung: "Das Missverständnis ist die Fehlhandlung, der falsche Code der Fehlerzustand. Die Fehlerwirkung zeigt sich erst beim Ausführen, wenn bei genau 100 € kein Rabatt kommt."
+  artikel: "#fehlerbegriffe"
+  tags: [softwaretest, begriffe]
+
+- id: st-gl-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Kunde bestellt für genau 100,00 € und bekommt keinen Rabatt. Was ist das?"
+  optionen:
+    - "Eine Fehlhandlung"
+    - "Ein Fehlerzustand"
+    - "Eine Fehlerwirkung"
+    - "Eine Grundursache"
+  richtig: [2]
+  erklaerung: "Das sichtbare Fehlverhalten beim Ausführen ist die Fehlerwirkung (failure)."
+  artikel: "#fehlerbegriffe"
+  tags: [softwaretest, begriffe]
+
+- id: st-gl-003
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Jeder Fehlerzustand im Code führt zwangsläufig zu einer Fehlerwirkung."
+  richtig: [1]
+  erklaerung: "Falsch. Der fehlerhafte Code muss erst ausgeführt werden – oft nur unter bestimmten Bedingungen, z. B. bei genau 100,00 €."
+  artikel: "#fehlerbegriffe"
+  tags: [softwaretest, begriffe]
+
+- id: st-gl-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist der Unterschied zwischen Testen und Debuggen?"
+  optionen:
+    - "Es gibt keinen"
+    - "Testen zeigt Fehlerwirkungen, Debuggen lokalisiert und behebt die Ursache"
+    - "Debuggen findet Fehler, Testen behebt sie"
+    - "Testen macht nur die Entwicklung"
+  richtig: [1]
+  erklaerung: "Testen deckt auf, Debuggen analysiert und korrigiert. Danach folgen Fehlernachtest und Regressionstest."
+  artikel: "#debuggen"
+  tags: [softwaretest, debuggen]
+
+- id: st-gl-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Frage beantwortet die Validierung?"
+  optionen:
+    - "Bauen wir das Produkt richtig – gemäß Spezifikation?"
+    - "Bauen wir das richtige Produkt – für die Bedürfnisse der Nutzer?"
+    - "Ist der Code fehlerfrei kompiliert?"
+    - "Sind alle Tests automatisiert?"
+  richtig: [1]
+  erklaerung: "Validierung prüft die Eignung für den Zweck, Verifizierung die Erfüllung der Spezifikation."
+  artikel: "#verifizierung-validierung"
+  tags: [softwaretest, validierung]
+
+- id: st-gl-006
+  typ: single
+  schwierigkeit: 1
+  frage: "Alle Tests sind grün. Welcher Grundsatz warnt vor dem Schluss 'Die Software ist fehlerfrei'?"
+  optionen:
+    - "Frühes Testen spart Zeit und Geld"
+    - "Testen zeigt die Anwesenheit von Fehlern, nicht ihre Abwesenheit"
+    - "Testen ist kontextabhängig"
+    - "Fehler treten gehäuft auf"
+  richtig: [1]
+  erklaerung: "Tests können Fehler finden, aber nie beweisen, dass keine mehr vorhanden sind."
+  artikel: "#grundsaetze"
+  tags: [softwaretest, grundsaetze]
+
+- id: st-gl-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Regressionssuite läuft seit zwei Jahren unverändert und findet keine Fehler mehr, obwohl Kunden welche melden. Welcher Grundsatz beschreibt das?"
+  optionen:
+    - "Vollständiges Testen ist nicht möglich"
+    - "Tests nutzen sich ab (Pestizid-Paradoxon)"
+    - "Trugschluss: keine Fehler = brauchbares System"
+    - "Testen ist kontextabhängig"
+  richtig: [1]
+  erklaerung: "Immer gleiche Tests finden irgendwann nichts Neues. Testfälle und Daten müssen regelmäßig überarbeitet und ergänzt werden."
+  artikel: "#grundsaetze"
+  tags: [softwaretest, grundsaetze]
+
+- id: st-gl-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Großteil der Fehlerberichte betrifft das Bezahlmodul. Welcher Grundsatz passt dazu?"
+  optionen:
+    - "Fehler treten gehäuft auf"
+    - "Frühes Testen spart Zeit und Geld"
+    - "Tests nutzen sich ab"
+    - "Vollständiges Testen ist nicht möglich"
+  richtig: [0]
+  erklaerung: "Wenige Komponenten enthalten oft die meisten Fehler – dort lohnt sich intensiveres Testen."
+  artikel: "#grundsaetze"
+  tags: [softwaretest, grundsaetze]
+
+- id: st-gl-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was gehört zu einem vollständigen Testfall?"
+  optionen:
+    - "Vorbedingungen"
+    - "Eingabewerte"
+    - "Erwartetes Ergebnis"
+    - "Name des Entwicklers, der den Code geschrieben hat"
+  richtig: [0, 1, 2]
+  erklaerung: "Ein Testfall besteht aus Vorbedingungen, Eingaben, erwartetem Ergebnis und Nachbedingungen. Ohne erwartetes Ergebnis kann niemand über Bestehen entscheiden."
+  artikel: "#begriffe"
+  tags: [softwaretest, testfall]
+
+- id: st-gl-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Woher kommt das erwartete Ergebnis eines Testfalls?"
+  optionen:
+    - "Aus dem Testorakel, z. B. der Spezifikation"
+    - "Aus dem tatsächlichen Ergebnis des ersten Testlaufs"
+    - "Aus dem Fehlerbericht"
+    - "Aus dem Debugger"
+  richtig: [0]
+  erklaerung: "Das Testorakel liefert das erwartete Ergebnis. Das Ist-Ergebnis als Erwartung zu übernehmen, zementiert vorhandene Fehler."
+  artikel: "#begriffe"
+  tags: [softwaretest, testorakel]
+
+- id: st-gl-011
+  typ: single
+  schwierigkeit: 2
+  frage: "In welcher Testaktivität wird festgelegt, WAS zu testen ist (Testbedingungen)?"
+  optionen:
+    - "Testanalyse"
+    - "Testentwurf"
+    - "Testdurchführung"
+    - "Testabschluss"
+  richtig: [0]
+  erklaerung: "Die Testanalyse beantwortet 'Was testen?', der Testentwurf 'Wie testen?' (Testfälle)."
+  artikel: "#testprozess"
+  tags: [softwaretest, testprozess]
+
+- id: st-gl-012
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie unterscheiden sich Qualitätssicherung und Testen?"
+  optionen:
+    - "QS ist prozessorientiert und vorbeugend, Testen prüft das konkrete Produkt"
+    - "Es ist dasselbe"
+    - "Testen ist prozessorientiert, QS produktorientiert"
+    - "QS findet nur nach dem Release statt"
+  richtig: [0]
+  erklaerung: "QS sorgt mit guten Prozessen dafür, dass Fehler gar nicht erst entstehen. Testen ist eine produktbezogene Qualitätssteuerung."
+  artikel: "#qs-test"
+  tags: [softwaretest, qs]

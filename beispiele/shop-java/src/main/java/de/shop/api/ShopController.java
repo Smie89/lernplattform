@@ -4,6 +4,7 @@ import de.shop.api.Vertraege.BestellAnfrage;
 import de.shop.api.Vertraege.BestellAntwort;
 import de.shop.api.Vertraege.PositionAnfrage;
 import de.shop.api.Vertraege.WarenkorbAntwort;
+import de.shop.bestellungen.BestellErgebnis;
 import de.shop.bestellungen.BestellRepository;
 import de.shop.bestellungen.BestellService;
 import de.shop.bestellungen.Kunde;
@@ -90,15 +91,22 @@ public class ShopController {
     public ResponseEntity<?> bestellen(@PathVariable UUID id, @RequestBody BestellAnfrage anfrage) {
         Warenkorb w = speicher.finde(id).orElse(null);
         if (w == null) return problem(HttpStatus.NOT_FOUND, "Warenkorb nicht gefunden.");
-        if (w.istLeer()) return problem(HttpStatus.BAD_REQUEST, "Der Warenkorb ist leer.");
-        if (anfrage.kundenName() == null || anfrage.kundenName().isBlank()) {
-            return problem(HttpStatus.BAD_REQUEST, "Bitte einen Namen angeben.");
+
+        BestellErgebnis ergebnis;
+        // SHOP-1: Prüfen, bestellen und entfernen muss pro Warenkorb atomar sein.
+        // Sonst kommen gleichzeitige Requests (Doppelklick) alle durch und erzeugen mehrere Bestellungen.
+        synchronized (w) {
+            if (speicher.finde(id).isEmpty()) return problem(HttpStatus.NOT_FOUND, "Warenkorb nicht gefunden.");
+            if (w.istLeer()) return problem(HttpStatus.BAD_REQUEST, "Der Warenkorb ist leer.");
+            if (anfrage.kundenName() == null || anfrage.kundenName().isBlank()) {
+                return problem(HttpStatus.BAD_REQUEST, "Bitte einen Namen angeben.");
+            }
+
+            ergebnis = bestellService.bestellen(w, new Kunde(anfrage.kundenName().trim(), anfrage.stammkunde()));
+            if (ergebnis.erfolgreich()) speicher.entfernen(id);
         }
 
-        var ergebnis = bestellService.bestellen(w, new Kunde(anfrage.kundenName().trim(), anfrage.stammkunde()));
         if (!ergebnis.erfolgreich()) return problem(HttpStatus.UNPROCESSABLE_CONTENT, ergebnis.fehler());
-
-        speicher.entfernen(id);
         var b = ergebnis.bestellung();
         return ResponseEntity.created(URI.create("/api/bestellungen/" + b.bestellnummer()))
             .body(new BestellAntwort(b.bestellnummer(), b.kunde().name(), b.zwischensumme(), b.endpreis()));

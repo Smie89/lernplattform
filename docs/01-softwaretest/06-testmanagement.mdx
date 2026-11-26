@@ -1,0 +1,168 @@
+---
+title: Testmanagement und risikobasiertes Testen
+description: Testkonzept und Teststrategie, Eingangs- und Endekriterien, Aufwandsschätzung, risikobasiertes Testen mit einer Risikomatrix, Testüberwachung mit Metriken und der Testbericht.
+tags: [softwaretest, testmanagement, risiko, metriken, istqb]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './06-testmanagement.fragen.yaml';
+
+# Testmanagement und risikobasiertes Testen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die Inhalte eines **Testkonzepts** benennen,
+- **Eingangs- und Endekriterien** formulieren,
+- den Testaufwand **schätzen** und Tests **priorisieren**,
+- mit einer **Risikomatrix** entscheiden, was wie intensiv getestet wird,
+- den Testfortschritt mit **Metriken** überwachen und einen **Testbericht** schreiben.
+:::
+
+## Testplanung und Testkonzept \{#testkonzept}
+
+Ein **Testkonzept** (Testplan) beschreibt Ziele, Vorgehen, Ressourcen und Zeitplan der Testaktivitäten. Es muss kein dickes Dokument sein – in agilen Teams reicht oft eine Seite im Wiki. Wichtig ist, dass diese Fragen beantwortet sind:
+
+| Frage | Beispiel Mini-Shop |
+|---|---|
+| **Was** wird getestet – und was nicht? | Warenkorb, Rabatt, Bestellung; **nicht**: Zahlungsanbieter (extern, Testdouble) |
+| **Warum** – welche Ziele, welche Risiken? | korrekte Preise, keine doppelten Bestellungen |
+| **Wie** – Teststufen, Testarten, Verfahren? | Unit-, API-, UI-Tests; Grenzwerte, Entscheidungstabellen; explorative Sessions |
+| **Womit** – Umgebungen, Werkzeuge, Testdaten? | CI mit GitHub Actions, NUnit, Playwright, eigene Testdaten |
+| **Wer** – Rollen und Verantwortung? | Entwicklung: Unit- und API-Tests; Test: UI-, explorative Tests |
+| **Wann** – Zeitplan, Meilensteine? | Tests laufen bei jedem Commit; Regression vor jedem Release |
+| **Wann sind wir fertig?** | Endekriterien (siehe unten) |
+| **Was, wenn …?** | Risiken des Projekts, z. B. Testumgebung fällt aus |
+
+Die **Teststrategie** ist die übergeordnete, oft unternehmensweite Vorgehensweise, z. B. „risikobasiert, hoher Automatisierungsgrad, Testpyramide“. Das Testkonzept setzt sie für ein konkretes Projekt um.
+
+## Eingangs- und Endekriterien \{#kriterien}
+
+| | Frage | Beispiele |
+|---|---|---|
+| **Eingangskriterien** (*Definition of Ready*) | Können wir mit dem Test **beginnen**? | Testumgebung verfügbar; Build kompiliert; Smoke-Test grün; Anforderungen reviewt; Testdaten vorhanden |
+| **Endekriterien** (*Definition of Done*) | Können wir den Test **beenden**? | alle geplanten Tests durchgeführt; keine offenen Fehler der Schwere „kritisch“; Zweigabdeckung der Fachlogik ≥ 90 %; alle Akzeptanzkriterien erfüllt |
+
+Endekriterien müssen **messbar** sein. „Ausreichend getestet“ ist kein Kriterium. Sind die Kriterien bei Terminende **nicht** erfüllt, entscheidet das Management mit dem Testbericht: verschieben oder mit bekanntem Risiko ausliefern.
+
+## Aufwand schätzen \{#schaetzung}
+
+| Verfahren | Idee |
+|---|---|
+| **Metrikbasiert** | Erfahrungswerte aus früheren Projekten, z. B. „Test = 30 % des Entwicklungsaufwands“ oder „15 Minuten je Testfall“ |
+| **Expertenbasiert** | Schätzung durch erfahrene Personen, z. B. **Planning Poker** im agilen Team oder **Drei-Punkt-Schätzung**: (optimistisch + 4 × wahrscheinlich + pessimistisch) / 6 |
+
+Beispiel Drei-Punkt-Schätzung für die UI-Tests der Bestellung: optimistisch 4 h, wahrscheinlich 6 h, pessimistisch 14 h → (4 + 24 + 14) / 6 = **7 h**.
+
+## Risikobasiertes Testen \{#risikobasiert}
+
+Da nie alles getestet werden kann, richtet sich der **Testaufwand nach dem Risiko**:
+
+> **Risiko = Eintrittswahrscheinlichkeit × Schadensausmaß**
+
+Man unterscheidet:
+- **Produktrisiken** – das Produkt könnte fehlerhaft sein (falscher Preis, doppelte Bestellung, Datenleck). Sie steuern, **was** und **wie intensiv** getestet wird.
+- **Projektrisiken** – das Projekt könnte scheitern (Testumgebung fehlt, Personal krank, Lieferant verspätet). Sie steuern die **Planung**.
+
+### Die Risikomatrix \{#risikomatrix}
+
+Bewertung der Produktrisiken des Mini-Shops (1 = gering, 3 = hoch):
+
+| Risiko | Wahrscheinlichkeit | Schaden | Risiko | Konsequenz |
+|---|---|---|---|---|
+| Falscher Rabatt/Endpreis | 2 | 3 | **6** | Grenzwerte, Entscheidungstabelle, Unit-Tests vollständig |
+| Doppelte Bestellung / doppelte Abbuchung | 2 | 3 | **6** | Nebenläufigkeitstests, explorative Session |
+| Bestellung geht verloren | 1 | 3 | **3** | API-Tests, Fehlerfälle |
+| Unbekanntes Produkt führt zu Absturz | 2 | 1 | **2** | Negativtest in der API |
+| Layout auf dem Smartphone verschoben | 2 | 1 | **2** | kurzer manueller Check |
+| Produktnamen mit Tippfehler | 1 | 1 | **1** | kein eigener Test |
+
+```text
+Schaden
+   3 │  Verlust        Preis, Doppelbestellung
+   2 │
+   1 │  Tippfehler     Absturz, Layout
+     └────────────────────────────────────
+        1               2               3   Wahrscheinlichkeit
+```
+
+Aus der Bewertung folgen:
+- **Testintensität**: hohe Risiken mit mehreren Verfahren und auf mehreren Teststufen,
+- **Reihenfolge**: hohe Risiken **zuerst** testen – geht die Zeit aus, sind die wichtigsten Tests erledigt,
+- **Restrisiko**: Was nicht getestet wird, ist bekannt und bewusst akzeptiert.
+
+:::tip[Risikoanalyse ist Teamarbeit]
+Fachbereich, Entwicklung, Test und Betrieb sehen unterschiedliche Risiken. Die Entwicklung weiß, welcher Code komplex ist (Wahrscheinlichkeit), der Fachbereich, was ein Fehler kostet (Schaden). Wäre die Doppelbestellung früher als hohes Risiko erkannt worden, hätte es von Anfang an einen Test dafür gegeben.
+:::
+
+## Testüberwachung und -steuerung \{#ueberwachung}
+
+**Überwachen** heißt, den Fortschritt mit dem Plan zu vergleichen; **steuern** heißt, bei Abweichungen gegenzusteuern.
+
+Typische **Metriken**:
+
+| Metrik | Aussage |
+|---|---|
+| Testfortschritt: durchgeführt / geplant | Wie weit sind wir? |
+| Testergebnisse: bestanden / fehlgeschlagen / blockiert | Wie gut ist der Stand? |
+| Offene Fehler nach Schweregrad, neue vs. behobene Fehler pro Woche | Wird es besser? (Die Kurve neuer Fehler sollte abflachen.) |
+| Abdeckung von Anforderungen und Code | Was ist noch ungetestet? |
+| Flaky-Rate in der CI | Wie zuverlässig ist die Automatisierung? |
+
+Mögliche **Steuerungsmaßnahmen**: Tests umpriorisieren (Risiko!), zusätzliche Ressourcen, Endekriterien neu verhandeln, Umfang reduzieren – immer **dokumentiert** und mit den Beteiligten abgestimmt.
+
+:::warning[Metriken nicht missbrauchen]
+„Anzahl gefundener Fehler pro Tester“ oder „Anzahl Testfälle“ als Leistungsziel führt zu vielen trivialen Fehlerberichten und aufgeblähten Testfällen. Metriken sollen **Entscheidungen unterstützen**, nicht Menschen bewerten.
+:::
+
+## Der Testbericht \{#testbericht}
+
+Ein **Testbericht** (Fortschritts- oder Abschlussbericht) fasst den Stand für die Entscheider zusammen – kurz, ehrlich und mit Empfehlung:
+
+```text
+Testbericht Release 1.1 – Mini-Shop                       Stand: 26.11.2026
+
+Zusammenfassung
+  Empfehlung: Freigabe nach Behebung von SHOP-1 erteilt.
+
+Durchgeführt
+  44 automatisierte Tests (23 Unit, 16 API, 5 UI): alle bestanden
+  1 explorative Session "Bestellvorgang mit ungewöhnlichem Nutzerverhalten" (60 min)
+
+Fehler
+  SHOP-1 (kritisch): Doppelklick erzeugt doppelte Bestellung – behoben, Fehlernachtest bestanden,
+                     neuer Regressionstest in API-Tests (C# und Java)
+  Offene Fehler: keine
+
+Abdeckung
+  Fachlogik (Shop.Core): 100 % Zweige
+  Alle Regeln der Rabatt-Entscheidungstabelle und alle Grenzwerte von Menge und Rabatt getestet
+
+Restrisiken / Abweichungen
+  Grenzwerte des Zahlungslimits (500,00 € / 500,01 €) nicht getestet – Risiko gering (Demo-Zahlungsdienst)
+  Keine Last- und Sicherheitstests durchgeführt
+```
+
+Ein guter Bericht nennt auch, **was nicht getestet wurde** – das ist die wichtigste Information für eine Freigabeentscheidung.
+
+## Konfigurationsmanagement \{#konfiguration}
+
+Tests sind nur aussagekräftig, wenn klar ist, **was** getestet wurde: Welche Version des Codes, welche Testfälle, welche Testdaten, welche Umgebung? **Konfigurationsmanagement** (Versionsverwaltung mit Git, Build-Nummern, versionierte Testumgebungen) macht Testergebnisse **reproduzierbar** und **nachvollziehbar**.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Kein Endekriterium** – getestet wird, „bis die Zeit um ist“.
+- **Alles gleich intensiv testen** – unwichtige Funktionen bekommen so viel Aufmerksamkeit wie die Bezahlung.
+- **Risikoanalyse allein vom Testteam** – der Schaden wird falsch eingeschätzt.
+- **Schätzung ohne Puffer** – Fehlerkorrekturen und Nachtests werden vergessen.
+- **Testbericht nur mit grünen Zahlen** – Restrisiken und Nicht-Getestetes fehlen.
+- **Metriken als Leistungsziel** für Personen.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Das **Testkonzept** beantwortet Was, Warum, Wie, Womit, Wer, Wann und „Wann sind wir fertig?“.
+- **Eingangskriterien** regeln den Start, **Endekriterien** das Ende – beide messbar.
+- Schätzen **metrikbasiert** oder **expertenbasiert** (Planning Poker, Drei-Punkt-Schätzung).
+- **Risiko = Wahrscheinlichkeit × Schaden**; Produktrisiken bestimmen Testintensität und Reihenfolge.
+- **Überwachen** mit Metriken, **steuern** bei Abweichungen, **berichten** mit Empfehlung und Restrisiken.
+
+<Quiz fragen={fragen} titel="Quiz: Testmanagement und risikobasiertes Testen" />

@@ -1,0 +1,153 @@
+---
+title: Statischer Test – Reviews und statische Analyse
+description: Fehler finden, ohne die Software auszuführen – Reviewarten, Rollen und Ablauf, eine Anforderung im Review prüfen und statische Analyse mit Compilerwarnungen, Analyzern und Lintern.
+tags: [softwaretest, review, statische-analyse, istqb]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './03-statischer-test.fragen.yaml';
+
+# Statischer Test – Reviews und statische Analyse
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, was **statischer Test** ist und warum er so **früh** und **günstig** Fehler findet,
+- die **Reviewarten** von informell bis Inspektion unterscheiden,
+- **Rollen** und **Ablauf** eines Reviews beschreiben,
+- eine **Anforderung im Review** auf typische Mängel prüfen,
+- **statische Analyse** in den Alltag einbauen.
+:::
+
+## Statisch und dynamisch \{#statisch-dynamisch}
+
+| | Statischer Test | Dynamischer Test |
+|---|---|---|
+| Software wird … | **nicht ausgeführt** | ausgeführt |
+| findet … | **Fehlerzustände** direkt (z. B. die falsche Codezeile, die widersprüchliche Anforderung) | **Fehlerwirkungen** (falsches Verhalten), deren Ursache noch gesucht werden muss |
+| geeignet für … | **alle Arbeitsergebnisse**: Anforderungen, User Stories, Entwürfe, Code, Testfälle, Verträge | ausführbare Software |
+| Techniken | **Reviews**, **statische Analyse** | Komponenten- bis Abnahmetest |
+
+Statischer und dynamischer Test **ergänzen** sich – sie finden unterschiedliche Fehlerarten.
+
+## Warum statisch testen? \{#warum}
+
+Der große Vorteil: Fehler werden gefunden, **bevor** sie in Code gegossen sind. Eine widersprüchliche Anforderung kostet im Review fünf Minuten Diskussion – entdeckt man sie erst im Systemtest, sind Code, Tests und Dokumentation schon falsch.
+
+Reviews finden typischerweise:
+- **unklare, widersprüchliche, unvollständige** Anforderungen,
+- **fehlende** Fälle (Was passiert bei 0 Stück? Bei negativen Beträgen?),
+- **Abweichungen** von Standards und Architekturvorgaben,
+- **nicht testbare** Anforderungen,
+- Sicherheitslücken und **Wartbarkeitsprobleme** im Code,
+- falsche oder fehlende erwartete Ergebnisse in **Testfällen**.
+
+Statische Analyse findet zusätzlich automatisch z. B. nicht erreichbaren Code, nicht initialisierte Variablen, mögliche `null`-Zugriffe und unsichere Aufrufe.
+
+## Reviewarten \{#reviewarten}
+
+Von locker bis streng formal:
+
+| Reviewart | Ziel | Merkmale |
+|---|---|---|
+| **Informelles Review** | schnell Mängel finden | kein fester Ablauf, oft kein Protokoll; z. B. „Schau mal kurz drüber“, Pair Programming |
+| **Walkthrough** | Verständnis schaffen, Wissen verteilen, Mängel finden | der **Autor** führt durch das Dokument |
+| **Technisches Review** | Konsens über technische Lösung, Mängel finden | Fachkollegen, Moderator, Entscheidungen werden festgehalten |
+| **Inspektion** | **möglichst viele** Mängel finden, Prozess messen und verbessern | **formalster** Ablauf, definierte Rollen, **Checklisten**, Metriken, Autor ist **nicht** Moderator |
+
+:::tip[Code-Reviews im Alltag]
+Ein **Pull Request**, den Kolleginnen vor dem Merge prüfen, ist meist ein informelles bis technisches Review. Klare Regeln helfen: kleine Änderungen, beschreibender PR-Text, Checkliste (Tests vorhanden? Fehlerfälle behandelt? Namen verständlich?).
+:::
+
+## Rollen und Ablauf \{#ablauf}
+
+| Rolle | Aufgabe |
+|---|---|
+| **Management** | entscheidet, was geprüft wird, stellt Zeit bereit |
+| **Autor** | hat das Arbeitsergebnis erstellt, behebt die Befunde |
+| **Moderator** (Facilitator) | sorgt für einen effektiven Ablauf, leitet die Sitzung |
+| **Gutachter** (Reviewer) | prüfen das Dokument – idealerweise aus **verschiedenen Perspektiven** (Fachbereich, Entwicklung, Test, Betrieb) |
+| **Protokollant** (Schreiber) | hält Befunde und Entscheidungen fest |
+| **Reviewleiter** | trägt die Gesamtverantwortung, organisiert |
+
+Ablauf eines Reviews:
+
+1. **Planung** – Umfang, Ziel, Beteiligte, Kriterien festlegen
+2. **Review-Start** – alle bekommen Dokument, Ziel und ggf. Checklisten
+3. **Individuelles Review** – jeder Gutachter prüft **allein** und notiert Befunde (hier werden die meisten Mängel gefunden)
+4. **Kommunikation und Analyse** – Befunde besprechen, bewerten, entscheiden
+5. **Fehlerbehebung und Bericht** – Autor korrigiert, Ergebnis wird dokumentiert, ggf. Nachprüfung
+
+:::warning[Das Produkt bewerten, nicht die Person]
+Reviews funktionieren nur in einer **vertrauensvollen Atmosphäre**. Befunde beziehen sich auf das Dokument („In Abschnitt 3 fehlt der Fall …“), nie auf den Autor („Du hast mal wieder …“). Und: Review-Ergebnisse dürfen **nicht** zur Leistungsbewertung von Mitarbeitenden verwendet werden.
+:::
+
+## Praxis: eine Anforderung reviewen \{#praxis-review}
+
+Ausgangslage – eine User Story für den Mini-Shop:
+
+> **Als** Kunde **möchte ich** einen Rabatt bekommen, wenn ich viel bestelle, **damit** sich größere Einkäufe lohnen.
+> Kunden bekommen ab einem Bestellwert über 100 € einen Rabatt von 10 %. Stammkunden bekommen mehr. Der Rabatt soll schnell berechnet werden.
+
+Befunde aus einem Review:
+
+| # | Befund | Art |
+|---|---|---|
+| 1 | „**über** 100 €“ – gilt der Rabatt bei **genau** 100,00 €? | mehrdeutig (Grenzwert!) |
+| 2 | „Bestellwert“ – vor oder nach Versandkosten? Inkl. MwSt.? | unklar |
+| 3 | „Stammkunden bekommen **mehr**“ – wie viel? Zusätzlich oder statt der 10 %? Auch unter 100 €? | unvollständig |
+| 4 | Wer ist Stammkunde? | Begriff nicht definiert |
+| 5 | Auf wie viele Stellen wird gerundet, kaufmännisch? | fehlt |
+| 6 | „schnell berechnet“ – nicht messbar | nicht testbar |
+| 7 | Keine **Akzeptanzkriterien** mit Beispielen | fehlt |
+
+Nach dem Review – die korrigierte Fassung mit Beispielen (genau so ist der Mini-Shop umgesetzt):
+
+> Ab einer Zwischensumme von **100,00 € (einschließlich)** werden 10 % abgezogen. Kunden mit Status „Stammkunde“ erhalten **zusätzlich** 5 % – auch unter 100 €. Der Endpreis wird **kaufmännisch auf Cent gerundet**.
+>
+> | Zwischensumme | Stammkunde | Endpreis |
+> |---|---|---|
+> | 99,99 € | nein | 99,99 € |
+> | 100,00 € | nein | 90,00 € |
+> | 50,00 € | ja | 47,50 € |
+> | 100,00 € | ja | 85,00 € |
+
+Befund 1 ist genau der Fehler, den die [Gegenprobe](../02-testautomation/01-grundlagen/03-tests-strukturieren.mdx#gegenprobe) mit `>` statt `>=` simuliert hat – im Review wäre er gefunden worden, **bevor** jemand Code schreibt. Die Beispieltabelle wird direkt zum [parametrisierten Test](../02-testautomation/02-csharp/01-nunit-grundlagen.mdx#parametrisiert).
+
+## Statische Analyse \{#statische-analyse}
+
+Werkzeuge untersuchen Code automatisch, ohne ihn auszuführen:
+
+| Werkzeug | Beispiel |
+|---|---|
+| **Compiler-Warnungen** | C#: `Nullable` aktiviert → Warnung bei möglichem `null`-Zugriff |
+| **Analyzer** | NUnit.Analyzers, NSubstitute.Analyzers, Roslyn-Analyzer (.NET) |
+| **Linter** | ShellCheck (Bash), ESLint (JavaScript), Checkstyle (Java) |
+| **Plattformen** | SonarQube/SonarCloud: Fehler, Sicherheitslücken, Duplikate, Komplexität |
+| **Sicherheitsscanner** | Abhängigkeiten mit bekannten Sicherheitslücken (`dotnet list package --vulnerable`, OWASP Dependency-Check) |
+
+Diese Plattform nutzt das selbst: ShellCheck prüft die [Bash-Beispielskripte](../04-linux/06-bash-skripte.mdx) in der CI – und hat beim ersten Lauf tatsächlich zwei Schwachstellen gefunden.
+
+Statische Analyse liefert außerdem **Metriken** wie die **zyklomatische Komplexität** (Anzahl unabhängiger Pfade durch eine Methode). Sehr komplexe Methoden sind schwer zu verstehen und zu testen – gute Kandidaten für Refactoring und intensive Tests.
+
+:::tip[In die Pipeline einbauen]
+Statische Analyse wirkt am besten **automatisch bei jedem Commit**. Warnungen, die niemand ansieht, nützen nichts – eine Option ist `TreatWarningsAsErrors` in .NET, damit neue Warnungen den Build rot machen.
+:::
+
+## Typische Fehler \{#typische-fehler}
+
+- **Nur Code reviewen** – die teuersten Fehler stecken oft in Anforderungen.
+- **Reviews ohne Vorbereitung** – das individuelle Review ist der wichtigste Schritt.
+- **Persönliche Kritik** statt sachlicher Befunde.
+- **Zu große Reviews** – 2.000 Zeilen Code oder 80 Seiten auf einmal prüft niemand gründlich.
+- **Warnungen ignorieren**, bis es Hunderte sind.
+- **Befunde nicht nachverfolgen** – das Review hat Mängel gefunden, behoben wurden sie nie.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Statischer Test prüft Arbeitsergebnisse **ohne Ausführung** und findet **Fehlerzustände direkt** – früh und günstig.
+- Reviewarten: **informell**, **Walkthrough**, **technisches Review**, **Inspektion** (am formalsten).
+- Rollen: Autor, Moderator, Gutachter, Protokollant, Reviewleiter, Management; Kern ist das **individuelle Review**.
+- Anforderungen auf **Mehrdeutigkeit, Lücken, Widersprüche und Testbarkeit** prüfen – mit **Beispielen** als Akzeptanzkriterien.
+- **Statische Analyse** (Compiler, Analyzer, Linter, Sonar) gehört automatisch in die CI.
+
+<Quiz fragen={fragen} titel="Quiz: Statischer Test" />

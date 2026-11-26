@@ -6,6 +6,8 @@ import de.shop.zahlung.Zahlungsdienst;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -78,6 +80,17 @@ class BestellServiceTest {
         var leer = einWarenkorb().bauen();
 
         assertThatThrownBy(() -> service.bestellen(leer, MAX)).isInstanceOf(IllegalStateException.class);
+        verifyNoInteractions(zahlung);
+    }
+
+    // Ergänzt, nachdem die Abdeckungsmessung gezeigt hat, dass dieser Zweig ungetestet war.
+    @ParameterizedTest
+    @ValueSource(strings = {"", "   "})
+    void bestellenOhneKundennamenWirftException(String name) {
+        var warenkorb = einWarenkorb().mit(TestProdukte.BUCH).bauen();
+
+        assertThatThrownBy(() -> service.bestellen(warenkorb, new Kunde(name, false)))
+            .isInstanceOf(IllegalArgumentException.class);
         verifyNoInteractions(zahlung);
     }
 

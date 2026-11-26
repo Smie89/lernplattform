@@ -54,6 +54,19 @@ public class BestellungApiTests : ApiTest
         Assert.That(antwort.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
 
+    // Fehlerbericht SHOP-1: Doppelklick auf "Bestellen" erzeugte zwei Bestellungen.
+    [Test]
+    public async Task Gleichzeitiges_Bestellen_desselben_Warenkorbs_erzeugt_nur_eine_Bestellung()
+    {
+        var warenkorb = await Shop.WarenkorbMitAsync(("buch", 1));
+
+        var antworten = await Task.WhenAll(Enumerable.Range(0, 10)
+            .Select(_ => Shop.BestellenAsync(warenkorb.Id, "Max Muster")));
+
+        Assert.That(antworten.Count(a => a.StatusCode == HttpStatusCode.Created), Is.EqualTo(1));
+        Assert.That(antworten.Count(a => a.StatusCode == HttpStatusCode.NotFound), Is.EqualTo(9));
+    }
+
     [Test]
     public async Task Zahlung_ueber_dem_Limit_wird_mit_422_abgelehnt()
     {
