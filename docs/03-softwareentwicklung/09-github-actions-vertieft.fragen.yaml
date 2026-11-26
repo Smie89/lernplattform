@@ -1,0 +1,159 @@
+# Fragen zur Lektion "GitHub Actions vertieft"
+
+- id: se-ga-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie laufen Jobs eines Workflows standardmäßig?"
+  optionen:
+    - "Nacheinander in der Reihenfolge der Datei"
+    - "Parallel, jeder auf einem eigenen Runner – mit needs lassen sie sich nacheinander schalten"
+    - "Alle im selben Prozess"
+    - "Nur einer pro Tag"
+  richtig: [1]
+  erklaerung: "In deploy.yml läuft deploy dank needs: build erst nach einem erfolgreichen Build."
+  artikel: "#jobs"
+  tags: [github-actions]
+
+- id: se-ga-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum laufen die Netzwerk-Tests als Matrix unter Linux und Windows?"
+  optionen:
+    - "Weil Windows schneller ist"
+    - "Weil sich die Plattformen unterscheiden – Windows lehnt einen geschlossenen Port erst nach etwa 2 Sekunden ab"
+    - "Weil Python nur unter Windows läuft"
+    - "Aus Zufall"
+  richtig: [1]
+  erklaerung: "Eine Matrix findet plattformabhängige Fehler, bevor sie bei Kollegen mit anderem System auftreten."
+  artikel: "#jobs"
+  tags: [github-actions, matrix]
+
+- id: se-ga-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt 'concurrency' mit 'cancel-in-progress: true'?"
+  optionen:
+    - "Jobs laufen doppelt"
+    - "Ein neuer Push auf denselben Branch bricht den noch laufenden Durchlauf ab"
+    - "Die Pipeline läuft nur nachts"
+    - "Secrets werden verschlüsselt"
+  richtig: [1]
+  erklaerung: "Das spart Zeit und Runner – getestet wird ohnehin nur der neueste Stand."
+  artikel: "#schnell"
+  tags: [github-actions]
+
+- id: se-ga-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dient 'if: failure()' beim Hochladen der Testergebnisse?"
+  optionen:
+    - "Der Step läuft immer"
+    - "Der Step läuft nur, wenn ein vorheriger Step fehlgeschlagen ist – dann werden die Beweise gesichert"
+    - "Der Step lässt die Pipeline absichtlich scheitern"
+    - "Er löscht die Ergebnisse"
+  richtig: [1]
+  erklaerung: "Ohne Artefakt sind Logs und Ergebnisse nach dem Job verloren, weil der Runner gelöscht wird."
+  artikel: "#artefakte"
+  tags: [github-actions, artefakte]
+
+- id: se-ga-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum stehen Secrets in Pull Requests aus Forks nicht zur Verfügung?"
+  optionen:
+    - "Weil Forks langsamer sind"
+    - "Sonst könnte jeder mit einem präparierten Pull Request die Secrets auslesen"
+    - "Weil Forks keine Workflows haben"
+    - "Das ist ein Fehler von GitHub"
+  richtig: [1]
+  erklaerung: "Fremder Code aus einem Fork darf nicht mit den Geheimnissen des Repositorys laufen."
+  artikel: "#rechte"
+  tags: [github-actions, secrets]
+
+- id: se-ga-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was macht Pipelines schneller und sparsamer?"
+  optionen:
+    - "Caching von Abhängigkeiten"
+    - "Pfadfilter, damit nur Betroffenes getestet wird"
+    - "Zeitlimits gegen hängende Jobs"
+    - "Alles in einem einzigen großen Job"
+  richtig: [0, 1, 2]
+  erklaerung: "Parallele Jobs sind schneller als ein großer sequenzieller Job."
+  artikel: "#schnell"
+  tags: [github-actions]
+
+- id: se-ga-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum ist es noch sicherer, eine Action per Commit-SHA statt per @v7 einzubinden?"
+  optionen:
+    - "Weil SHAs kürzer sind"
+    - "Weil sich ein Tag wie v7 nachträglich auf anderen Code verschieben lässt, ein Commit-SHA nicht"
+    - "Weil @v7 nicht funktioniert"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Wird ein Action-Repository kompromittiert, könnte ein verschobenes Tag Schadcode in alle Pipelines bringen."
+  artikel: "#lieferkette"
+  tags: [github-actions, lieferkette]
+
+- id: se-ga-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Begriff seine Bedeutung zu."
+  paare:
+    - ["Workflow", "YAML-Datei unter .github/workflows"]
+    - ["Job", "Läuft auf einem eigenen Runner"]
+    - ["Step", "Einzelner Befehl oder Action innerhalb eines Jobs"]
+    - ["Runner", "Rechner, der den Job ausführt"]
+    - ["Artefakt", "Datei, die den Job überdauert"]
+  erklaerung: "Workflow → Jobs → Steps."
+  artikel: "#aufbau"
+  tags: [github-actions]
+
+- id: se-ga-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Welcher Auslöser passt?"
+  paare:
+    - ["Jede Nacht um 2 Uhr komplett testen", "schedule"]
+    - ["Manuell mit Auswahl der Zielumgebung starten", "workflow_dispatch mit inputs"]
+    - ["Bei jedem Pull Request testen", "pull_request"]
+    - ["Nur wenn sich Dateien unter beispiele/ ändern", "paths-Filter"]
+  erklaerung: "Auslöser und Filter bestimmen, wann wie viel getestet wird."
+  artikel: "#ausloeser"
+  tags: [github-actions]
+
+- id: se-ga-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die minimalen Rechte für einen Workflow, der nur testet."
+  sprache: yaml
+  text: |
+    ___:
+      contents: ___
+  luecken:
+    - ["permissions"]
+    - ["read"]
+  exakt: true
+  erklaerung: "Tests müssen nichts ins Repository schreiben. So kann ein kompromittierter Step wenig anrichten."
+  artikel: "#rechte"
+  tags: [github-actions, rechte]
+
+- id: se-ga-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile ist ein Sicherheitsproblem?"
+  sprache: yaml
+  code: |
+    - name: Deploy
+      env:
+        API_KEY: ${{ secrets.API_KEY }}
+      run: |
+        echo "Verwende Schlüssel $API_KEY" > deploy.log
+        ./deploy.sh
+  richtig: [4]
+  erklaerung: "Der Schlüssel landet in einer Datei – die Maskierung gilt nur für die Log-Ausgabe. Wird deploy.log als Artefakt hochgeladen, ist das Secret öffentlich."
+  artikel: "#typische-fehler"
+  tags: [github-actions, secrets]

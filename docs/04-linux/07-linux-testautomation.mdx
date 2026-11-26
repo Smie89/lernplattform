@@ -182,7 +182,7 @@ Nach dem Lauf wird der Runner gelöscht – mit allen Screenshots, Traces und Lo
 
 - name: Testergebnisse hochladen
   if: failure()                     # nur, wenn ein vorheriger Schritt fehlgeschlagen ist
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with:
     name: testergebnisse
     path: |

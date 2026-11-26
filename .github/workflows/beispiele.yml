@@ -11,9 +11,15 @@ on:
 permissions:
   contents: read
 
+# Neuer Push auf denselben Branch bricht den noch laufenden Durchlauf ab – spart Zeit und Runner.
+concurrency:
+  group: beispiele-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   shop-dotnet:
     runs-on: ubuntu-latest
+    timeout-minutes: 20   # hängt etwas, bricht der Job ab, statt stundenlang Runner zu blockieren
     defaults:
       run:
         working-directory: beispiele/shop
@@ -24,9 +30,9 @@ jobs:
           dotnet-version: 10.0.x
       - run: dotnet build
       - name: Unit-Tests
-        run: dotnet test tests/Shop.Core.Tests --no-build
+        run: dotnet test tests/Shop.Core.Tests --no-build --logger trx --results-directory testergebnisse
       - name: API-Tests
-        run: dotnet test tests/Shop.Api.Tests --no-build
+        run: dotnet test tests/Shop.Api.Tests --no-build --logger trx --results-directory testergebnisse
       - name: Browser für UI-Tests installieren
         run: pwsh tests/Shop.UiTests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
       - name: UI-Tests gegen die gestartete Anwendung
@@ -39,6 +45,13 @@ jobs:
           ../linux/tests-mit-app.sh k6 run -e PROFIL=last ../performance/lasttest.js
       - name: Sicherheits-Header des laufenden Shops prüfen
         run: ../linux/tests-mit-app.sh python3 ../security/header_check.py http://localhost:5000/
+      - name: Testergebnisse bei Fehlschlag sichern
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: testergebnisse-dotnet
+          path: beispiele/shop/testergebnisse
+          retention-days: 7
 
   shop-java:
     runs-on: ubuntu-latest
@@ -137,7 +150,12 @@ jobs:
         run: python -m unittest -v
 
   netzwerk:
-    runs-on: ubuntu-latest
+    # Matrix: dieselben Tests unter Linux und Windows – Windows meldet "Connection refused" erst nach ~2 s.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: beispiele/netzwerk

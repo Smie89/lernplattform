@@ -1,0 +1,158 @@
+---
+title: Teststrategie in der Pipeline
+description: Tests sinnvoll auf die Stufen einer Pipeline verteilen, schnelle Rückmeldung durch Reihenfolge und Parallelisierung, Qualitätsschranken, Testberichte, Umgang mit Flaky Tests in der CI, nächtliche Läufe, Auslieferungsstrategien und Tests in Produktion sowie Azure DevOps Pipelines im Vergleich zu GitHub Actions.
+tags: [ci-cd, teststrategie, azure-devops, pipeline]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './10-pipelines-teststrategie.fragen.yaml';
+
+# Teststrategie in der Pipeline
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- Tests sinnvoll auf die **Stufen einer Pipeline** verteilen,
+- **schnelle Rückmeldung** durch Reihenfolge, Parallelisierung und Aufteilung erreichen,
+- **Qualitätsschranken** festlegen, die wirklich etwas aussagen,
+- **Testberichte** veröffentlichen und **Flaky Tests** in der CI handhaben,
+- **Auslieferungsstrategien** und Tests in Produktion einordnen,
+- eine Pipeline zwischen **GitHub Actions und Azure DevOps** übertragen.
+:::
+
+## Tests auf die Pipeline verteilen \{#stufen}
+
+Die [Testpyramide](../02-testautomation/01-grundlagen/01-grundlagen-testautomation.mdx#testpyramide) bestimmt auch die
+Reihenfolge in der Pipeline: **schnell und zahlreich zuerst**, langsam und aufwendig später.
+
+| Stufe | Inhalt | Dauer | bei Fehlschlag |
+|---|---|---|---|
+| 1. Bauen und statische Prüfungen | Kompilieren, Linter, [SAST](../07-cybersecurity/04-sicherheitstests-devsecops.mdx#sast), Secret Scanning | Sekunden bis Minuten | sofort abbrechen |
+| 2. Unit-Tests | hunderte bis tausende Tests | Sekunden | abbrechen |
+| 3. Integrations- und API-Tests | gegen Datenbank im Container, Testserver | Minuten | abbrechen |
+| 4. UI-Tests | wichtigste Abläufe im Browser, Barrierefreiheit | Minuten | abbrechen |
+| 5. Nicht-funktional | kurzer Lasttest, Header-Check, IaC-Scan | Minuten | abbrechen oder warnen |
+| 6. Nach dem Ausrollen in die Testumgebung | Rauchtests, DAST, längere Tests | Minuten bis Stunden | Ausrollen in Produktion stoppen |
+
+Der Job `shop-dotnet` in diesem Repository folgt genau diesem Muster: Bauen → Unit-Tests → API-Tests → UI-Tests (inklusive
+[axe](../02-testautomation/07-barrierefreiheit/02-barrierefreiheit-testen.mdx#axe)) → k6-Rauch- und Lasttest →
+[Header-Check](../07-cybersecurity/08-web-pentesting.mdx#befund). Scheitert eine Stufe, laufen die teureren gar nicht erst.
+
+## Schnelle Rückmeldung \{#schnell}
+
+Eine Pipeline, die 45 Minuten braucht, wird umgangen. Ziel sind **wenige Minuten** bis zur ersten Rückmeldung:
+
+- **Fail fast**: billige Prüfungen zuerst.
+- **Parallele Jobs**: unabhängige Teile gleichzeitig – hier 9 Jobs mit 10 Läufen.
+- **Aufteilen (Sharding)**: eine große UI-Testsuite auf mehrere Runner verteilen (Playwright: `--shard 1/4`).
+- **Nur Betroffenes**: Pfadfilter oder Werkzeuge, die nur Tests zu geänderten Projekten ausführen.
+- **Rest später**: lange Suiten (Dauertests, vollständige DAST-Scans) **nachts** oder vor Releases.
+
+## Qualitätsschranken \{#schranken}
+
+Eine **Qualitätsschranke** (Quality Gate) entscheidet automatisch, ob ein Stand weiter darf. Gute Schranken sind
+**eindeutig** und **aussagekräftig**:
+
+| Schranke | Bewertung |
+|---|---|
+| alle Tests grün | Pflicht |
+| keine neuen SAST-Befunde ab „hoch“ | sinnvoll, mit begründeten Ausnahmen |
+| keine bekannten kritischen Schwachstellen in Abhängigkeiten | sinnvoll |
+| p95 der Antwortzeit unter Schwelle ([k6-Thresholds](../02-testautomation/06-performance/02-lasttests-mit-k6.mdx#schwellen)) | sinnvoll, mit großzügigen Schwellen auf CI-Runnern |
+| Codeabdeckung ≥ 80 % | **mit Vorsicht** – lädt zu Tests ohne Aussage ein; besser: Abdeckung darf nicht sinken, neue Codezeilen müssen getestet sein |
+
+Die Erfahrung mit dem Mini-Shop zeigt, warum Abdeckung allein nichts beweist: 100 % Zweigabdeckung – und trotzdem die
+Race Condition [SHOP-1](../01-softwaretest/05-white-box-erfahrungsbasiert.mdx#doppelklick).
+
+## Testberichte \{#berichte}
+
+Rohausgaben in Logs liest niemand gern. Besser:
+
+- Ergebnisse in einem **Standardformat** schreiben: TRX (.NET, `--logger trx`), JUnit-XML (Java/Maven Surefire, Python,
+  Playwright und viele andere).
+- Diese Dateien als **Testbericht veröffentlichen** – in Azure DevOps mit der Aufgabe `PublishTestResults@2`, in
+  GitHub Actions über Community-Actions oder als Zusammenfassung im Job.
+- Bei Fehlschlag **Artefakte** sichern (siehe [GitHub Actions vertieft](./09-github-actions-vertieft.mdx#artefakte)).
+- **Trends** beobachten: Dauer pro Suite, häufig scheiternde Tests, Flaky-Kandidaten.
+
+## Flaky Tests in der CI \{#flaky}
+
+Ein Flaky Test in der Pipeline ist teuer: Er blockiert alle oder wird ignoriert – und dann auch echte Fehler. Bewährt hat sich:
+
+1. Fehlschlag **mit allen Beweisen** sichern (Logs, Screenshots, Traces).
+2. Test in **Quarantäne** verschieben (eigene Kategorie, läuft weiter, blockiert aber nicht) – mit Ticket und Frist.
+3. **Ursache beheben** (siehe [Flaky Tests](../02-testautomation/01-grundlagen/02-flaky-tests.mdx#vorgehen)), dann zurückholen.
+
+Automatische **Wiederholungen** (Retries) nur als Übergang und **sichtbar**: Ein Test, der erst beim dritten Versuch
+grün wird, ist ein Befund, kein Erfolg.
+
+## Auslieferung und Tests in Produktion \{#auslieferung}
+
+| Strategie | Ablauf | Testbezug |
+|---|---|---|
+| **Blue-Green** | neue Version parallel zur alten, Umschalten auf einen Schlag | Rauchtest gegen „green“ vor dem Umschalten, schnelles Zurückschalten |
+| **Canary** | neue Version zuerst für wenige Prozent der Nutzer | Fehlerraten und Antwortzeiten vergleichen, automatisch zurückrollen |
+| **Feature Flags** | Code ist ausgeliefert, Funktion aber abgeschaltet | Funktion für Testkonten einschalten, in Produktion prüfen |
+
+Auch nach dem Ausrollen wird getestet:
+
+- **Rauchtests**: Startseite erreichbar, Anmeldung funktioniert, wichtigste API antwortet – Minuten nach jedem Deployment.
+- **Synthetisches Monitoring**: automatisierte Abläufe (z. B. ein Playwright-Skript „Produkt in den Warenkorb“) laufen
+  regelmäßig gegen Produktion – mit Testkonten und ohne echte Bestellungen.
+- **Überwachung** von Fehlerraten und Antwortzeiten – die Fortsetzung des Lasttests im Betrieb.
+
+## Azure DevOps im Vergleich \{#azure-devops}
+
+In vielen Unternehmen mit Microsoft-Umgebung laufen Pipelines in **Azure DevOps**. Die Konzepte sind dieselben:
+
+| GitHub Actions | Azure DevOps Pipelines |
+|---|---|
+| Workflow (`.github/workflows/*.yml`) | Pipeline (`azure-pipelines.yml`) |
+| `on:` | `trigger:` / `pr:` |
+| Jobs mit `needs` | `stages` → `jobs` → `steps`, mit `dependsOn` |
+| `uses: actions/setup-dotnet@v6` | `task: UseDotNet@2` |
+| `run:` | `script:` |
+| `secrets.NAME` | Variablengruppen, Azure Key Vault |
+| `environment` mit Freigaben | Environments mit Approvals and Checks |
+| Artefakt hochladen | `PublishPipelineArtifact@1` |
+| Testbericht (Community-Actions) | `PublishTestResults@2` (eingebaut, mit Testergebnis-Ansicht) |
+
+```yaml title="azure-pipelines.yml (Skizze für den Mini-Shop)"
+trigger:
+  branches: { include: [main] }
+
+stages:
+  - stage: Test
+    jobs:
+      - job: dotnet
+        pool: { vmImage: ubuntu-latest }
+        steps:
+          - task: UseDotNet@2
+            inputs: { version: 10.0.x }
+          - script: dotnet test beispiele/shop --logger trx --results-directory $(Agent.TempDirectory)/ergebnisse
+          - task: PublishTestResults@2
+            condition: always()           # Bericht auch bei rot
+            inputs:
+              testResultsFormat: VSTest
+              testResultsFiles: '$(Agent.TempDirectory)/ergebnisse/*.trx'
+```
+
+Wer eine der beiden Plattformen beherrscht, findet sich in der anderen – und in Jenkins oder GitLab CI – schnell zurecht.
+
+## Typische Fehler \{#typische-fehler}
+
+- **UI-Tests zuerst**, Unit-Tests zuletzt – langsame Rückmeldung.
+- Pipeline dauert **zu lange** und wird umgangen.
+- Qualitätsschranke **nur Codeabdeckung**.
+- **Flaky Tests** mit stillen Retries verstecken.
+- **Keine Tests nach dem Ausrollen** – ein Konfigurationsfehler in Produktion fällt erst Nutzern auf.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Pipeline nach der Testpyramide: **statisch → Unit → API → UI → nicht-funktional → nach dem Ausrollen**.
+- Schnell durch **fail fast, Parallelisierung, Sharding** und nächtliche Läufe für Langes.
+- **Qualitätsschranken** eindeutig und aussagekräftig; Abdeckung allein beweist nichts.
+- **Testberichte** in Standardformaten, Artefakte bei Fehlschlag, **Quarantäne** für Flaky Tests.
+- **Blue-Green, Canary, Feature Flags**; Rauchtests und synthetisches Monitoring in Produktion.
+- **Azure DevOps** nutzt dieselben Konzepte mit anderen Namen.
+
+<Quiz fragen={fragen} titel="Quiz: Teststrategie in der Pipeline" />

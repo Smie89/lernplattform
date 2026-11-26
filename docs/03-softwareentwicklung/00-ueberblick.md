@@ -20,6 +20,8 @@ Empfohlene Reihenfolge:
 6. [Refactoring](./06-refactoring.mdx) – Charakterisierungstests und ein vollständiges Vorher-nachher-Beispiel
 7. [Git – Grundlagen](./07-git-grundlagen.mdx) – Commits, .gitignore, Branches, Merge-Konflikte, Rückgängig machen
 8. [Zusammenarbeit und CI/CD](./08-zusammenarbeit-ci-cd.mdx) – Pull Requests, Code-Review, Pipelines, SemVer
+9. [GitHub Actions vertieft](./09-github-actions-vertieft.mdx) – Matrix, Caching, Artefakte, Rechte, OIDC, Lieferkette – an den echten Pipelines
+10. [Teststrategie in der Pipeline](./10-pipelines-teststrategie.mdx) – Stufen, Qualitätsschranken, Flaky Tests, Auslieferung, Azure DevOps
 
 Querverbindungen: Tests für diesen Code schreibst du im Bereich 🤖 [Testautomation](../02-testautomation/00-ueberblick.md),
 Reviews und Testentwurf behandelt der Bereich 🧪 [Softwaretest](../01-softwaretest/00-ueberblick.md).

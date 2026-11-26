@@ -1,0 +1,192 @@
+---
+title: GitHub Actions vertieft
+description: Workflows im Detail an den echten Pipelines dieser Plattform – Auslöser und Pfadfilter, Jobs und Abhängigkeiten, Matrix über Betriebssysteme, Caching, Artefakte bei Fehlschlägen, Zeitlimits und Concurrency, Rechte des GITHUB_TOKEN, OIDC und Umgebungen, wiederverwendbare Workflows und die Sicherheit der Lieferkette.
+tags: [ci-cd, github-actions, pipeline]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './09-github-actions-vertieft.fragen.yaml';
+
+# GitHub Actions vertieft
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- **Auslöser**, **Jobs**, **Abhängigkeiten** und **Matrizen** in GitHub Actions gezielt einsetzen,
+- Pipelines mit **Caching**, **Concurrency** und **Zeitlimits** schnell und sparsam halten,
+- **Artefakte** für die Fehlersuche sichern,
+- **Rechte** und **Geheimnisse** sicher handhaben (GITHUB_TOKEN, OIDC, Umgebungen),
+- Workflows **wiederverwenden** und die **Lieferkette** der verwendeten Actions absichern.
+:::
+
+Die Grundlagen von CI stehen in [Zusammenarbeit und CI/CD](./08-zusammenarbeit-ci-cd.mdx#ci). Diese Lektion vertieft sie an
+den beiden echten Pipelines dieses Repositorys:
+[beispiele.yml](https://github.com/Smie89/lernplattform/blob/main/.github/workflows/beispiele.yml) (9 Jobs für die
+Beispielprojekte) und [deploy.yml](https://github.com/Smie89/lernplattform/blob/main/.github/workflows/deploy.yml)
+(Lernplattform bauen, prüfen, veröffentlichen).
+
+## Aufbau eines Workflows \{#aufbau}
+
+| Begriff | Bedeutung |
+|---|---|
+| **Workflow** | eine YAML-Datei unter `.github/workflows/` |
+| **Auslöser** (`on`) | wann der Workflow startet |
+| **Job** | läuft auf einem eigenen **Runner** (frische virtuelle Maschine); Jobs laufen standardmäßig **parallel** |
+| **Step** | ein Befehl (`run`) oder eine fertige **Action** (`uses`) innerhalb eines Jobs, nacheinander |
+| **Runner** | `ubuntu-latest`, `windows-latest`, `macos-latest` – oder eigene Rechner (self-hosted) |
+
+## Auslöser und Pfadfilter \{#ausloeser}
+
+```yaml title="beispiele.yml"
+on:
+  push:
+    branches: [main]
+    paths: ['beispiele/**', '.github/workflows/beispiele.yml']
+  pull_request:
+    paths: ['beispiele/**']
+  workflow_dispatch:          # zusätzlich per Knopfdruck startbar
+```
+
+Die **Pfadfilter** sorgen dafür, dass die Beispielprojekte nur getestet werden, wenn sich an ihnen etwas ändert – eine
+reine Textänderung an einer Lektion startet nur die Deploy-Pipeline. Weitere nützliche Auslöser:
+
+| Auslöser | Einsatz |
+|---|---|
+| `schedule` (Cron) | nächtliche Komplettläufe, z. B. lange Lasttests oder Prüfung auf neue Schwachstellen in Abhängigkeiten |
+| `workflow_dispatch` mit `inputs` | manuell mit Parametern, z. B. Zielumgebung |
+| `release` | beim Veröffentlichen einer Version |
+
+## Jobs, Abhängigkeiten und Matrix \{#jobs}
+
+Jobs laufen parallel, mit `needs` nacheinander. In `deploy.yml` darf **deploy** erst laufen, wenn **build** – inklusive
+`npm run pruefen` für alle Quizfragen – erfolgreich war:
+
+```yaml title="deploy.yml"
+jobs:
+  build:
+    steps:
+      - run: npm ci
+      - run: npm run build
+      - run: npm run pruefen
+  deploy:
+    needs: build              # wartet auf build und läuft nur, wenn build grün ist
+```
+
+Eine **Matrix** startet denselben Job mehrfach mit verschiedenen Werten. Die Netzwerk-Tests laufen unter Linux **und**
+Windows – weil Windows einen geschlossenen Port erst nach etwa
+[2 Sekunden ablehnt](../09-netzwerke/02-tcp-udp-ports.mdx#fehler):
+
+```yaml title="beispiele.yml"
+  netzwerk:
+    strategy:
+      fail-fast: false        # ein rotes Betriebssystem bricht das andere nicht ab
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+```
+
+Typische Matrizen: Betriebssysteme, Sprachversionen (.NET 8 und 10, Java 17 und 21), Browser (Chromium, Firefox, WebKit).
+
+## Schnell und sparsam \{#schnell}
+
+| Mittel | Beispiel aus diesem Repository |
+|---|---|
+| **Caching** von Abhängigkeiten | `setup-node` mit `cache: npm`, `setup-java` mit `cache: maven` – Pakete werden nicht bei jedem Lauf neu geladen |
+| **Concurrency** | ein neuer Push auf denselben Branch bricht den laufenden Durchlauf ab |
+| **Zeitlimit** | `timeout-minutes: 20` für den Shop-Job – ein hängender Test blockiert keine Stunden |
+| **Pfadfilter** | nur testen, was sich geändert hat |
+| **Parallele Jobs** | 9 Jobs (durch die Matrix 10 Läufe) laufen gleichzeitig statt nacheinander |
+
+```yaml title="beispiele.yml"
+concurrency:
+  group: beispiele-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+Bei `deploy.yml` ist `cancel-in-progress` ebenfalls aktiv: Es soll immer nur der **neueste** Stand veröffentlicht werden.
+
+## Artefakte: Beweise sichern \{#artefakte}
+
+Ein Runner wird nach dem Job gelöscht – mit allen Logs, Screenshots und Testergebnissen. Was man zur Fehlersuche braucht,
+lädt man als **Artefakt** hoch:
+
+```yaml title="beispiele.yml"
+      - name: Unit-Tests
+        run: dotnet test tests/Shop.Core.Tests --no-build --logger trx --results-directory testergebnisse
+      ...
+      - name: Testergebnisse bei Fehlschlag sichern
+        if: failure()                     # nur, wenn vorher etwas rot war
+        uses: actions/upload-artifact@v7
+        with:
+          name: testergebnisse-dotnet
+          path: beispiele/shop/testergebnisse
+          retention-days: 7
+```
+
+`--logger trx` schreibt die Ergebnisse als Datei, die sich herunterladen und in Visual Studio öffnen lässt. Für UI-Tests
+gehören Screenshots, Videos oder [Playwright-Traces](../09-netzwerke/05-netzwerkanalyse.mdx#browser) dazu – siehe auch
+[Artefakte bei Fehlschlag](../04-linux/07-linux-testautomation.mdx#artefakte).
+
+## Rechte, Geheimnisse und Umgebungen \{#rechte}
+
+Jeder Lauf bekommt automatisch ein **GITHUB_TOKEN**. Seine Rechte sollten so klein wie möglich sein:
+
+```yaml title="beispiele.yml"
+permissions:
+  contents: read              # nur lesen – Tests müssen nichts ins Repository schreiben
+```
+
+```yaml title="deploy.yml"
+permissions:
+  contents: read
+  pages: write                # auf GitHub Pages veröffentlichen
+  id-token: write             # OIDC-Token anfordern
+
+  deploy:
+    environment:
+      name: github-pages      # Umgebung mit eigenen Regeln
+```
+
+- **Secrets** (`${{ secrets.NAME }}`) werden in Logs maskiert, stehen aber in Pull Requests aus **Forks** nicht zur Verfügung –
+  sonst könnte jeder sie mit einem präparierten Pull Request auslesen.
+- **OIDC** (`id-token: write`) ersetzt dauerhafte Cloud-Schlüssel durch kurzlebige Tokens – mehr dazu in
+  [Cloud-Sicherheit](../10-cloud/02-cloud-sicherheit.mdx#schluessel). Die Veröffentlichung dieser Plattform funktioniert genau so.
+- **Umgebungen** (`environment`) können eine **Freigabe** durch bestimmte Personen verlangen, bevor ein Job läuft – typisch für Produktion.
+
+## Wiederverwenden \{#wiederverwenden}
+
+| Mittel | Zweck |
+|---|---|
+| **Composite Action** | mehrere Steps als eine eigene Action, z. B. „.NET einrichten und bauen“ |
+| **Wiederverwendbarer Workflow** (`workflow_call`) | ein ganzer Workflow, den andere Repositorys aufrufen, z. B. ein einheitlicher Security-Scan |
+| **Starter-Workflows** | Vorlagen für neue Repositorys einer Organisation |
+
+## Sicherheit der Lieferkette \{#lieferkette}
+
+Jede `uses:`-Zeile führt **fremden Code** mit den Rechten des Workflows aus. Deshalb:
+
+- Nur **vertrauenswürdige** Actions (offizielle `actions/…`, bekannte Hersteller).
+- Versionen **festlegen**: `@v7` folgt der Hauptversion; noch sicherer ist ein vollständiger **Commit-SHA**, der sich nicht
+  nachträglich verschieben lässt.
+- **Dependabot** für GitHub Actions aktivieren – er schlägt Updates per Pull Request vor. Die Aktualisierung aller Actions
+  auf die aktuellen Hauptversionen in diesem Repository war genau so ein Schritt.
+- Werkzeuge in Jobs mit **fester Version** installieren (`pip install checkov==3.4.11`), damit sich Ergebnisse nicht
+  ohne Codeänderung verschieben.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Keine Rechtebegrenzung** – das GITHUB_TOKEN darf mehr als nötig.
+- **Kein Zeitlimit** – ein hängender Test blockiert Runner für Stunden.
+- Logs und Screenshots **nicht sichern** – bei sporadischen Fehlern fehlen später die Beweise.
+- **Fremde Actions** ungeprüft und ohne feste Version.
+- Alles in **einem** riesigen Job statt paralleler Jobs.
+- Geheimnisse mit `echo` ausgeben oder in Dateien schreiben, die als Artefakt hochgeladen werden.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Workflow → Jobs (parallel, mit `needs` nacheinander) → Steps; **Pfadfilter** und **Matrix** steuern, was wo läuft.
+- **Caching, Concurrency, Zeitlimits** und parallele Jobs machen Pipelines schnell und sparsam.
+- **Artefakte** mit `if: failure()` sichern Testergebnisse für die Fehlersuche.
+- **permissions** minimal, Secrets nicht für Forks, **OIDC** statt Schlüsseln, **Umgebungen** mit Freigaben.
+- Actions sind fremder Code: vertrauenswürdige Quellen, feste Versionen, Dependabot.
+
+<Quiz fragen={fragen} titel="Quiz: GitHub Actions vertieft" />

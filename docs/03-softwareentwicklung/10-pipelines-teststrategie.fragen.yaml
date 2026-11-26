@@ -1,0 +1,153 @@
+# Fragen zur Lektion "Teststrategie in der Pipeline"
+
+- id: se-ts-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Warum laufen Unit-Tests in der Pipeline vor den UI-Tests?"
+  optionen:
+    - "Weil sie wichtiger sind"
+    - "Weil sie schnell sind und bei einem Fehler die teuren UI-Tests gar nicht erst starten müssen (fail fast)"
+    - "Weil UI-Tests Unit-Tests brauchen"
+    - "Das ist egal"
+  richtig: [1]
+  erklaerung: "Die Reihenfolge folgt der Testpyramide: schnell und zahlreich zuerst."
+  artikel: "#stufen"
+  tags: [ci-cd, teststrategie]
+
+- id: se-ts-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine UI-Testsuite dauert 40 Minuten. Was hilft, ohne Tests wegzulassen?"
+  optionen:
+    - "Alle Tests nur noch wöchentlich ausführen"
+    - "Die Suite auf mehrere Runner aufteilen (Sharding) und parallel ausführen"
+    - "Thread.Sleep entfernen ist nie sinnvoll"
+    - "Die Pipeline ignorieren"
+  richtig: [1]
+  erklaerung: "Playwright z. B. mit --shard 1/4 auf vier Runnern – plus feste Wartezeiten durch echtes Warten ersetzen."
+  artikel: "#schnell"
+  tags: [ci-cd, parallelisierung]
+
+- id: se-ts-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist 'Codeabdeckung mindestens 80 %' als einzige Qualitätsschranke problematisch?"
+  optionen:
+    - "Weil 80 % zu wenig ist"
+    - "Weil sie zu Tests ohne Aussage verleitet – der Mini-Shop hatte 100 % Zweigabdeckung und trotzdem SHOP-1"
+    - "Weil Abdeckung nicht messbar ist"
+    - "Weil Schranken verboten sind"
+  richtig: [1]
+  erklaerung: "Besser: Abdeckung darf nicht sinken, neuer Code muss getestet sein – kombiniert mit anderen Schranken."
+  artikel: "#schranken"
+  tags: [ci-cd, quality-gate]
+
+- id: se-ts-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie gehst du mit einem Flaky Test um, der die Pipeline immer wieder blockiert?"
+  optionen:
+    - "Löschen"
+    - "Mit allen Beweisen sichern, mit Ticket und Frist in Quarantäne verschieben, Ursache beheben und zurückholen"
+    - "Fünf automatische Wiederholungen still einschalten"
+    - "Die ganze Pipeline abschalten"
+  richtig: [1]
+  erklaerung: "Quarantäne heißt: Der Test läuft weiter, blockiert aber nicht – und wird nicht vergessen."
+  artikel: "#flaky"
+  tags: [ci-cd, flaky]
+
+- id: se-ts-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist ein Canary-Release?"
+  optionen:
+    - "Eine Version nur für Tester"
+    - "Die neue Version erhält zunächst nur einen kleinen Teil der Nutzer; Fehlerraten werden verglichen, bevor sie für alle gilt"
+    - "Eine Version mit gelbem Design"
+    - "Ein Release ohne Tests"
+  richtig: [1]
+  erklaerung: "Steigen die Fehler, wird automatisch zurückgerollt."
+  artikel: "#auslieferung"
+  tags: [ci-cd, deployment]
+
+- id: se-ts-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Tests laufen sinnvollerweise nach dem Ausrollen in Produktion?"
+  optionen:
+    - "Rauchtests der wichtigsten Funktionen"
+    - "Synthetisches Monitoring mit Testkonten"
+    - "Überwachung von Fehlerraten und Antwortzeiten"
+    - "Aktive DAST-Angriffe mit echten Kundendaten"
+  richtig: [0, 1, 2]
+  erklaerung: "Aktive Angriffsscans gehören in Testumgebungen, nicht in Produktion."
+  artikel: "#auslieferung"
+  tags: [ci-cd, produktion]
+
+- id: se-ts-007
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Ein Test, der erst beim dritten automatischen Versuch grün wird, ist ein erfolgreicher Test."
+  richtig: [1]
+  erklaerung: "Falsch. Das ist ein Hinweis auf einen Flaky Test – oder einen echten, sporadischen Fehler wie eine Race Condition."
+  artikel: "#flaky"
+  tags: [ci-cd, flaky]
+
+- id: se-ts-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne die Begriffe von GitHub Actions denen von Azure DevOps zu."
+  paare:
+    - ["on:", "trigger:"]
+    - ["needs:", "dependsOn:"]
+    - ["run:", "script:"]
+    - ["uses: actions/setup-dotnet", "task: UseDotNet@2"]
+    - ["environment mit Freigabe", "Environment mit Approvals and Checks"]
+  erklaerung: "Die Konzepte sind gleich, nur die Syntax unterscheidet sich."
+  artikel: "#azure-devops"
+  tags: [ci-cd, azure-devops]
+
+- id: se-ts-009
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Stufen einer Pipeline in eine sinnvolle Reihenfolge."
+  elemente:
+    - "Bauen und statische Prüfungen"
+    - "Unit-Tests"
+    - "Integrations- und API-Tests"
+    - "UI-Tests"
+    - "Nach dem Ausrollen: Rauchtests in der Testumgebung"
+  erklaerung: "Schnelle, billige Prüfungen zuerst – so kommt die Rückmeldung in Minuten."
+  artikel: "#stufen"
+  tags: [ci-cd, teststrategie]
+
+- id: se-ts-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Azure-DevOps-Aufgabe, die den Testbericht auch bei roten Tests veröffentlicht."
+  sprache: yaml
+  text: |
+    - task: ___@2
+      condition: ___()
+      inputs:
+        testResultsFormat: VSTest
+        testResultsFiles: '**/*.trx'
+  luecken:
+    - ["PublishTestResults"]
+    - ["always"]
+  exakt: true
+  erklaerung: "Ohne condition: always() würde der Schritt nach einem Testfehler übersprungen – genau dann braucht man den Bericht."
+  artikel: "#azure-devops"
+  tags: [ci-cd, azure-devops]
+
+- id: se-ts-011
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Auslieferungsstrategie ihr Merkmal zu."
+  paare:
+    - ["Blue-Green", "Alte und neue Version parallel, Umschalten auf einen Schlag"]
+    - ["Canary", "Neue Version zuerst für wenige Prozent der Nutzer"]
+    - ["Feature Flag", "Code ausgeliefert, Funktion per Schalter aktivierbar"]
+  erklaerung: "Alle drei machen das Zurückrollen einfach und erlauben Tests unter echten Bedingungen."
+  artikel: "#auslieferung"
+  tags: [ci-cd, deployment]
