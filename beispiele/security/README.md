@@ -16,15 +16,19 @@ Erklärt im Bereich **🔐 Cybersecurity**: https://smie89.github.io/lernplattfo
 | `test_angriffe.py` | 27 Tests: Angriffe gelingen gegen `unsicher.py`, scheitern gegen `sicher.py` |
 | `log_analyse.py`, `auth.log` | Brute-Force-Erkennung und Alarm bei erfolgreicher Anmeldung nach Fehlversuchen |
 | `test_log_analyse.py` | 7 Tests für die Erkennungsregeln, inklusive ihrer Grenzen |
+| `header_check.py` | prüft die Sicherheits-Header einer laufenden Webanwendung (fand 4 echte Befunde im Mini-Shop) |
+| `test_header_check.py` | 7 Tests für den Header-Check mit den Antworten des Mini-Shops vor und nach der Behebung |
 
 ```bash
 cd beispiele/security
-python -m unittest -v          # 34 Tests
+python -m unittest -v          # 41 Tests
 python log_analyse.py auth.log # Bericht wie aus einem SOC
 
 pip install bandit             # statische Sicherheitsanalyse (SAST)
 bandit sicher.py               # keine Befunde
 bandit unsicher.py             # findet 2 der 6 Lücken – die übrigen finden nur die Tests
+
+python header_check.py http://localhost:5000/   # gegen den laufenden Mini-Shop
 ```
 
 Unter Windows: `python`, unter Linux/macOS meist `python3`. Benötigt Python 3.10 oder neuer.

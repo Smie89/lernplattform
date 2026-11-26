@@ -11,8 +11,8 @@ jemand das Falsche eingibt?“ sind der Kern von Sicherheitstests.
 
 Dieser Bereich verbindet **Theorie, echten Code und Berufspraxis**. Im Beispielprojekt
 [beispiele/security](https://github.com/Smie89/lernplattform/tree/main/beispiele/security) stehen sechs typische
-Schwachstellen als unsicherer und als behobener Code nebeneinander, mit 34 Tests, die jeden Angriff gegen beide
-Varianten ausführen, einer statischen Sicherheitsanalyse in der CI und einer Erkennungsregel für Angriffe in Server-Logs
+Schwachstellen als unsicherer und als behobener Code nebeneinander, mit Tests, die jeden Angriff gegen beide
+Varianten ausführen, einem Prüfer für Sicherheits-Header, einer statischen Sicherheitsanalyse in der CI und einer Erkennungsregel für Angriffe in Server-Logs
 (reines Python, keine Bibliotheken nötig).
 
 Empfohlene Reihenfolge:
@@ -24,6 +24,8 @@ Empfohlene Reihenfolge:
 5. [Systeme und Netzwerke härten](./05-systemhaertung.mdx) – Ports, Firewall, SSH, Updates, Container, Backups
 6. [Angriffe erkennen und auf Vorfälle reagieren](./06-erkennung-incident-response.mdx) – Logging, SIEM, Erkennungsregeln, Incident Response
 7. [Berufseinstieg, Recht und Lernpfad](./07-karriere-und-recht.mdx) – Berufsbilder, Zertifikate, legale Übungsumgebungen, Hackerparagraf
+8. [Web-Pentesting in der Praxis](./08-web-pentesting.mdx) – OWASP WSTG, Burp Suite und ZAP, echte Befunde im Mini-Shop behoben
+9. [Übungslabor und Pentest-Bericht](./09-pentest-praxis-bericht.mdx) – Juice Shop, Notizen, Berichtsaufbau, CVSS, Nachtest
 
 :::danger[Nur mit Erlaubnis]
 Alle Angriffe in diesem Bereich laufen gegen **eigenen Code auf dem eigenen Rechner** oder gegen Übungsumgebungen, die
