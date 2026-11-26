@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Grundlagen der Informationssicherheit"
+
+- id: sec-gl-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Ein Angreifer ändert im Warenkorb den Preis eines Artikels von 499 € auf 1 €. Welches Schutzziel ist verletzt?"
+  optionen:
+    - "Vertraulichkeit"
+    - "Integrität"
+    - "Verfügbarkeit"
+    - "Keines"
+  richtig: [1]
+  erklaerung: "Daten werden unberechtigt verändert – das betrifft die Integrität."
+  artikel: "#schutzziele"
+  tags: [security, cia]
+
+- id: sec-gl-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Ransomware verschlüsselt alle Server eines Unternehmens. Welches Schutzziel steht dabei im Vordergrund?"
+  optionen:
+    - "Vertraulichkeit"
+    - "Integrität"
+    - "Verfügbarkeit"
+    - "Nichtabstreitbarkeit"
+  richtig: [2]
+  erklaerung: "Die Systeme und Daten sind nicht mehr nutzbar. Moderne Ransomware stiehlt oft zusätzlich Daten und verletzt damit auch die Vertraulichkeit."
+  artikel: "#schutzziele"
+  tags: [security, cia]
+
+- id: sec-gl-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie wird ein Risiko in der Informationssicherheit üblicherweise bestimmt?"
+  optionen:
+    - "Nur nach dem CVSS-Wert"
+    - "Eintrittswahrscheinlichkeit × Schadenshöhe"
+    - "Nach der Anzahl der Codezeilen"
+    - "Nach dem Alter der Software"
+  richtig: [1]
+  erklaerung: "Eine Schwachstelle mit realistischer Bedrohung und großem Schaden ist ein hohes Risiko – so wird priorisiert."
+  artikel: "#begriffe"
+  tags: [security, risiko]
+
+- id: sec-gl-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist ein Exploit?"
+  optionen:
+    - "Eine Liste aller Mitarbeitenden"
+    - "Ein konkretes Vorgehen oder Programm, das eine Schwachstelle ausnutzt"
+    - "Ein Sicherheitsupdate"
+    - "Eine Firewall-Regel"
+  richtig: [1]
+  erklaerung: "Die Schwachstelle ist der Fehler, der Exploit ist das Werkzeug, mit dem er ausgenutzt wird – etwa die Eingabe admin' -- bei einer SQL-Injection."
+  artikel: "#begriffe"
+  tags: [security, begriffe]
+
+- id: sec-gl-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was unterscheidet CVE und CWE?"
+  optionen:
+    - "Es gibt keinen Unterschied"
+    - "CVE benennt eine konkrete Schwachstelle in einem Produkt, CWE die allgemeine Art des Fehlers"
+    - "CWE ist die Bewertung von 0 bis 10"
+    - "CVE gilt nur für Windows"
+  richtig: [1]
+  erklaerung: "Beispiel: CVE-2021-44228 ist Log4Shell in Log4j; CWE-89 ist SQL-Injection als Fehlerart in beliebiger Software."
+  artikel: "#cve-cvss"
+  tags: [security, cve]
+
+- id: sec-gl-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Schwachstelle hat den CVSS-Wert 7,5. Wie wird sie eingestuft?"
+  optionen:
+    - "Niedrig"
+    - "Mittel"
+    - "Hoch"
+    - "Kritisch"
+  richtig: [2]
+  erklaerung: "7,0 bis 8,9 gilt als hoch, ab 9,0 als kritisch."
+  artikel: "#cve-cvss"
+  tags: [security, cvss]
+
+- id: sec-gl-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Eine Bibliothek hat eine Lücke mit CVSS 9,8, aber die betroffene Funktion wird in deiner Anwendung nie aufgerufen. Gleichzeitig hat dein öffentlicher Login eine Lücke mit 7,5. Was ist sinnvoll?"
+  optionen:
+    - "Immer zuerst den höheren CVSS-Wert beheben"
+    - "Den Einsatzkontext bewerten – hier ist der öffentlich erreichbare Login vermutlich dringender; die Bibliothek trotzdem zeitnah aktualisieren"
+    - "Beide ignorieren, weil kein Angriff bekannt ist"
+    - "Nur die Bibliothek austauschen"
+  richtig: [1]
+  erklaerung: "CVSS bewertet die Schwachstelle allgemein. Erreichbarkeit, Ausnutzbarkeit (EPSS, KEV-Katalog) und betroffene Daten bestimmen das tatsächliche Risiko."
+  artikel: "#cve-cvss"
+  tags: [security, cvss, risiko]
+
+- id: sec-gl-008
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Kleine Firmen werden kaum angegriffen, weil Angreifer nur gezielt große Unternehmen auswählen."
+  richtig: [1]
+  erklaerung: "Falsch. Die meisten Angriffe sind automatisiert und ungezielt: Bots scannen das gesamte Internet nach offenen Diensten und bekannten Lücken."
+  artikel: "#angreifer"
+  tags: [security, angreifer]
+
+- id: sec-gl-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Angreifer hat einen Arbeitsplatzrechner übernommen und verschafft sich von dort Zugang zu weiteren Servern. Wie heißt diese Phase?"
+  optionen:
+    - "Aufklärung"
+    - "Erstzugang"
+    - "Seitwärtsbewegung (Lateral Movement)"
+    - "Exfiltration"
+  richtig: [2]
+  erklaerung: "Die Bewegung von einem System zum nächsten im Netz. Netzsegmentierung und Least Privilege erschweren sie."
+  artikel: "#angriffsablauf"
+  tags: [security, mitre-attack]
+
+- id: sec-gl-010
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Welche Merkmale sind typische Warnzeichen für Phishing?"
+  optionen:
+    - "Starker Zeitdruck ('Ihr Konto wird in 2 Stunden gesperrt')"
+    - "Das Link-Ziel passt nicht zum angezeigten Text"
+    - "Bitte um Zugangsdaten oder eine eilige Zahlung"
+    - "Die Mail kommt von einer bekannten Kollegin zu einem vereinbarten Termin ohne Link"
+  richtig: [0, 1, 2]
+  erklaerung: "Dringlichkeit, unpassende Links und Bitten um Passwörter oder Zahlungen sind klassische Merkmale."
+  artikel: "#social-engineering"
+  tags: [security, phishing]
+
+- id: sec-gl-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Anwendung nutzt parametrisierte Abfragen, prüft zusätzlich Eingaben und verbindet sich mit einem Datenbankbenutzer, der keine Tabellen löschen darf. Welches Prinzip ist das?"
+  optionen:
+    - "Security by Obscurity"
+    - "Defense in Depth"
+    - "Fail Open"
+    - "Zero-Day"
+  richtig: [1]
+  erklaerung: "Mehrere unabhängige Schutzschichten: Fällt eine aus, schützen die anderen noch."
+  artikel: "#prinzipien"
+  tags: [security, prinzipien]
+
+- id: sec-gl-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Die Rechteprüfung einer API wirft eine Ausnahme, weil der Rechtedienst nicht erreichbar ist. Was ist nach dem Prinzip 'Fail Secure' richtig?"
+  optionen:
+    - "Zugriff erlauben, damit die Nutzer weiterarbeiten können"
+    - "Zugriff verweigern"
+    - "Zufällig entscheiden"
+    - "Die Prüfung beim nächsten Mal überspringen"
+  richtig: [1]
+  erklaerung: "Im Fehlerfall muss das System in einen sicheren Zustand gehen – das lässt sich auch gut testen."
+  artikel: "#prinzipien"
+  tags: [security, prinzipien]

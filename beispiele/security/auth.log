@@ -1,0 +1,34 @@
+Nov 26 03:12:00 web01 sshd[2001]: Failed password for invalid user admin from 203.0.113.7 port 40100 ssh2
+Nov 26 03:12:03 web01 sshd[2002]: Failed password for root from 203.0.113.7 port 40101 ssh2
+Nov 26 03:12:06 web01 sshd[2003]: Failed password for invalid user test from 203.0.113.7 port 40102 ssh2
+Nov 26 03:12:09 web01 sshd[2004]: Failed password for invalid user oracle from 203.0.113.7 port 40103 ssh2
+Nov 26 03:12:12 web01 sshd[2005]: Failed password for invalid user ubuntu from 203.0.113.7 port 40104 ssh2
+Nov 26 03:12:15 web01 sshd[2006]: Failed password for invalid user pi from 203.0.113.7 port 40105 ssh2
+Nov 26 03:12:18 web01 sshd[2007]: Failed password for invalid user admin from 203.0.113.7 port 40106 ssh2
+Nov 26 03:12:21 web01 sshd[2008]: Failed password for root from 203.0.113.7 port 40107 ssh2
+Nov 26 03:12:24 web01 sshd[2009]: Failed password for invalid user git from 203.0.113.7 port 40108 ssh2
+Nov 26 03:12:27 web01 sshd[2010]: Failed password for invalid user postgres from 203.0.113.7 port 40109 ssh2
+Nov 26 03:12:30 web01 sshd[2011]: Failed password for invalid user guest from 203.0.113.7 port 40110 ssh2
+Nov 26 03:12:33 web01 sshd[2012]: Failed password for invalid user user from 203.0.113.7 port 40111 ssh2
+Nov 26 03:13:00 web01 sshd[2034]: Connection closed by invalid user admin 203.0.113.7 port 40112 [preauth]
+Nov 26 08:00:00 web01 sshd[2032]: Server listening on 0.0.0.0 port 22.
+Nov 26 08:01:10 web01 sshd[2013]: Failed password for anna from 198.51.100.23 port 50211 ssh2
+Nov 26 08:01:25 web01 sshd[2014]: Accepted password for anna from 198.51.100.23 port 50213 ssh2
+Nov 26 08:30:00 web01 sshd[2015]: Accepted publickey for ben from 198.51.100.40 port 50999 ssh2
+Nov 26 09:00:00 web01 sshd[2024]: Failed password for invalid user admin from 203.0.113.99 port 60000 ssh2
+Nov 26 09:10:00 web01 sshd[2025]: Failed password for invalid user admin from 203.0.113.99 port 60001 ssh2
+Nov 26 09:20:00 web01 sshd[2026]: Failed password for invalid user admin from 203.0.113.99 port 60002 ssh2
+Nov 26 09:30:00 web01 sshd[2027]: Failed password for invalid user admin from 203.0.113.99 port 60003 ssh2
+Nov 26 09:40:00 web01 sshd[2028]: Failed password for invalid user admin from 203.0.113.99 port 60004 ssh2
+Nov 26 09:50:00 web01 sshd[2029]: Failed password for invalid user admin from 203.0.113.99 port 60005 ssh2
+Nov 26 10:00:00 web01 sshd[2030]: Failed password for invalid user admin from 203.0.113.99 port 60006 ssh2
+Nov 26 10:10:00 web01 sshd[2031]: Failed password for invalid user admin from 203.0.113.99 port 60007 ssh2
+Nov 26 13:40:00 web01 sshd[2016]: Failed password for ben from 192.0.2.50 port 51000 ssh2
+Nov 26 13:40:04 web01 sshd[2017]: Failed password for ben from 192.0.2.50 port 51001 ssh2
+Nov 26 13:40:08 web01 sshd[2018]: Failed password for ben from 192.0.2.50 port 51002 ssh2
+Nov 26 13:40:12 web01 sshd[2019]: Failed password for ben from 192.0.2.50 port 51003 ssh2
+Nov 26 13:40:16 web01 sshd[2020]: Failed password for ben from 192.0.2.50 port 51004 ssh2
+Nov 26 13:40:20 web01 sshd[2021]: Failed password for ben from 192.0.2.50 port 51005 ssh2
+Nov 26 13:40:24 web01 sshd[2022]: Failed password for ben from 192.0.2.50 port 51006 ssh2
+Nov 26 13:40:31 web01 sshd[2023]: Accepted password for ben from 192.0.2.50 port 51010 ssh2
+Nov 26 13:45:00 web01 sshd[2033]: pam_unix(sshd:session): session opened for user ben(uid=1001) by (uid=0)

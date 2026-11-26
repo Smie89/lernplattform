@@ -1,0 +1,203 @@
+---
+title: Systeme und Netzwerke härten
+description: Angriffsfläche eines Servers verkleinern – offene Ports finden und schließen, Firewall, SSH absichern, Updates, minimale Rechte, Docker-Container härten, Netzsegmentierung und Backups gegen Ransomware.
+tags: [security, haertung, linux, firewall, ssh, docker]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './05-systemhaertung.fragen.yaml';
+
+# Systeme und Netzwerke härten
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die **offenen Ports** eines Systems ermitteln und bewerten,
+- eine **Firewall** nach dem Prinzip „standardmäßig verweigern“ einrichten,
+- einen **SSH-Zugang** absichern,
+- **Updates**, **minimale Rechte** und **Container-Härtung** umsetzen,
+- erklären, warum **Netzsegmentierung** und **getestete Backups** gegen Ransomware entscheidend sind.
+:::
+
+**Härtung** heißt: alles entfernen oder abschalten, was nicht gebraucht wird, und den Rest so restriktiv wie möglich
+konfigurieren. Die Befehle bauen auf dem Bereich 🐧 [Linux](../04-linux/00-ueberblick.md) auf.
+
+## Netzwerk-Grundlagen für Security \{#netzwerk}
+
+Ein Dienst ist über eine **IP-Adresse** und einen **Port** erreichbar. Ein offener Port ist eine Tür – jede Tür kann
+angegriffen werden.
+
+| Port | Dienst | Hinweis |
+|---|---|---|
+| 22 | SSH | Ziel ständiger automatisierter Anmeldeversuche |
+| 80 / 443 | HTTP / HTTPS | 80 nur noch für die Umleitung auf 443 |
+| 3389 | RDP (Windows-Fernzugriff) | nie direkt ins Internet |
+| 3306 / 5432 / 1433 | MySQL / PostgreSQL / SQL Server | Datenbanken nie öffentlich erreichbar |
+| 6379 / 27017 / 9200 | Redis / MongoDB / Elasticsearch | wurden oft **ohne Passwort** im Internet gefunden – große Datenlecks |
+
+**TCP** baut eine Verbindung auf (Handshake), **UDP** schickt einzelne Pakete ohne Verbindung (z. B. DNS auf Port 53).
+
+## Offene Ports finden \{#ports}
+
+Von **innen** – welche Dienste lauschen auf welcher Adresse?
+
+```bash
+sudo ss -tulpn
+```
+
+```text
+Netid State  Local Address:Port  Process
+tcp   LISTEN 0.0.0.0:22          users:(("sshd",pid=812))
+tcp   LISTEN 127.0.0.1:5432      users:(("postgres",pid=901))
+tcp   LISTEN 0.0.0.0:6379        users:(("redis-server",pid=955))
+```
+
+Entscheidend ist die **Adresse**: `127.0.0.1` ist nur lokal erreichbar (gut für die Datenbank), `0.0.0.0` bzw. `[::]` auf
+**allen** Netzwerkschnittstellen. Hier lauscht Redis also für die ganze Welt – ein klarer Befund.
+
+Von **außen** – was sieht ein Angreifer? Dafür gibt es **nmap**:
+
+```bash
+nmap -sV localhost              # eigener Rechner: offene Ports mit Dienst und Version
+nmap -sV -p- 192.168.1.20       # alle 65 535 Ports eines eigenen Testservers
+```
+
+:::danger[Nur eigene oder freigegebene Systeme scannen]
+Ein Portscan fremder Systeme kann als Vorbereitung eines Angriffs gewertet werden und verstößt gegen die Nutzungsbedingungen
+fast aller Netze – auch im Firmennetz ohne Auftrag. Zum Üben: der eigene Rechner, eine eigene VM oder die vom
+nmap-Projekt ausdrücklich freigegebene Adresse `scanme.nmap.org`.
+:::
+
+## Firewall: standardmäßig verweigern \{#firewall}
+
+Eine **Firewall** lässt nur ausdrücklich erlaubten Verkehr durch. Unter Ubuntu ist **ufw** ein einfacher Einstieg:
+
+```bash
+sudo ufw default deny incoming     # alles Eingehende verbieten …
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp              # … außer SSH
+sudo ufw allow 443/tcp             # … und HTTPS
+sudo ufw enable
+sudo ufw status verbose
+```
+
+:::warning[Erst SSH erlauben, dann einschalten]
+Wer auf einem entfernten Server `ufw enable` ausführt, bevor Port 22 erlaubt ist, sperrt sich selbst aus. In der Cloud
+übernehmen oft **Security Groups** die Rolle der Firewall – das Prinzip ist dasselbe.
+:::
+
+Die Firewall ist **eine** Schicht (Defense in Depth): Redis sollte trotzdem nur auf `127.0.0.1` lauschen **und** ein Passwort haben.
+
+## SSH absichern \{#ssh}
+
+SSH ist der Generalschlüssel zum Server. Die wichtigsten Einstellungen in `/etc/ssh/sshd_config` (oder einer Datei in
+`/etc/ssh/sshd_config.d/`):
+
+```text title="/etc/ssh/sshd_config.d/haertung.conf"
+PasswordAuthentication no     # nur noch Schlüssel – Passwort-Raten wird sinnlos
+PermitRootLogin no            # als normaler Benutzer anmelden, dann sudo
+KbdInteractiveAuthentication no
+MaxAuthTries 3
+AllowUsers anna ben           # nur diese Benutzer dürfen sich anmelden
+```
+
+```bash
+sudo sshd -t && sudo systemctl reload ssh   # erst Konfiguration prüfen, dann neu laden
+```
+
+Vorher den eigenen **Schlüssel hinterlegen** und in einer **zweiten Sitzung** testen, ob die Anmeldung noch klappt (siehe
+[SSH-Schlüssel](../04-linux/05-pakete-netzwerk-ssh.mdx#ssh-schluessel)). Zusätzlich sperrt **fail2ban** IPs nach mehreren
+Fehlversuchen automatisch – im Prinzip dieselbe Regel wie im
+[Erkennungs-Beispiel](./06-erkennung-incident-response.mdx#erkennungsregel), nur mit automatischer Reaktion.
+
+## Updates und Patch-Management \{#updates}
+
+Die meisten erfolgreichen Angriffe nutzen **bekannte** Lücken, für die es längst einen Patch gibt.
+
+```bash
+sudo apt update && sudo apt upgrade         # manuell
+sudo apt install unattended-upgrades        # Sicherheitsupdates automatisch
+```
+
+In Unternehmen gehört dazu ein Prozess: Welche Systeme gibt es (Inventar)? Wie schnell werden kritische Lücken gepatcht
+(z. B. innerhalb von 72 Stunden bei Einträgen im KEV-Katalog)? Wer testet Updates vorher? Hier hilft die Testautomation
+direkt: Eine gute Regressionstestsuite macht schnelles Patchen erst möglich.
+
+## Minimale Rechte \{#rechte}
+
+- **Dienste nicht als root** betreiben, sondern mit eigenem Systembenutzer (siehe [Benutzer und Rechte](../04-linux/03-benutzer-und-rechte.mdx)).
+- Dateirechte eng setzen: Konfigurationsdateien mit Passwörtern `chmod 600`, nie `777`.
+- `sudo` nur für Personen, die es brauchen, und nicht für alles (`/etc/sudoers.d/`).
+- Datenbankbenutzer der Anwendung: nur `SELECT`, `INSERT`, `UPDATE` auf die eigenen Tabellen – keine Schemaänderungen,
+  kein Zugriff auf andere Datenbanken.
+- Persönliche Administratorkonten getrennt vom Alltagskonto.
+
+## Container härten \{#container}
+
+Container trennen Prozesse, sind aber **keine** vollständige Sicherheitsgrenze wie eine virtuelle Maschine. Wichtige Regeln
+(Grundlagen im Bereich 🐳 [Dockerfile](../05-docker/02-dockerfile.mdx#best-practices)):
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled   # minimales Image, keine Shell, kein Paketmanager
+WORKDIR /app
+COPY --from=build /app/publish .
+USER app                                                  # nicht als root laufen
+ENTRYPOINT ["dotnet", "Shop.Web.dll"]
+```
+
+```bash
+docker run --read-only --cap-drop ALL --security-opt no-new-privileges -p 5000:8080 mein-shop
+```
+
+| Regel | Warum |
+|---|---|
+| Kleines Basis-Image (chiseled, distroless, alpine) | weniger Pakete, weniger Lücken, weniger Werkzeuge für Angreifer |
+| `USER` ohne root-Rechte | ein Ausbruch aus der Anwendung bringt keine root-Rechte im Container |
+| kein `--privileged`, `/var/run/docker.sock` nicht einhängen | beides bedeutet praktisch root auf dem Host |
+| Secrets nicht ins Image (`ENV`, `COPY .env`) | jede Schicht eines Images ist auslesbar |
+| Image regelmäßig neu bauen und mit [Trivy](./04-sicherheitstests-devsecops.mdx#container-scan) scannen | Basis-Images bekommen laufend Sicherheitsupdates |
+
+## Netzsegmentierung \{#segmentierung}
+
+Ein **flaches Netz**, in dem jeder Rechner jeden erreicht, macht die Seitwärtsbewegung eines Angreifers leicht. Besser
+sind getrennte Zonen:
+
+- **DMZ** für öffentlich erreichbare Server (Webserver, Reverse Proxy)
+- **Anwendungs- und Datenbanknetz** nur von der DMZ aus erreichbar, nicht aus dem Internet
+- **Büronetz** getrennt von Servern und Produktionsanlagen
+- **Verwaltungszugänge** nur über einen abgesicherten Weg (VPN, Bastion-Host)
+
+In Docker Compose ist das im Kleinen dasselbe: Die Datenbank hängt nur im internen Netz und veröffentlicht keinen Port
+(siehe [Netzwerke](../05-docker/03-volumes-netzwerke.mdx)).
+
+## Backups gegen Ransomware \{#backups}
+
+Ransomware verschlüsselt alles, was sie erreicht – **auch erreichbare Backups**. Die **3-2-1-Regel**:
+
+- **3** Kopien der Daten,
+- auf **2** verschiedenen Medien,
+- davon **1** außer Haus – und mindestens eine **offline** oder **unveränderbar** (immutable).
+
+Und das Wichtigste: **Wiederherstellung regelmäßig testen.** Ein Backup, das nie zurückgespielt wurde, ist eine Hoffnung,
+kein Backup. Auch das ist ein Testfall – mit messbarem Ergebnis: Wie lange dauert die Wiederherstellung, und wie viele
+Daten gehen verloren?
+
+## Typische Fehler \{#typische-fehler}
+
+- Datenbanken oder Redis auf `0.0.0.0` **ohne Passwort**.
+- **Passwort-Anmeldung per SSH** für root.
+- Firewall einschalten, **bevor** SSH erlaubt ist.
+- **Updates aufschieben**, weil keine Tests vorhanden sind, die ein Update absichern.
+- Container als **root** mit `--privileged` oder eingehängtem Docker-Socket.
+- Backups auf einem **Netzlaufwerk, das ständig verbunden** ist – und nie eine Wiederherstellung getestet.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Angriffsfläche verkleinern**: Was nicht läuft, kann nicht angegriffen werden.
+- `ss -tulpn` zeigt, wer lauscht – `127.0.0.1` ist lokal, `0.0.0.0` öffentlich; **nmap** nur gegen eigene Systeme.
+- Firewall nach dem Prinzip **standardmäßig verweigern**.
+- SSH: **nur Schlüssel, kein root-Login**, fail2ban.
+- **Updates** schnell einspielen – gute Regressionstests machen das möglich.
+- **Minimale Rechte** für Dienste, Dateien, Datenbankbenutzer und Container.
+- **Segmentierung** bremst Seitwärtsbewegung, **3-2-1-Backups mit getesteter Wiederherstellung** retten bei Ransomware.
+
+<Quiz fragen={fragen} titel="Quiz: Systeme und Netzwerke härten" />

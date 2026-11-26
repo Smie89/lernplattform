@@ -1,0 +1,223 @@
+---
+title: Authentifizierung, Passwörter und Kryptografie
+description: Passwörter richtig speichern (Salt, langsame Hashverfahren, gemessen am Beispiel), Passwortregeln, Mehr-Faktor-Authentifizierung und Passkeys, Sessions und JWT, Grundlagen der Kryptografie und TLS sowie der Umgang mit Secrets.
+tags: [security, authentifizierung, passwort, kryptografie, tls]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './03-authentifizierung-kryptografie.fragen.yaml';
+
+# Authentifizierung, Passwörter und Kryptografie
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- **Authentifizierung** und **Autorisierung** unterscheiden,
+- erklären, warum Passwörter mit **Salt** und einem **langsamen** Verfahren gehasht werden,
+- sinnvolle **Passwortregeln** und **MFA** einordnen,
+- **Sessions und JWT** sicher einsetzen und testen,
+- die Grundbausteine der **Kryptografie** und von **TLS** erklären,
+- mit **Secrets** (Passwörter, API-Schlüssel) richtig umgehen.
+:::
+
+## Authentifizierung und Autorisierung \{#authn-authz}
+
+| | Frage | Beispiel | typischer HTTP-Status bei Fehler |
+|---|---|---|---|
+| **Authentifizierung** (AuthN) | **Wer** bist du? | Anmeldung mit Passwort und zweitem Faktor | 401 Unauthorized |
+| **Autorisierung** (AuthZ) | **Was** darfst du? | Ben darf nur seine eigenen Bestellungen sehen | 403 Forbidden (oder 404, um nichts zu verraten) |
+
+Die [IDOR-Lücke](./02-web-schwachstellen.mdx#idor) ist ein Autorisierungsfehler: Die Anmeldung funktioniert, die
+Rechteprüfung fehlt.
+
+## Passwörter richtig speichern \{#passwoerter}
+
+Passwörter werden **nie im Klartext** und **nie verschlüsselt** gespeichert (wer den Schlüssel hat, hat alle Passwörter),
+sondern als **Hash**: eine Einwegfunktion, aus der das Passwort nicht zurückgerechnet werden kann. Bei der Anmeldung wird
+die Eingabe erneut gehasht und verglichen.
+
+Doch „gehasht“ allein reicht nicht. Das Beispielprojekt zeigt beide Varianten:
+
+```python title="unsicher.py"
+def passwort_hashen(passwort):
+    # Schwachstelle: MD5 ist schnell und ohne Salt
+    return hashlib.md5(passwort.encode()).hexdigest()
+```
+
+```python title="sicher.py"
+SCRYPT = {"n": 2**14, "r": 8, "p": 1}
+
+def passwort_hashen(passwort):
+    salt = secrets.token_bytes(16)  # zufällig, für jedes Passwort neu
+    wert = hashlib.scrypt(passwort.encode(), salt=salt, **SCRYPT)
+    return f"scrypt${salt.hex()}${wert.hex()}"  # Verfahren und Salt werden mitgespeichert
+
+def passwort_pruefen(passwort, gespeichert):
+    verfahren, salt_hex, hash_hex = gespeichert.split("$")
+    if verfahren != "scrypt":
+        return False
+    wert = hashlib.scrypt(passwort.encode(), salt=bytes.fromhex(salt_hex), **SCRYPT)
+    return hmac.compare_digest(wert.hex(), hash_hex)
+```
+
+### Was das Salt bewirkt \{#salt}
+
+Ein **Salt** ist ein zufälliger Wert pro Passwort, der vor dem Hashen angehängt und mitgespeichert wird (er ist nicht
+geheim). Ohne Salt:
+
+- Gleiche Passwörter haben **gleiche Hashes** – man sieht in einer gestohlenen Datenbank sofort, wer dasselbe Passwort hat.
+- Angreifer können **vorberechnete Tabellen** (Rainbow Tables) mit Milliarden Hashes nutzen.
+
+Die Tests zeigen beides:
+
+```python title="test_angriffe.py"
+def test_gleiches_passwort_gleicher_hash(self):            # unsicher: gleich
+    self.assertEqual(unsicher.passwort_hashen("Sommer2026"), unsicher.passwort_hashen("Sommer2026"))
+
+def test_gleiches_passwort_verschiedener_hash_durch_salt(self):  # sicher: verschieden
+    self.assertNotEqual(sicher.passwort_hashen("Sommer2026"), sicher.passwort_hashen("Sommer2026"))
+```
+
+### Warum langsam gut ist \{#langsam}
+
+Nach einem Datenleck probieren Angreifer offline Passwörter aus Wortlisten durch. Bei MD5 oder SHA-256 schafft eine
+Grafikkarte **Milliarden Versuche pro Sekunde**. Verfahren für Passwörter sind deshalb **absichtlich langsam** und
+**speicherintensiv**. Gemessen auf dem Rechner, auf dem diese Lektion entstand:
+
+| Verfahren | Zeit pro Prüfung |
+|---|---|
+| MD5 (`unsicher.py`) | ca. 0,002 ms |
+| scrypt, n = 2¹⁴, 16 MiB (`sicher.py`) | ca. 29 ms |
+
+Das ist rund **15 000-mal** langsamer – für eine Anmeldung kaum spürbar, für einen Angreifer mit einer Milliarde
+Rateversuchen der Unterschied zwischen Minuten und Jahren. Der Test sichert das mit großem Puffer ab:
+
+```python title="test_angriffe.py"
+def test_jeder_rateversuch_ist_viel_teurer_als_bei_md5(self):
+    ...
+    self.assertGreater(dauer(sicher, 5) / dauer(unsicher, 2000), 100)
+```
+
+| empfohlen | nicht für Passwörter |
+|---|---|
+| **Argon2id** (erste Wahl), **scrypt**, **bcrypt**, PBKDF2 mit sehr vielen Iterationen | MD5, SHA-1, SHA-256 allein, Verschlüsselung, Base64 |
+
+In der Praxis nimmt man die eingebaute Lösung des Frameworks: ASP.NET Core Identity (`PasswordHasher`, PBKDF2),
+Spring Security (`Argon2PasswordEncoder`, `BCryptPasswordEncoder`).
+
+:::warning[Die ehrliche Grenze]
+Der letzte Test im Beispiel ist bewusst **grün, obwohl der Angriff gelingt**: `Sommer2026` steht in der Wortliste und
+wird auch bei scrypt gefunden. Langsames Hashing macht **jeden Versuch teuer**, rettet aber kein Passwort, das ganz oben in
+jeder Liste steht. Dagegen helfen nur **Sperrlisten** bei der Passwortwahl, **Anmeldelimits** und **MFA**.
+:::
+
+### Vergleich in konstanter Zeit \{#konstante-zeit}
+
+`hmac.compare_digest` vergleicht immer **alle** Zeichen. Ein normales `==` bricht beim ersten Unterschied ab – über
+die Antwortzeit könnte man dann Zeichen für Zeichen herausfinden, wie viel stimmt (**Timing-Angriff**). Aus demselben Grund
+rechnet `sicher.anmelden` auch bei unbekannten Benutzernamen einmal den Hash: Sonst wäre die Antwort für nicht vorhandene
+Namen messbar schneller, und man könnte gültige Benutzernamen herausfinden.
+
+## Passwortregeln \{#passwortregeln}
+
+Die aktuellen Empfehlungen (z. B. **NIST SP 800-63B**, BSI) widersprechen vielen alten Regeln:
+
+| sinnvoll | überholt |
+|---|---|
+| **Länge** vor Komplexität: lieber 4 zufällige Wörter als `P@ssw0rt!` | Pflicht zu Sonderzeichen, Groß- und Kleinbuchstaben |
+| **Sperrliste** bekannter und geleakter Passwörter prüfen | regelmäßiger Zwangswechsel ohne Anlass |
+| Passwort-Manager erlauben (Einfügen nicht blockieren) | Sicherheitsfragen („Name des ersten Haustiers“) |
+| Wechsel **bei Verdacht** auf Kompromittierung | Passwort-Hinweise |
+| **Anmeldelimits** und Verzögerung nach Fehlversuchen | dauerhafte Kontosperre nach 3 Fehlversuchen (lädt zu Sabotage ein) |
+
+## Mehr-Faktor-Authentifizierung \{#mfa}
+
+Faktoren sind **Wissen** (Passwort), **Besitz** (Smartphone, Sicherheitsschlüssel) und **Sein** (Fingerabdruck). MFA
+kombiniert mindestens zwei – ein gestohlenes Passwort allein reicht dann nicht mehr.
+
+| Verfahren | Schutz vor Phishing |
+|---|---|
+| SMS-Code | schwach – SIM-Tausch, Code kann auf Phishing-Seite eingegeben werden |
+| TOTP-App (6-stelliger Code) | mittel – Code kann in Echtzeit auf einer Phishing-Seite abgegriffen werden |
+| Push-Bestätigung | mittel – anfällig für „MFA-Fatigue“ (so lange Anfragen senden, bis jemand bestätigt) |
+| **FIDO2 / Passkeys** | **hoch** – die Anmeldung ist kryptografisch an die echte Domain gebunden; auf einer gefälschten Seite funktioniert sie nicht |
+
+## Sessions und Tokens \{#sessions}
+
+Nach der Anmeldung braucht der Server einen Nachweis für jede weitere Anfrage:
+
+- **Session-Cookie**: zufällige, lange ID; die Daten liegen auf dem Server. Nach der Anmeldung eine **neue** ID vergeben
+  (sonst Session Fixation), beim Abmelden serverseitig ungültig machen, Cookie mit `Secure; HttpOnly; SameSite`.
+- **JWT** (JSON Web Token): signiertes Token, das die Daten selbst enthält. Häufige Fehler:
+  - Der Inhalt ist nur **Base64-kodiert, nicht verschlüsselt** – keine Geheimnisse hineinschreiben.
+  - Die **Signatur nicht prüfen** oder den Algorithmus `none` akzeptieren.
+  - Keine oder sehr lange **Ablaufzeit** (`exp`); ein ausgestelltes JWT lässt sich nicht einfach zurückziehen.
+
+:::tip[Testfälle für die Anmeldung]
+Abgelaufenes Token → 401. Token mit verändertem Inhalt (z. B. `"rolle": "admin"`) und alter Signatur → 401. Nach dem
+Abmelden ist die alte Session-ID ungültig. Nach der Anmeldung hat sich die Session-ID geändert. Fehlermeldung bei falschem
+Benutzernamen und bei falschem Passwort ist **gleich** („Benutzername oder Passwort falsch“).
+:::
+
+## Kryptografie in Kürze \{#kryptografie}
+
+| Baustein | wofür | Beispiele |
+|---|---|---|
+| **Hashfunktion** | Fingerabdruck von Daten, Integrität prüfen | SHA-256, SHA-3 |
+| **Symmetrische Verschlüsselung** | ein Schlüssel zum Ver- und Entschlüsseln, schnell | AES-GCM, ChaCha20-Poly1305 |
+| **Asymmetrische Verschlüsselung** | Schlüsselpaar: öffentlich verschlüsseln, privat entschlüsseln | RSA, Elliptische Kurven (ECC) |
+| **Digitale Signatur** | Herkunft und Unverändertheit beweisen | Ed25519, ECDSA, RSA-PSS |
+| **MAC** | Integrität mit gemeinsamem Schlüssel | HMAC-SHA-256 |
+
+Die wichtigste Regel: **Keine eigene Kryptografie bauen.** Bewährte Bibliotheken und Standardeinstellungen verwenden; kein
+ECB-Modus, kein festes oder wiederverwendetes IV, keine Schlüssel im Quellcode. Zufallswerte für Sicherheitszwecke kommen
+aus einem **kryptografisch sicheren** Generator (`secrets` in Python, `RandomNumberGenerator` in .NET, `SecureRandom` in
+Java) – nicht aus `random` oder `Math.random()`.
+
+### TLS und HTTPS \{#tls}
+
+**TLS** schützt die Verbindung zwischen Browser und Server:
+
+1. Der Server schickt sein **Zertifikat** – seinen öffentlichen Schlüssel, unterschrieben von einer **Zertifizierungsstelle** (CA).
+2. Der Browser prüft die Unterschrift, die **Gültigkeit** und ob der **Name** zur aufgerufenen Domain passt.
+3. Beide handeln einen gemeinsamen **Sitzungsschlüssel** aus; ab dann wird symmetrisch verschlüsselt.
+
+So sind Vertraulichkeit, Integrität und Authentizität des Servers gesichert. Heute gilt TLS 1.2 als Minimum, TLS 1.3 als
+Standard. Kostenlose Zertifikate gibt es z. B. über Let's Encrypt.
+
+:::warning[Zertifikatsprüfung nie abschalten]
+In Testcode findet man oft `verify=False`, `-k` bei curl oder einen `ServerCertificateCustomValidationCallback`, der immer
+`true` liefert. Das ist in einer lokalen Testumgebung manchmal nötig – darf aber **nie** in Produktionscode landen, sonst
+ist jede Verbindung für einen Angreifer im Netz mitlesbar (Man-in-the-Middle). Bandit meldet so etwas übrigens als B501.
+:::
+
+## Secrets: Passwörter und Schlüssel im Code \{#secrets}
+
+- **Nie ins Repository**: keine Passwörter, API-Schlüssel oder Tokens in Quellcode, `appsettings.json` oder `.env`, die
+  eingecheckt wird.
+- Stattdessen: **Umgebungsvariablen**, **CI-Secrets** (z. B. GitHub Actions Secrets), **Secret-Manager** (Azure Key Vault,
+  AWS Secrets Manager, HashiCorp Vault), lokal `dotnet user-secrets`.
+- **Secret Scanning** in der CI und vor dem Commit, z. B. mit **gitleaks** oder dem eingebauten Secret Scanning von GitHub.
+- Ist ein Secret einmal im Repository gelandet: **sofort widerrufen und neu erzeugen**. Den Commit zu löschen reicht nicht –
+  die Git-Historie, Forks und Kopien behalten es.
+
+## Typische Fehler \{#typische-fehler}
+
+- Passwörter mit **MD5 oder SHA-256 ohne Salt** – oder sogar verschlüsselt oder im Klartext.
+- Unterschiedliche Fehlermeldungen für „Benutzer unbekannt“ und „Passwort falsch“.
+- **SMS** als einziger zweiter Faktor für Administratoren.
+- **Geheimnisse im JWT** oder JWT ohne Signaturprüfung.
+- **Zertifikatsprüfung abschalten** „nur zum Testen“ – und es bleibt so.
+- Ein geleaktes Secret **nur aus dem Code löschen**, statt es zu widerrufen.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Authentifizierung** klärt, wer jemand ist (401), **Autorisierung**, was er darf (403/404).
+- Passwörter: **Hash mit zufälligem Salt** und **langsamem** Verfahren (Argon2id, scrypt, bcrypt) – im Beispiel ~15 000-mal
+  teurer pro Versuch als MD5. Schwache Passwörter rettet das trotzdem nicht.
+- Passwortregeln: **Länge, Sperrlisten, Passwort-Manager, MFA** statt Sonderzeichenzwang und Zwangswechsel.
+- **FIDO2/Passkeys** sind phishing-resistent, SMS und TOTP nur eingeschränkt.
+- Sessions: neue ID nach Anmeldung, sichere Cookie-Attribute; JWT signiert prüfen, kurze Laufzeit, keine Geheimnisse darin.
+- Keine eigene Kryptografie; **TLS** prüft Zertifikate – diese Prüfung nie abschalten.
+- **Secrets** gehören in Secret-Manager, nicht ins Repository; geleakte Secrets sofort widerrufen.
+
+<Quiz fragen={fragen} titel="Quiz: Authentifizierung, Passwörter und Kryptografie" />

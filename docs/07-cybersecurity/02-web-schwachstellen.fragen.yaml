@@ -1,0 +1,178 @@
+# Fragen zur Lektion "Web-Schwachstellen verstehen und beheben"
+
+- id: sec-web-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welches Risiko steht in den OWASP Top 10 (2025) auf Platz 1?"
+  optionen:
+    - "Injection"
+    - "Broken Access Control (fehlerhafte Zugriffskontrolle)"
+    - "Cross-Site Request Forgery"
+    - "Denial of Service"
+  richtig: [1]
+  erklaerung: "Fehlerhafte Zugriffskontrolle, etwa IDOR, ist seit Jahren das häufigste schwerwiegende Problem in Webanwendungen."
+  artikel: "#owasp-top-10"
+  tags: [security, owasp]
+
+- id: sec-web-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum meldet die Eingabe admin' -- im unsicheren Beispiel ohne Passwort als admin an?"
+  optionen:
+    - "Weil admin kein Passwort hat"
+    - "Das ' beendet den String und -- macht den Rest der Abfrage, also die Passwortprüfung, zum Kommentar"
+    - "Weil SQLite Passwörter ignoriert"
+    - "Weil -- ein Administratorbefehl ist"
+  richtig: [1]
+  erklaerung: "Die Eingabe verändert die Bedeutung des SQL-Befehls: Übrig bleibt nur WHERE name = 'admin'."
+  artikel: "#sql-injection"
+  tags: [security, sql-injection]
+
+- id: sec-web-003
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist die richtige Gegenmaßnahme gegen SQL-Injection?"
+  optionen:
+    - "Anführungszeichen aus Eingaben entfernen"
+    - "Parametrisierte Abfragen (Prepared Statements)"
+    - "Die Datenbank umbenennen"
+    - "Nur POST statt GET verwenden"
+  richtig: [1]
+  erklaerung: "Der SQL-Text ist fest, die Eingabe wird getrennt als Wert übergeben und kann den Befehl nicht verändern. Filter sind höchstens eine zusätzliche Schicht."
+  artikel: "#sql-injection"
+  tags: [security, sql-injection]
+
+- id: sec-web-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Angreifer speichert einen Kommentar mit Skriptcode, der bei jedem Besucher ausgeführt wird. Welche Art von XSS ist das?"
+  optionen:
+    - "Reflektiertes XSS"
+    - "Gespeichertes XSS (stored)"
+    - "DOM-basiertes XSS"
+    - "SQL-Injection"
+  richtig: [1]
+  erklaerung: "Der Schadcode liegt in der Datenbank und trifft alle, die die Seite aufrufen – besonders gefährlich."
+  artikel: "#xss"
+  tags: [security, xss]
+
+- id: sec-web-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Maßnahmen schützen vor XSS?"
+  optionen:
+    - "Ausgaben kontextgerecht kodieren (z. B. html.escape)"
+    - "Content Security Policy, die eingeschleuste Skripte blockiert"
+    - "Session-Cookies mit HttpOnly, damit JavaScript sie nicht lesen kann"
+    - "Html.Raw oder innerHTML für Benutzereingaben verwenden"
+  richtig: [0, 1, 2]
+  erklaerung: "Kodierung ist die Hauptmaßnahme, CSP und HttpOnly sind weitere Schichten. Html.Raw und innerHTML schalten die Kodierung gerade ab."
+  artikel: "#xss"
+  tags: [security, xss]
+
+- id: sec-web-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Worauf achtest du beim Code-Review besonders, um XSS in einer React-, Razor- oder Thymeleaf-Anwendung zu finden?"
+  optionen:
+    - "Auf lange Methodennamen"
+    - "Auf Stellen, an denen die automatische Kodierung abgeschaltet wird (dangerouslySetInnerHTML, Html.Raw, th:utext)"
+    - "Auf die Anzahl der CSS-Klassen"
+    - "Auf fehlende Kommentare"
+  richtig: [1]
+  erklaerung: "Moderne Frameworks kodieren standardmäßig. Lücken entstehen fast immer dort, wo das bewusst umgangen wird."
+  artikel: "#xss"
+  tags: [security, xss, review]
+
+- id: sec-web-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum prüft sicher.py beim Datei-Lesen mit resolve() und is_relative_to(), statt nur '../' aus dem Namen zu entfernen?"
+  optionen:
+    - "Weil resolve() schneller ist"
+    - "Weil es viele Varianten gibt (absolute Pfade, verschachtelte ../, symbolische Links) – nur der aufgelöste Endpfad zeigt sicher, wohin der Zugriff geht"
+    - "Weil '../' unter Windows nicht funktioniert"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Prüfe das Ergebnis, nicht die Eingabe. Ein absoluter Pfad wie /etc/passwd enthält zum Beispiel gar kein '../'."
+  artikel: "#path-traversal"
+  tags: [security, path-traversal]
+
+- id: sec-web-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Ben ist angemeldet, ändert in der URL /bestellungen/2 auf /bestellungen/1 und sieht Annas Bestellung. Wie heißt diese Schwachstelle?"
+  optionen:
+    - "SQL-Injection"
+    - "IDOR (Insecure Direct Object Reference)"
+    - "XSS"
+    - "SSRF"
+  richtig: [1]
+  erklaerung: "Die Anwendung prüft nur, ob jemand angemeldet ist, nicht, ob ihm das Objekt gehört – eine Form von Broken Access Control."
+  artikel: "#idor"
+  tags: [security, idor, access-control]
+
+- id: sec-web-009
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Eine parametrisierte SQL-Abfrage ist automatisch sicher gegen alle Angriffe auf diesen Endpunkt."
+  richtig: [1]
+  erklaerung: "Falsch. bestellung_holen in unsicher.py ist parametrisiert und trotzdem anfällig für IDOR, weil die Besitzprüfung fehlt."
+  artikel: "#idor"
+  tags: [security, idor]
+
+- id: sec-web-010
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum liefert die sichere Variante für eine fremde Bestellung dasselbe Ergebnis wie für eine nicht vorhandene?"
+  optionen:
+    - "Weil es einfacher zu programmieren ist"
+    - "Damit ein Angreifer nicht herausfinden kann, welche IDs existieren"
+    - "Weil HTTP keinen anderen Statuscode kennt"
+    - "Das ist ein Fehler"
+  richtig: [1]
+  erklaerung: "Unterschiedliche Antworten (403 vs. 404) würden verraten, welche Bestellungen es gibt – auch das ist eine Informationspreisgabe."
+  artikel: "#idor"
+  tags: [security, idor]
+
+- id: sec-web-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie testest du Zugriffskontrolle in einer API am systematischsten?"
+  optionen:
+    - "Mit einem automatischen Scanner, der findet alles"
+    - "Datengetrieben: jeden Endpunkt als Besitzer, als anderer Benutzer und ohne Anmeldung aufrufen und das erwartete Ergebnis prüfen"
+    - "Nur über die Oberfläche klicken"
+    - "Gar nicht, das ist Aufgabe der Entwickler"
+  richtig: [1]
+  erklaerung: "Kein Werkzeug weiß, wem was gehört. Eine Tabelle Rolle × Endpunkt × erwartetes Ergebnis macht die Prüfung vollständig und wiederholbar."
+  artikel: "#idor"
+  tags: [security, access-control, testen]
+
+- id: sec-web-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine fremde Webseite löst im Browser einer angemeldeten Person unbemerkt das Formular 'Passwort ändern' deiner Anwendung aus. Was hilft dagegen?"
+  optionen:
+    - "SameSite-Cookies und Anti-CSRF-Token"
+    - "Längere Passwörter"
+    - "Ein schnellerer Server"
+    - "Parametrisierte Abfragen"
+  richtig: [0]
+  erklaerung: "Das ist CSRF. SameSite verhindert, dass der Browser das Cookie bei fremden Seiten mitschickt; das Token kennt nur die eigene Seite."
+  artikel: "#weitere"
+  tags: [security, csrf]
+
+- id: sec-web-013
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher HTTP-Header sorgt dafür, dass der Browser eine Domain nur noch über HTTPS aufruft?"
+  optionen:
+    - "Content-Security-Policy"
+    - "Strict-Transport-Security (HSTS)"
+    - "X-Content-Type-Options"
+    - "Cache-Control"
+  richtig: [1]
+  erklaerung: "HSTS verhindert, dass Verbindungen auf unverschlüsseltes HTTP herabgestuft werden."
+  artikel: "#header"
+  tags: [security, header]

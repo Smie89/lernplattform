@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Systeme und Netzwerke härten"
+
+- id: sec-hd-001
+  typ: single
+  schwierigkeit: 2
+  frage: "ss -tulpn zeigt 'tcp LISTEN 0.0.0.0:6379 redis-server'. Was bedeutet das?"
+  optionen:
+    - "Redis ist nur lokal erreichbar"
+    - "Redis lauscht auf allen Netzwerkschnittstellen und ist damit von außen erreichbar, wenn keine Firewall davor ist"
+    - "Redis ist abgeschaltet"
+    - "Redis nutzt UDP"
+  richtig: [1]
+  erklaerung: "0.0.0.0 heißt alle Schnittstellen. Für eine Datenbank oder einen Cache sollte es 127.0.0.1 oder ein internes Netz sein."
+  artikel: "#ports"
+  tags: [security, ports]
+
+- id: sec-hd-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Dienste sollten nie direkt aus dem Internet erreichbar sein?"
+  optionen:
+    - "HTTPS auf Port 443 eines Webshops"
+    - "Datenbanken wie PostgreSQL (5432) oder SQL Server (1433)"
+    - "Die öffentliche Startseite"
+    - "DNS-Abfragen des Clients"
+  richtig: [1]
+  erklaerung: "Datenbanken gehören in ein internes Netz. Offen erreichbare Datenbanken ohne Passwort waren Ursache vieler großer Datenlecks."
+  artikel: "#netzwerk"
+  tags: [security, netzwerk]
+
+- id: sec-hd-003
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Mit nmap darf man jedes System im Internet scannen, solange man nichts kaputt macht."
+  richtig: [1]
+  erklaerung: "Falsch. Scans fremder Systeme ohne Erlaubnis können als Vorbereitung eines Angriffs gelten. Zum Üben: eigene Systeme oder scanme.nmap.org."
+  artikel: "#ports"
+  tags: [security, nmap, recht]
+
+- id: sec-hd-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Nach welchem Prinzip richtet man eine Firewall ein?"
+  optionen:
+    - "Alles erlauben, bekannte Angriffe verbieten"
+    - "Eingehend standardmäßig alles verweigern und nur benötigte Dienste ausdrücklich erlauben"
+    - "Nur ausgehenden Verkehr filtern"
+    - "Eine Firewall ist bei Linux nicht nötig"
+  richtig: [1]
+  erklaerung: "Default Deny ist Secure by Default: Ein vergessener Dienst bleibt dann trotzdem unerreichbar."
+  artikel: "#firewall"
+  tags: [security, firewall]
+
+- id: sec-hd-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Du richtest per SSH auf einem entfernten Server ufw ein. Was musst du vor 'ufw enable' unbedingt tun?"
+  optionen:
+    - "Den Server neu starten"
+    - "Port 22 bzw. SSH erlauben, sonst sperrst du dich selbst aus"
+    - "Alle Benutzer löschen"
+    - "Nichts"
+  richtig: [1]
+  erklaerung: "Mit 'default deny incoming' wäre auch die eigene SSH-Verbindung blockiert."
+  artikel: "#firewall"
+  tags: [security, firewall]
+
+- id: sec-hd-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche SSH-Einstellungen härten einen Server?"
+  optionen:
+    - "PasswordAuthentication no"
+    - "PermitRootLogin no"
+    - "AllowUsers mit den berechtigten Benutzern"
+    - "PermitEmptyPasswords yes"
+  richtig: [0, 1, 2]
+  erklaerung: "Nur Schlüssel, kein direkter root-Login und eine Liste erlaubter Benutzer. Leere Passwörter zu erlauben wäre das Gegenteil."
+  artikel: "#ssh"
+  tags: [security, ssh]
+
+- id: sec-hd-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum hilft eine gute Regressionstestsuite der Sicherheit?"
+  optionen:
+    - "Sie ersetzt Updates"
+    - "Sie macht es möglich, Sicherheitsupdates schnell einzuspielen, weil Fehler durch das Update sofort auffallen würden"
+    - "Sie verschlüsselt die Daten"
+    - "Gar nicht"
+  richtig: [1]
+  erklaerung: "Die meisten Angriffe nutzen bekannte Lücken. Wer Angst vor Updates hat, patcht langsam – Tests nehmen diese Angst."
+  artikel: "#updates"
+  tags: [security, updates, testen]
+
+- id: sec-hd-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Rechte braucht der Datenbankbenutzer einer Webanwendung typischerweise?"
+  optionen:
+    - "Alle Rechte, damit Migrationen laufen"
+    - "Nur die nötigen Rechte wie SELECT, INSERT und UPDATE auf die eigenen Tabellen"
+    - "Administratorrechte auf dem Datenbankserver"
+    - "Keine, die Anwendung braucht keine Datenbank"
+  richtig: [1]
+  erklaerung: "Least Privilege: Selbst eine erfolgreiche SQL-Injection kann dann keine Tabellen löschen oder andere Datenbanken lesen."
+  artikel: "#rechte"
+  tags: [security, least-privilege]
+
+- id: sec-hd-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was gehört zur Härtung eines Docker-Containers?"
+  optionen:
+    - "Ein kleines Basis-Image wie chiseled oder distroless"
+    - "Mit USER einen Benutzer ohne root-Rechte festlegen"
+    - "Keine Secrets per ENV oder COPY ins Image schreiben"
+    - "Den Docker-Socket einhängen, damit der Container sich selbst verwalten kann"
+  richtig: [0, 1, 2]
+  erklaerung: "Wer den Docker-Socket einhängt, gibt dem Container praktisch root-Rechte auf dem Host."
+  artikel: "#container"
+  tags: [security, docker]
+
+- id: sec-hd-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dient Netzsegmentierung?"
+  optionen:
+    - "Um das Netz schneller zu machen"
+    - "Um einem Angreifer, der einen Rechner übernommen hat, den Weg zu anderen Systemen zu erschweren"
+    - "Um IP-Adressen zu sparen"
+    - "Sie ersetzt Passwörter"
+  richtig: [1]
+  erklaerung: "Getrennte Zonen (DMZ, Server, Büro) bremsen die Seitwärtsbewegung (Lateral Movement)."
+  artikel: "#segmentierung"
+  tags: [security, netzwerk]
+
+- id: sec-hd-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist bei Backups der wichtigste Schutz gegen Ransomware?"
+  optionen:
+    - "Backups auf einem ständig verbundenen Netzlaufwerk"
+    - "Mindestens eine Kopie offline oder unveränderbar – und die Wiederherstellung regelmäßig getestet"
+    - "Backups einmal im Jahr"
+    - "Backups im selben Ordner wie die Daten"
+  richtig: [1]
+  erklaerung: "Ransomware verschlüsselt alles, was sie erreicht. Und ein nie getestetes Backup ist nur eine Hoffnung."
+  artikel: "#backups"
+  tags: [security, backup, ransomware]

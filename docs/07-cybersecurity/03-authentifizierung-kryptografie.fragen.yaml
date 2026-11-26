@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Authentifizierung, Passwörter und Kryptografie"
+
+- id: sec-auth-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Ein angemeldeter Benutzer ruft eine Admin-Funktion auf, für die er keine Rechte hat. Welcher Bereich ist betroffen?"
+  optionen:
+    - "Authentifizierung"
+    - "Autorisierung"
+    - "Verschlüsselung"
+    - "Verfügbarkeit"
+  richtig: [1]
+  erklaerung: "Wer er ist, steht fest (Authentifizierung). Was er darf, regelt die Autorisierung – typische Antwort 403."
+  artikel: "#authn-authz"
+  tags: [security, authentifizierung]
+
+- id: sec-auth-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie werden Passwörter richtig gespeichert?"
+  optionen:
+    - "Im Klartext in einer gut geschützten Tabelle"
+    - "Mit AES verschlüsselt"
+    - "Als Hash mit zufälligem Salt und einem langsamen Verfahren wie Argon2id, scrypt oder bcrypt"
+    - "Base64-kodiert"
+  richtig: [2]
+  erklaerung: "Verschlüsselte Passwörter lassen sich mit dem Schlüssel zurückgewinnen, Base64 ist gar kein Schutz."
+  artikel: "#passwoerter"
+  tags: [security, passwort]
+
+- id: sec-auth-003
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was bewirkt ein Salt beim Passwort-Hashing?"
+  optionen:
+    - "Gleiche Passwörter ergeben unterschiedliche Hashes"
+    - "Vorberechnete Tabellen (Rainbow Tables) werden nutzlos"
+    - "Das Salt muss geheim bleiben, sonst ist es wirkungslos"
+    - "Ein schwaches Passwort wird dadurch stark"
+  richtig: [0, 1]
+  erklaerung: "Das Salt wird mit dem Hash gespeichert und ist nicht geheim. Gegen Wörterbuchangriffe auf schwache Passwörter hilft es nicht – das zeigt der letzte Test im Beispiel."
+  artikel: "#salt"
+  tags: [security, passwort, salt]
+
+- id: sec-auth-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum sind MD5 und SHA-256 ungeeignet, um Passwörter zu speichern?"
+  optionen:
+    - "Weil sie zu lange Hashes erzeugen"
+    - "Weil sie sehr schnell sind – Angreifer können Milliarden Passwörter pro Sekunde ausprobieren"
+    - "Weil sie umkehrbar sind"
+    - "Weil sie nur unter Linux funktionieren"
+  richtig: [1]
+  erklaerung: "Passwortverfahren sind absichtlich langsam. Im Beispiel ist scrypt rund 15 000-mal teurer pro Prüfung als MD5."
+  artikel: "#langsam"
+  tags: [security, passwort]
+
+- id: sec-auth-005
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Mit scrypt oder Argon2id gespeicherte Passwörter wie 'Sommer2026' sind nach einem Datenleck sicher."
+  richtig: [1]
+  erklaerung: "Falsch. Langsames Hashing macht jeden Versuch teuer, aber ein Passwort aus jeder Wortliste wird trotzdem schnell gefunden. Dagegen helfen Sperrlisten, Anmeldelimits und MFA."
+  artikel: "#langsam"
+  tags: [security, passwort]
+
+- id: sec-auth-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum vergleicht sicher.py die Hashes mit hmac.compare_digest statt mit ==?"
+  optionen:
+    - "Weil == bei Strings nicht funktioniert"
+    - "compare_digest braucht immer gleich lange und verrät über die Antwortzeit nicht, wie viele Zeichen übereinstimmen"
+    - "Weil compare_digest schneller ist"
+    - "Es gibt keinen Grund"
+  richtig: [1]
+  erklaerung: "Ein Vergleich, der beim ersten Unterschied abbricht, ermöglicht Timing-Angriffe."
+  artikel: "#konstante-zeit"
+  tags: [security, timing]
+
+- id: sec-auth-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Passwortregeln entsprechen aktuellen Empfehlungen (z. B. NIST SP 800-63B)?"
+  optionen:
+    - "Länge vor Komplexität"
+    - "Abgleich mit einer Sperrliste bekannter Passwörter"
+    - "Passwort-Manager erlauben, Einfügen nicht blockieren"
+    - "Alle 30 Tage einen Wechsel erzwingen"
+  richtig: [0, 1, 2]
+  erklaerung: "Zwangswechsel ohne Anlass führt zu Mustern wie Sommer2026 → Herbst2026. Gewechselt wird bei Verdacht."
+  artikel: "#passwortregeln"
+  tags: [security, passwort]
+
+- id: sec-auth-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches MFA-Verfahren schützt am besten vor Phishing?"
+  optionen:
+    - "SMS-Code"
+    - "TOTP-Code aus einer App"
+    - "FIDO2-Sicherheitsschlüssel bzw. Passkeys"
+    - "Sicherheitsfrage"
+  richtig: [2]
+  erklaerung: "FIDO2/Passkeys sind kryptografisch an die echte Domain gebunden. Codes kann man dagegen auf einer gefälschten Seite eingeben."
+  artikel: "#mfa"
+  tags: [security, mfa]
+
+- id: sec-auth-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Was gilt für den Inhalt (Payload) eines JWT?"
+  optionen:
+    - "Er ist verschlüsselt und kann Passwörter enthalten"
+    - "Er ist nur Base64-kodiert und für jeden lesbar – die Signatur schützt nur vor Veränderung"
+    - "Er ist komprimiert und unlesbar"
+    - "Er wird auf dem Server gespeichert"
+  richtig: [1]
+  erklaerung: "Keine Geheimnisse ins JWT schreiben und die Signatur immer prüfen, auch den Algorithmus."
+  artikel: "#sessions"
+  tags: [security, jwt]
+
+- id: sec-auth-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Was prüft der Browser beim Aufbau einer TLS-Verbindung?"
+  optionen:
+    - "Nur die Geschwindigkeit"
+    - "Ob das Zertifikat von einer vertrauenswürdigen Stelle unterschrieben, gültig und für die aufgerufene Domain ausgestellt ist"
+    - "Ob der Server Linux verwendet"
+    - "Ob das Passwort stark ist"
+  richtig: [1]
+  erklaerung: "Nur so ist sichergestellt, dass man wirklich mit dem richtigen Server spricht und niemand dazwischen sitzt."
+  artikel: "#tls"
+  tags: [security, tls]
+
+- id: sec-auth-011
+  typ: single
+  schwierigkeit: 1
+  frage: "Welche Zufallsquelle verwendest du in Python für ein Session-Token?"
+  optionen:
+    - "random.randint"
+    - "Das aktuelle Datum"
+    - "Das Modul secrets"
+    - "Die Prozess-ID"
+  richtig: [2]
+  erklaerung: "secrets ist ein kryptografisch sicherer Generator. random ist vorhersagbar und nur für Simulationen gedacht."
+  artikel: "#kryptografie"
+  tags: [security, zufall]
+
+- id: sec-auth-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein API-Schlüssel wurde versehentlich in ein öffentliches Repository gepusht. Was ist der wichtigste Schritt?"
+  optionen:
+    - "Den Commit löschen und hoffen, dass es niemand gesehen hat"
+    - "Den Schlüssel sofort widerrufen und einen neuen erzeugen"
+    - "Das Repository umbenennen"
+    - "Nichts, solange niemand Bescheid sagt"
+  richtig: [1]
+  erklaerung: "Bots durchsuchen öffentliche Repositories in Minuten nach Secrets. Die Git-Historie und Kopien behalten den Schlüssel – nur Widerrufen hilft."
+  artikel: "#secrets"
+  tags: [security, secrets]

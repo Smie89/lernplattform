@@ -1,0 +1,226 @@
+---
+title: Angriffe erkennen und auf Vorfälle reagieren
+description: Was protokolliert werden muss, wie ein SOC und ein SIEM arbeiten, eine echte Erkennungsregel für Brute-Force-Angriffe mit Tests und ihren Grenzen, Indikatoren für Kompromittierung, der Ablauf der Incident Response und Meldepflichten.
+tags: [security, soc, siem, logging, incident-response]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './06-erkennung-incident-response.fragen.yaml';
+
+# Angriffe erkennen und auf Vorfälle reagieren
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- festlegen, **was protokolliert** werden muss – und was nicht,
+- erklären, wie ein **SOC** mit einem **SIEM** arbeitet,
+- eine **Erkennungsregel** schreiben, testen und ihre **Grenzen** benennen,
+- **Fehlalarme** und **übersehene Angriffe** gegeneinander abwägen,
+- die Phasen der **Incident Response** an einem Beispiel durchspielen,
+- die wichtigsten **Meldepflichten** einordnen.
+:::
+
+Kein Schutz ist perfekt. Deshalb gilt: **Angriffe schnell bemerken** ist genauso wichtig wie sie zu verhindern. Je länger
+ein Angreifer unbemerkt bleibt, desto größer der Schaden.
+
+## Was protokolliert werden muss \{#logging}
+
+| protokollieren | **nicht** protokollieren |
+|---|---|
+| Anmeldungen, erfolgreich **und** fehlgeschlagen, mit Zeit, Benutzer, IP | Passwörter (auch falsche – oft ist es das richtige mit Tippfehler) |
+| verweigerte Zugriffe (401, 403) | Session-IDs, Tokens, API-Schlüssel |
+| Änderungen an Rechten, Benutzern, Konfiguration | vollständige Kreditkartennummern, Gesundheitsdaten |
+| Administratoraktionen | personenbezogene Daten über das Nötige hinaus (DSGVO) |
+| Eingabevalidierungsfehler in großer Zahl | |
+
+Logs müssen **zentral** gesammelt werden (ein Angreifer mit root-Rechten löscht lokale Logs zuerst), eine **einheitliche Zeit**
+haben (NTP) und gegen Veränderung geschützt sein. Fehlende Protokollierung und Alarmierung ist ein eigener Punkt der
+[OWASP Top 10](./02-web-schwachstellen.mdx#owasp-top-10) (A09).
+
+## SOC und SIEM \{#soc-siem}
+
+Ein **Security Operations Center (SOC)** überwacht die Systeme einer Organisation, oft rund um die Uhr. Sein wichtigstes
+Werkzeug ist ein **SIEM** (Security Information and Event Management), z. B. Microsoft Sentinel, Splunk, Elastic Security
+oder das freie Wazuh. Ein SIEM
+
+1. **sammelt** Logs aus Servern, Firewalls, Anwendungen, Cloud-Diensten und Endgeräten,
+2. **vereinheitlicht** sie (Zeit, Felder wie Benutzer und IP),
+3. wendet **Erkennungsregeln** an und erzeugt **Alarme**,
+4. bietet **Suche und Auswertung** für die Untersuchung.
+
+| Stufe | Aufgabe |
+|---|---|
+| **Tier 1** – Analyst | Alarme sichten (Triage): echter Vorfall oder Fehlalarm? Einfache Fälle abschließen, schwere eskalieren |
+| **Tier 2** – Incident Responder | tiefere Untersuchung, Eindämmung, Abstimmung mit den Systemverantwortlichen |
+| **Tier 3** – Threat Hunter, Detection Engineer | aktiv nach unentdeckten Angriffen suchen, neue Erkennungsregeln entwickeln |
+
+Ergänzt wird das durch **EDR** (Endpoint Detection and Response) auf den Rechnern selbst, das verdächtiges Verhalten von
+Prozessen erkennt und Rechner isolieren kann.
+
+## Eine Erkennungsregel bauen \{#erkennungsregel}
+
+Das Beispielprojekt enthält ein realistisches SSH-Log
+([auth.log](https://github.com/Smie89/lernplattform/blob/main/beispiele/security/auth.log), Adressen aus den für
+Dokumentation reservierten Bereichen) und eine Erkennung in
+[log_analyse.py](https://github.com/Smie89/lernplattform/blob/main/beispiele/security/log_analyse.py):
+
+```text title="auth.log (Ausschnitt)"
+Nov 26 03:12:00 web01 sshd[2001]: Failed password for invalid user admin from 203.0.113.7 port 40100 ssh2
+Nov 26 03:12:03 web01 sshd[2002]: Failed password for root from 203.0.113.7 port 40101 ssh2
+...
+Nov 26 13:40:24 web01 sshd[2022]: Failed password for ben from 192.0.2.50 port 51006 ssh2
+Nov 26 13:40:31 web01 sshd[2023]: Accepted password for ben from 192.0.2.50 port 51010 ssh2
+```
+
+**Regel 1 – Brute Force:** mindestens 5 Fehlversuche einer IP innerhalb von 60 Sekunden (gleitendes Fenster):
+
+```python title="log_analyse.py"
+def brute_force(zeilen, schwelle=5, fenster_sekunden=60):
+    fenster = defaultdict(deque)
+    hoechstwert = {}
+    for zeitpunkt, ergebnis, _, ip in ereignisse(zeilen):
+        if ergebnis != "Failed":
+            continue
+        f = fenster[ip]
+        f.append(zeitpunkt)
+        while (zeitpunkt - f[0]).total_seconds() > fenster_sekunden:
+            f.popleft()                       # Versuche außerhalb des Fensters vergessen
+        if len(f) >= schwelle:
+            hoechstwert[ip] = max(hoechstwert.get(ip, 0), len(f))
+    return hoechstwert
+```
+
+**Regel 2 – der eigentlich wichtige Alarm:** eine **erfolgreiche** Anmeldung von einer IP, die vorher viele Fehlversuche hatte.
+Brute-Force-Versuche gibt es auf jedem Server täglich – ein **gelungener** ist ein Notfall.
+
+```bash
+python log_analyse.py auth.log
+```
+
+```text
+Brute-Force-Verdacht (>= 5 Fehlversuche in 60 s):
+  203.0.113.7      12 Fehlversuche
+  192.0.2.50       7 Fehlversuche
+KRITISCH - erfolgreiche Anmeldung nach Fehlversuchen:
+  26.11. 13:40:31  ben von 192.0.2.50 nach 7 Fehlversuchen
+```
+
+In echten SIEMs schreibt man solche Regeln in einer Abfragesprache (z. B. KQL in Sentinel, SPL in Splunk) oder
+herstellerneutral als **Sigma**-Regel. Die Logik ist dieselbe.
+
+### Erkennungsregeln testen \{#regeln-testen}
+
+Auch Erkennungsregeln sind Code – und brauchen Tests (**Detection Engineering**). `test_log_analyse.py` prüft nicht nur,
+was erkannt wird, sondern auch, was **nicht** erkannt werden darf und wo die Regel an ihre **Grenzen** kommt:
+
+```python title="test_log_analyse.py"
+def test_brute_force_wird_erkannt(self):
+    self.assertEqual(brute_force(LOG)["203.0.113.7"], 12)
+
+def test_ein_tippfehler_ist_kein_angriff(self):
+    self.assertNotIn("198.51.100.23", brute_force(LOG))
+
+def test_erfolgreicher_angriff_loest_kritischen_alarm_aus(self):
+    alarme = erfolg_nach_fehlversuchen(LOG)
+    self.assertEqual([(benutzer, ip) for _, benutzer, ip, _ in alarme], [("ben", "192.0.2.50")])
+
+def test_langsamer_angriff_unterlaeuft_das_zeitfenster(self):
+    # Bekannte Grenze der Regel: 8 Versuche im Abstand von 10 Minuten bleiben unter der Schwelle.
+    self.assertNotIn("203.0.113.99", brute_force(LOG))
+
+def test_langsamer_angriff_mit_tagesfenster(self):
+    # Eine zweite Regel mit großem Fenster fängt ihn – dafür mehr Fehlalarme bei vergesslichen Nutzern.
+    self.assertIn("203.0.113.99", brute_force(LOG, schwelle=8, fenster_sekunden=24 * 3600))
+```
+
+### Fehlalarme gegen übersehene Angriffe \{#fehlalarme}
+
+Jede Regel ist ein Kompromiss – wie die Präzision und Sensitivität eines
+[Klassifikators](../06-ki/01-ki-grundlagen.mdx):
+
+| | Folge |
+|---|---|
+| **False Positive** (Fehlalarm) | Analysten verschwenden Zeit; zu viele Fehlalarme führen zu **Alarmmüdigkeit** – echte Alarme gehen unter |
+| **False Negative** (übersehener Angriff) | der Angreifer bleibt unentdeckt |
+
+Typische Umgehungen einfacher Regeln, die man kennen sollte:
+
+- **Low and Slow**: wenige Versuche über lange Zeit (im Beispiel 203.0.113.99).
+- **Password Spraying**: **ein** häufiges Passwort gegen **viele** Benutzer – pro Benutzer nur ein Fehlversuch.
+- **Verteilte Angriffe**: viele IPs aus einem Botnetz, jede nur mit wenigen Versuchen.
+- **Gültige Zugangsdaten** aus einem anderen Datenleck: gar keine Fehlversuche – hier helfen nur Auffälligkeiten wie neues
+  Land, ungewöhnliche Uhrzeit oder „unmögliche Reise“ (Anmeldung in Berlin und 10 Minuten später in Singapur).
+
+## Indikatoren: IoCs und TTPs \{#ioc}
+
+- **IoC** (Indicator of Compromise): konkrete Spuren eines bekannten Angriffs – IP-Adressen, Domains, Datei-Hashes.
+  Schnell zu prüfen, aber leicht zu ändern: Der Angreifer nimmt einfach eine neue IP.
+- **TTP** (Tactics, Techniques and Procedures): das **Verhalten** eines Angreifers, beschrieben z. B. mit
+  [MITRE ATT&CK](./01-security-grundlagen.mdx#angriffsablauf). Regeln auf Verhalten („Erfolg nach vielen Fehlversuchen“,
+  „Office-Programm startet PowerShell“) sind schwerer zu umgehen.
+
+## Incident Response \{#incident-response}
+
+Wenn ein Alarm sich als echter Vorfall herausstellt, hilft ein vorbereiteter Ablauf. Verbreitet ist das Modell des NIST
+(SP 800-61), vereinfacht:
+
+| Phase | Inhalt |
+|---|---|
+| **1. Vorbereitung** | Zuständigkeiten, Kontaktliste, Playbooks, Werkzeuge, Logging, Übungen – **vor** dem Ernstfall |
+| **2. Erkennung und Analyse** | Alarm bestätigen, Umfang bestimmen: Welche Systeme, Konten, Daten? Seit wann? |
+| **3. Eindämmung** | Ausbreitung stoppen, ohne Spuren zu vernichten |
+| **4. Beseitigung** | Ursache entfernen: Schadcode, Hintertüren, Lücke schließen |
+| **5. Wiederherstellung** | Systeme sauber zurück in den Betrieb, verstärkt überwachen |
+| **6. Nachbereitung** | Lessons Learned ohne Schuldzuweisung: Was verbessern wir? Neue Erkennungsregel, neuer Test |
+
+### Durchgespielt: der Alarm für ben \{#playbook}
+
+Der kritische Alarm aus dem Beispiel – `ben von 192.0.2.50 nach 7 Fehlversuchen` – als Playbook:
+
+1. **Analyse:** Ist das wirklich Ben? Ben fragen (über einen **anderen** Kanal als die betroffene Anmeldung). Was hat die
+   Sitzung danach getan (`session opened`, Befehle, neue Dateien, neue SSH-Schlüssel in `~/.ssh/authorized_keys`)?
+2. **Eindämmung:** Bens Konto sperren, laufende Sitzungen beenden, IP an der Firewall blockieren. Falls Ben Rechte hatte:
+   Server vom Netz isolieren – aber **nicht ausschalten**, denn der Arbeitsspeicher enthält Spuren.
+3. **Beweise sichern:** Logs und, wenn nötig, ein Abbild des Systems sichern, bevor etwas verändert wird. Jeden Schritt mit
+   Uhrzeit dokumentieren.
+4. **Beseitigung:** Passwort zurücksetzen, unbekannte Schlüssel und Benutzer entfernen; im Zweifel das System **neu
+   aufsetzen** statt zu „reparieren“.
+5. **Ursache beheben:** Warum war Passwort-Anmeldung überhaupt möglich? → [SSH härten](./05-systemhaertung.mdx#ssh):
+   nur noch Schlüssel, fail2ban.
+6. **Nachbereitung:** Warum kam der Alarm erst im Nachhinein? → Regel direkt im SIEM mit sofortiger Benachrichtigung.
+
+:::warning[Häufige Fehler im Ernstfall]
+Hektisch Systeme neu starten oder löschen (Spuren weg), den Angreifer über das kompromittierte Mailsystem „warnen“, ohne
+Absprache eigenmächtig handeln, oder bei Ransomware sofort zahlen. Deshalb gibt es Playbooks und Übungen **vorher**.
+:::
+
+## Meldepflichten \{#meldepflichten}
+
+| Regelung | Wer | Frist (vereinfacht) |
+|---|---|---|
+| **DSGVO** Art. 33 | jedes Unternehmen bei Verletzung des Schutzes personenbezogener Daten mit Risiko für Betroffene | Meldung an die Datenschutzaufsicht **innerhalb von 72 Stunden**; bei hohem Risiko auch die Betroffenen informieren |
+| **NIS2** (in Deutschland über das BSI-Gesetz umgesetzt) | wichtige und besonders wichtige Einrichtungen, z. B. Energie, Gesundheit, Digitale Infrastruktur, viele mittlere und große Unternehmen | **frühe Warnung innerhalb von 24 Stunden**, Meldung innerhalb von 72 Stunden, Abschlussbericht nach einem Monat |
+
+Die Fristen beginnen mit dem **Bekanntwerden** – deshalb gehören Datenschutz, Rechtsabteilung und Geschäftsleitung von
+Anfang an in den Ablauf. Für konkrete Fälle gilt wie immer: Rechtsabteilung und aktuellen Stand der Vorgaben einbeziehen.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Passwörter oder Tokens** in Logs schreiben.
+- Logs nur **lokal** speichern, wo ein Angreifer sie löschen kann.
+- Erkennungsregeln **ohne Tests** – oder nur mit Tests für den Treffer, nicht für Fehlalarme.
+- **Zu viele Alarme**, bis keiner mehr hinsieht.
+- Nur Brute Force erkennen, aber **keine erfolgreiche Anmeldung** danach melden.
+- Im Vorfall **Spuren vernichten** oder ohne Plan improvisieren.
+- Die **72-Stunden-Frist** der DSGVO verpassen, weil niemand an den Datenschutz gedacht hat.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Protokollieren: Anmeldungen, verweigerte Zugriffe, Rechteänderungen – **zentral**, mit einheitlicher Zeit; keine Secrets.
+- **SOC** mit **SIEM**: sammeln, vereinheitlichen, Regeln anwenden, Alarme sichten (Tier 1–3).
+- Erkennungsregeln sind Code und brauchen **Tests** – für Treffer, Fehlalarme und bekannte Grenzen.
+- Der wichtigste Alarm: **Erfolg nach Fehlversuchen**. Umgehungen: Low and Slow, Password Spraying, verteilte Angriffe.
+- Regeln auf **Verhalten (TTPs)** sind robuster als auf **IoCs**.
+- **Incident Response**: Vorbereitung, Analyse, Eindämmung, Beseitigung, Wiederherstellung, Nachbereitung – Spuren sichern.
+- **Meldepflichten**: DSGVO 72 Stunden, NIS2 zusätzlich frühe Warnung in 24 Stunden.
+
+<Quiz fragen={fragen} titel="Quiz: Angriffe erkennen und auf Vorfälle reagieren" />

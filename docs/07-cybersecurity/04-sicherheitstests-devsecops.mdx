@@ -1,0 +1,281 @@
+---
+title: Sicherheitstests und DevSecOps
+description: Sicherheit im Entwicklungsprozess – Bedrohungsmodellierung mit STRIDE, automatisierte Sicherheits-Regressionstests, SAST mit Bandit (und was es nicht findet), Abhängigkeiten prüfen (SCA, SBOM), Secret Scanning, DAST mit ZAP, Container-Scans, Penetrationstests und eine echte Security-Pipeline.
+tags: [security, devsecops, sast, dast, pentest, ci]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './04-sicherheitstests-devsecops.fragen.yaml';
+
+# Sicherheitstests und DevSecOps
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- mit **STRIDE** Bedrohungen für eine Anwendung systematisch finden,
+- **Sicherheits-Regressionstests** schreiben,
+- **SAST, SCA, Secret Scanning, DAST** und **Container-Scans** unterscheiden und einsetzen,
+- die **Grenzen** automatischer Werkzeuge an einem echten Beispiel erklären,
+- den Ablauf eines **Penetrationstests** beschreiben,
+- eine **Security-Pipeline** in der CI aufbauen.
+:::
+
+## Shift Left: Sicherheit von Anfang an \{#shift-left}
+
+Eine Sicherheitslücke ist – wie jeder Fehler – umso teurer, je später sie gefunden wird. **DevSecOps** heißt: Sicherheit ist
+kein Abnahmeschritt am Ende, sondern Teil jeder Phase.
+
+| Phase | Sicherheitsaktivität |
+|---|---|
+| Anforderungen | Sicherheitsanforderungen, Schutzbedarf der Daten |
+| Entwurf | **Bedrohungsmodellierung** |
+| Entwicklung | sichere Programmierrichtlinien, Code-Review, **SAST**, **Secret Scanning** in der IDE und vor dem Commit |
+| Build/CI | **SAST**, **SCA**, **Sicherheitstests**, Container-Scan |
+| Test | **DAST**, manuelle Sicherheitstests, **Penetrationstest** |
+| Betrieb | Härtung, Monitoring, [Erkennung](./06-erkennung-incident-response.mdx), Patch-Management |
+
+## Bedrohungsmodellierung mit STRIDE \{#threat-modeling}
+
+Bevor man testet, fragt man: **Was kann schiefgehen?** Bewährt sind vier Leitfragen: *Was bauen wir? Was kann schiefgehen?
+Was tun wir dagegen? Haben wir gut genug gearbeitet?* Für die zweite Frage hilft **STRIDE**:
+
+| Buchstabe | Bedrohung | verletztes Schutzziel | Beispiel im Mini-Shop | Gegenmaßnahme |
+|---|---|---|---|---|
+| **S** | Spoofing – Identität vortäuschen | Authentizität | Anmeldung mit gestohlenem Passwort | MFA, Anmeldelimits |
+| **T** | Tampering – Daten manipulieren | Integrität | Preis im Bestell-Request ändern | Preis serverseitig aus der Datenbank nehmen |
+| **R** | Repudiation – Handlung abstreiten | Nichtabstreitbarkeit | „Diese Bestellung habe ich nie aufgegeben“ | Protokollierung mit Zeit und Benutzer |
+| **I** | Information Disclosure – Daten preisgeben | Vertraulichkeit | Fremde Bestellungen lesen (IDOR) | Besitzprüfung in jeder Abfrage |
+| **D** | Denial of Service – Dienst lahmlegen | Verfügbarkeit | 10 000 Bestellungen pro Sekunde | Rate Limiting |
+| **E** | Elevation of Privilege – Rechte ausweiten | Autorisierung | `"istAdmin": true` im Profil-Request | DTOs mit erlaubten Feldern |
+
+Man geht dafür ein **Datenflussdiagramm** durch (Browser → API → Datenbank) und fragt an jedem Übergang über eine
+**Vertrauensgrenze** alle sechs Buchstaben ab. Jede gefundene Bedrohung wird zu einer Anforderung **und** zu einem Testfall.
+
+:::tip[Für Tester ein starkes Werkzeug]
+Bedrohungsmodellierung ist im Kern **Testentwurf aus Angreifersicht**. Wer als Tester in diese Runden geht, bringt genau die
+Frage mit, die dort gebraucht wird: „Und was passiert, wenn …?“
+:::
+
+## Sicherheits-Regressionstests \{#regressionstests}
+
+Die wertvollsten Sicherheitstests sind **ganz normale automatisierte Tests**, die einen Angriff ausführen und erwarten,
+dass er scheitert. Das Beispielprojekt führt jeden Angriff gegen beide Varianten aus:
+
+```python title="test_angriffe.py"
+class GemeinsameTests:
+    """Fachliche Tests, die für beide Varianten gelten müssen."""
+    def test_anmeldung_mit_richtigem_passwort(self): ...
+
+class UnsicherTests(GemeinsameTests, unittest.TestCase):
+    """Nachweis der Schwachstellen: Diese Tests sind grün, WEIL die Angriffe funktionieren."""
+    modul = unsicher
+    def test_sql_injection_meldet_ohne_passwort_als_admin_an(self):
+        self.assertEqual(unsicher.anmelden(self.db, SQL_INJECTION, "egal"), "admin")
+
+class SicherTests(GemeinsameTests, unittest.TestCase):
+    """Dieselben Angriffe müssen hier scheitern."""
+    modul = sicher
+    def test_sql_injection_scheitert(self):
+        self.assertIsNone(sicher.anmelden(self.db, SQL_INJECTION, "egal"))
+```
+
+Drei Erkenntnisse aus dem Aufbau:
+
+1. **Erst den Angriff gegen den unsicheren Code zeigen.** Ein Sicherheitstest, der nie rot war, beweist nichts – vielleicht
+   ist die Angriffs-Eingabe falsch. Das ist dieselbe Regel wie bei jedem Test: [einmal rot sehen](../06-ki/05-ki-assistenten-entwicklung.mdx#arbeitsweise).
+2. **Die normale Funktion mittesten** (`GemeinsameTests`). Eine „Behebung“, die jede Anmeldung verweigert, ist auch sicher – aber nutzlos.
+3. **Nach jedem Sicherheitsbefund** einen solchen Test ergänzen. Dann kann dieselbe Lücke nie unbemerkt zurückkommen.
+
+## SAST: statische Analyse \{#sast}
+
+**Static Application Security Testing** untersucht den **Quellcode**, ohne ihn auszuführen, und sucht nach bekannten
+unsicheren Mustern. Werkzeuge: **Bandit** (Python), **Semgrep** (viele Sprachen), **CodeQL** (GitHub), **SonarQube**,
+Roslyn-Analyzer bzw. **SpotBugs mit Find Security Bugs** für C# und Java.
+
+Das Beispielprojekt lässt Bandit gegen beide Varianten laufen – mit einem aufschlussreichen Ergebnis:
+
+```bash
+bandit sicher.py datenbank.py log_analyse.py   # No issues identified.
+bandit unsicher.py
+```
+
+```text
+>> Issue: [B324:hashlib] Use of weak MD5 hash for security.
+   Severity: High   Confidence: High
+   CWE: CWE-327
+   Location: .\unsicher.py:14:11
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89
+   Location: .\unsicher.py:24:8
+```
+
+| Schwachstelle in `unsicher.py` | von Bandit gefunden? | warum (nicht)? |
+|---|---|---|
+| SQL-Injection | ✅ B608 | erkennbares Muster: SQL-Text aus f-String |
+| MD5 | ✅ B324 | erkennbares Muster: Aufruf von `hashlib.md5` |
+| fehlendes Salt | ❌ | hängt mit MD5 zusammen, wird nicht eigens gemeldet |
+| XSS | ❌ | Bandit weiß nicht, dass der String als HTML im Browser landet |
+| Path Traversal | ❌ | woher `dateiname` kommt, ist im Code nicht erkennbar |
+| IDOR | ❌ | Fachwissen nötig: Wem gehört eine Bestellung? |
+
+**Zwei von sechs.** SAST ist wertvoll, weil es schnell, billig und bei jedem Commit läuft – aber ein grünes SAST-Ergebnis
+heißt **nicht**, dass der Code sicher ist. Die anderen vier Lücken finden nur **Tests, Review und Fachwissen**. Die CI dieses
+Repositorys prüft genau dieses Ergebnis, damit es dokumentiert bleibt (siehe [Pipeline](#pipeline)).
+
+Typische Arbeit mit SAST-Befunden:
+
+- **Bewerten** (Triage): echter Befund oder **False Positive**? „Confidence: Low“ bei B608 zeigt: Bandit ist selbst unsicher.
+- False Positives **begründet** unterdrücken, z. B. mit `# nosec B608 – Tabellenname aus fester Liste` – nie pauschal.
+- **Neue** Befunde blockieren den Merge, alte werden schrittweise abgebaut (Baseline).
+
+## SCA: Abhängigkeiten prüfen \{#sca}
+
+Moderne Anwendungen bestehen zum größten Teil aus **fremdem Code**. **Software Composition Analysis** gleicht die verwendeten
+Pakete und Versionen mit Datenbanken bekannter Schwachstellen (CVE) ab:
+
+| Ökosystem | Werkzeug |
+|---|---|
+| .NET | `dotnet list package --vulnerable --include-transitive` |
+| Java/Maven | OWASP Dependency-Check, `mvn versions:display-dependency-updates` |
+| npm | `npm audit` |
+| Python | `pip-audit` |
+| alle (GitHub) | **Dependabot**: Warnungen und automatische Pull Requests mit Updates |
+
+Dazu gehört die **Lieferkette** insgesamt (OWASP A03): Pakete nur aus vertrauenswürdigen Quellen, **Lock-Dateien**
+einchecken (`package-lock.json`, `packages.lock.json`), Versionen festlegen – wie hier `bandit==1.9.4` in der CI – und bei
+unbekannten Paketen prüfen, ob sie echt sind (Typosquatting, siehe
+[KI-Assistenten](../06-ki/05-ki-assistenten-entwicklung.mdx#risiken)). Eine **SBOM** (Software Bill of Materials, z. B. im
+Format CycloneDX oder SPDX) listet alle enthaltenen Komponenten; damit beantwortet man bei der nächsten Lücke wie Log4Shell
+in Minuten die Frage „Sind wir betroffen?“.
+
+## Secret Scanning \{#secret-scanning}
+
+Werkzeuge wie **gitleaks** oder **trufflehog** durchsuchen Code und Git-Historie nach Mustern von Schlüsseln und Passwörtern.
+GitHub bietet für öffentliche Repositories Secret Scanning und **Push Protection**, die einen Push mit erkanntem Secret
+blockiert. Am wirksamsten ist der Scan **vor** dem Commit (Pre-Commit-Hook) – was nie gepusht wurde, muss nicht widerrufen
+werden (siehe [Secrets](./03-authentifizierung-kryptografie.mdx#secrets)).
+
+## DAST: die laufende Anwendung angreifen \{#dast}
+
+**Dynamic Application Security Testing** greift die **laufende** Anwendung von außen an, ohne den Code zu kennen – wie ein
+Angreifer. Das bekannteste freie Werkzeug ist **ZAP** (Zed Attack Proxy). Ein **Baseline-Scan** ist passiv (er greift nicht
+aktiv an) und eignet sich für jede Pipeline:
+
+```bash
+# Mini-Shop aus beispiele/shop lokal starten (läuft auf Port 5000), dann:
+docker run --rm -t ghcr.io/zaproxy/zaproxy:stable \
+  zap-baseline.py -t http://host.docker.internal:5000
+# unter Linux stattdessen: docker run --rm -t --network host ... -t http://localhost:5000
+```
+
+Typische Befunde eines Baseline-Scans sind fehlende [Sicherheits-Header](./02-web-schwachstellen.mdx#header), Cookies ohne
+`HttpOnly`/`Secure`, verräterische Server-Header und Fehlerseiten. Ein **aktiver Scan** (`zap-full-scan.py`) probiert
+zusätzlich Injection- und XSS-Angriffe aus – **nur gegen eigene Testumgebungen**, er verändert Daten und erzeugt hohe Last.
+
+| | SAST | DAST |
+|---|---|---|
+| prüft | Quellcode | laufende Anwendung |
+| braucht | Code, keine laufende Umgebung | laufende Umgebung, keinen Code |
+| findet | unsichere Muster, genaue Codezeile | Konfigurations- und Laufzeitfehler, echtes Verhalten |
+| übersieht | Konfiguration, Laufzeitverhalten | Code, den der Scanner nicht erreicht; Fachlogik |
+| wann | bei jedem Commit | nach dem Deployment in eine Testumgebung |
+
+Wie bei SAST gilt: **Fachlogik** (IDOR, Preise manipulieren, Workflow-Schritte überspringen) findet auch DAST kaum – das
+bleibt Aufgabe von gezielten Tests.
+
+## Container und Infrastruktur scannen \{#container-scan}
+
+**Trivy** (oder Grype) untersucht Docker-Images auf verwundbare Systempakete und Bibliotheken, außerdem Dockerfiles,
+Kubernetes- und Terraform-Dateien auf Fehlkonfigurationen:
+
+```bash
+trivy image mein-shop:latest                 # Schwachstellen im Image
+trivy config .                               # z. B. "Container läuft als root"
+```
+
+Kleinere Basis-Images (z. B. `-alpine`, distroless, „chiseled“) enthalten weniger Pakete und damit weniger Lücken – mehr dazu in
+[Systeme härten](./05-systemhaertung.mdx#container).
+
+## Penetrationstests \{#pentest}
+
+Ein **Penetrationstest** ist ein autorisierter, manueller Angriff durch Fachleute. Er findet, was Werkzeuge nicht finden:
+Logikfehler, verkettete kleine Schwächen, kreative Umgehungen. Ablauf:
+
+1. **Auftrag und Scope** – schriftlich: welche Systeme, welcher Zeitraum, welche Methoden, Ansprechpartner für Notfälle
+   (**Rules of Engagement**). Ohne das ist es kein Test, sondern eine [Straftat](./07-karriere-und-recht.mdx#recht).
+2. **Informationsbeschaffung** – Dienste, Versionen, Endpunkte, Rollen.
+3. **Schwachstellenanalyse** – Scanner plus manuelle Prüfung, z. B. nach OWASP WSTG.
+4. **Ausnutzung** – Nachweis, dass die Lücke real ist, ohne unnötigen Schaden.
+5. **Bericht** – jede Lücke mit Beschreibung, Reproduktionsschritten, Risiko (z. B. CVSS) und Empfehlung; dazu eine
+   Management-Zusammenfassung.
+6. **Nachtest** – sind die Lücken wirklich behoben?
+
+| Art | Wissen des Testers |
+|---|---|
+| **Black Box** | nur die URL, wie ein externer Angreifer |
+| **Grey Box** | Testkonten, Dokumentation – das häufigste und effizienteste Vorgehen |
+| **White Box** | zusätzlich Quellcode und Architektur |
+
+Ergänzend gibt es **Bug-Bounty-Programme**, bei denen Unternehmen externe Sicherheitsforscher für gemeldete Lücken bezahlen –
+nach klar veröffentlichten Regeln.
+
+:::note[Ein guter Bericht ist ein guter Fehlerbericht]
+Ein Pentest-Befund braucht dasselbe wie ein [Fehlerbericht](../01-softwaretest/07-fehlermanagement-agil.mdx): eindeutige
+Schritte zur Reproduktion, erwartetes und tatsächliches Verhalten, Schweregrad, Umgebung. Wer gute Fehlerberichte schreibt,
+hat einen großen Teil der Pentester-Arbeit schon gelernt.
+:::
+
+## Eine Security-Pipeline \{#pipeline}
+
+So prüft die CI dieses Repositorys das Beispielprojekt (Job `security` in `.github/workflows/beispiele.yml`):
+
+```yaml title=".github/workflows/beispiele.yml (Ausschnitt)"
+  security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beispiele/security
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Sicherheitstests (Angriffe gegen unsicher.py und sicher.py)
+        run: python -m unittest -v
+      - name: Erkennungsregel auf dem Beispiel-Log
+        run: python log_analyse.py auth.log
+      - name: Bandit installieren
+        run: pip install bandit==1.9.4
+      - name: "SAST: sicherer Code ohne Befunde"
+        run: bandit sicher.py datenbank.py log_analyse.py
+      - name: "SAST-Grenzen: Bandit findet in unsicher.py genau 2 der 6 Lücken"
+        run: |
+          bandit -q -f json -o bandit.json unsicher.py || true
+          python -c "import json; ids = sorted({r['test_id'] for r in json.load(open('bandit.json'))['results']}); print('Befunde:', ids); assert ids == ['B324', 'B608'], ids"
+```
+
+In einem echten Projekt kommen hinzu: SCA (Dependabot oder `dotnet list package --vulnerable`), Secret Scanning,
+Container-Scan des gebauten Images und nach dem Deployment in die Testumgebung ein ZAP-Baseline-Scan. Wichtig ist die
+**Reihenfolge nach Geschwindigkeit**: Schnelle Prüfungen zuerst, damit Entwickler in Minuten Rückmeldung bekommen.
+
+## Typische Fehler \{#typische-fehler}
+
+- **„SAST ist grün, also sicher“** – im Beispiel findet Bandit 2 von 6 Lücken.
+- **Hunderte Befunde ungefiltert** an Entwickler weitergeben – ohne Triage wird alles ignoriert.
+- False Positives **pauschal** unterdrücken statt einzeln begründet.
+- **Abhängigkeiten nie aktualisieren**, weil „es ja läuft“.
+- Einen **aktiven DAST-Scan** gegen Produktion oder fremde Systeme laufen lassen.
+- Sicherheit erst **kurz vor dem Release** mit einem Pentest „abhaken“.
+- Sicherheitstests, die **nie rot** waren.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **DevSecOps**: Sicherheit in jeder Phase, je früher, desto billiger.
+- **STRIDE** findet Bedrohungen systematisch; jede wird zu Anforderung und Testfall.
+- **Sicherheits-Regressionstests**: Angriff gegen unsicheren Code zeigen, gegen sicheren scheitern lassen, normale Funktion mittesten.
+- **SAST** prüft Code (Bandit, Semgrep, CodeQL), **SCA** Abhängigkeiten (Dependabot, pip-audit), **Secret Scanning** Schlüssel,
+  **DAST** die laufende Anwendung (ZAP), **Trivy** Container.
+- Werkzeuge finden **Muster**, keine **Fachlogik** – IDOR & Co. brauchen gezielte Tests und Pentests.
+- **Pentests** nur mit schriftlichem Auftrag und Scope; der Bericht ist ein sehr guter Fehlerbericht.
+
+<Quiz fragen={fragen} titel="Quiz: Sicherheitstests und DevSecOps" />

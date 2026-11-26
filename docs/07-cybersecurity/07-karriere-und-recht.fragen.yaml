@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Berufseinstieg, Recht und Lernpfad"
+
+- id: sec-kr-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Wer sichtet in einem SOC typischerweise eingehende Alarme und entscheidet, ob sie eskaliert werden?"
+  optionen:
+    - "Penetration Tester"
+    - "SOC-Analyst"
+    - "Informationssicherheitsbeauftragter"
+    - "Application Security Engineer"
+  richtig: [1]
+  erklaerung: "SOC-Analysten arbeiten mit dem SIEM, oft im Schichtdienst, und sind ein häufiger Einstieg in die Blue-Team-Seite."
+  artikel: "#berufsbilder"
+  tags: [security, karriere]
+
+- id: sec-kr-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Rolle berät Entwicklungsteams, macht Bedrohungsmodellierung und Code-Reviews und baut Sicherheitstests ein?"
+  optionen:
+    - "SOC-Analyst"
+    - "Forensiker"
+    - "Application Security Engineer"
+    - "Netzwerkadministrator"
+  richtig: [2]
+  erklaerung: "AppSec liegt nah an Entwicklung und Test – für Tester einer der natürlichsten Einstiege."
+  artikel: "#berufsbilder"
+  tags: [security, karriere, appsec]
+
+- id: sec-kr-003
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Fähigkeiten aus Softwaretest und Testautomation helfen direkt in der Security?"
+  optionen:
+    - "Negativtests und Grenzwertdenken"
+    - "Gute, reproduzierbare Fehlerberichte"
+    - "API-Testautomation und CI/CD"
+    - "Möglichst wenige Testfälle schreiben"
+  richtig: [0, 1, 2]
+  erklaerung: "Angriffs-Eingaben sind Negativtests, Pentest-Befunde sind Fehlerberichte, und Zugriffskontrollen testet man über APIs in der Pipeline."
+  artikel: "#vom-testen"
+  tags: [security, karriere]
+
+- id: sec-kr-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches Zertifikat schließt direkt an das ISTQB Foundation Level an und behandelt Sicherheitstests aus Testersicht?"
+  optionen:
+    - "CISSP"
+    - "ISTQB Advanced Level Security Tester"
+    - "OSCP"
+    - "Azure Fundamentals"
+  richtig: [1]
+  erklaerung: "Der Security Tester setzt das Foundation Level voraus und passt gut zu einem Weg aus dem Softwaretest."
+  artikel: "#zertifizierungen"
+  tags: [security, zertifizierung]
+
+- id: sec-kr-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches Zertifikat gilt als anspruchsvoll und praktisch, mit einer langen Prüfung, in der echte Systeme angegriffen werden?"
+  optionen:
+    - "CompTIA Security+"
+    - "OSCP"
+    - "ISO 27001 Foundation"
+    - "CEH"
+  richtig: [1]
+  erklaerung: "Das OSCP von OffSec ist für Pentester sehr angesehen. Für den Einstieg in praktische Pentests eignet sich eher das eJPT."
+  artikel: "#zertifizierungen"
+  tags: [security, zertifizierung, pentest]
+
+- id: sec-kr-006
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Wo darfst du Angriffstechniken legal üben?"
+  optionen:
+    - "PortSwigger Web Security Academy"
+    - "OWASP Juice Shop auf dem eigenen Rechner"
+    - "Die Webseite eines Online-Shops, bei dem du Kunde bist"
+    - "Freigegebene Maschinen auf TryHackMe oder Hack The Box"
+  richtig: [0, 1, 3]
+  erklaerung: "Kundin oder Kunde zu sein ist keine Erlaubnis für Angriffe. Geübt wird nur in Umgebungen, die dafür freigegeben sind."
+  artikel: "#uebungsumgebungen"
+  tags: [security, uebung, recht]
+
+- id: sec-kr-007
+  typ: single
+  schwierigkeit: 1
+  frage: "Was unterscheidet einen Penetrationstest von einer Straftat?"
+  optionen:
+    - "Die verwendeten Werkzeuge"
+    - "Die schriftliche Erlaubnis des Berechtigten mit festgelegtem Scope"
+    - "Die Uhrzeit"
+    - "Ob man etwas findet"
+  richtig: [1]
+  erklaerung: "Gute Absicht allein schützt nicht. Ohne Auftrag kann schon das Überwinden einer Zugangssicherung nach § 202a StGB strafbar sein."
+  artikel: "#recht"
+  tags: [security, recht]
+
+- id: sec-kr-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Worum geht es in § 202a StGB?"
+  optionen:
+    - "Um Urheberrechtsverletzungen"
+    - "Um das unbefugte Verschaffen von Zugang zu besonders gesicherten Daten unter Überwindung einer Zugangssicherung"
+    - "Um Datenschutzmeldungen"
+    - "Um Steuerdaten"
+  richtig: [1]
+  erklaerung: "§ 202b betrifft das Abfangen von Daten, § 202c das Vorbereiten solcher Taten, §§ 303a/b Datenveränderung und Computersabotage."
+  artikel: "#recht"
+  tags: [security, recht]
+
+- id: sec-kr-009
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Als Mitarbeiter darf man das Firmennetz jederzeit mit nmap scannen, weil man ja zum Unternehmen gehört."
+  richtig: [1]
+  erklaerung: "Falsch. Auch intern braucht man einen Auftrag. Unangekündigte Scans können Alarme auslösen, Systeme stören und arbeitsrechtliche Folgen haben."
+  artikel: "#recht"
+  tags: [security, recht]
+
+- id: sec-kr-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Du bemerkst zufällig, dass ein Online-Dienst fremde Kundendaten anzeigt, wenn man die ID in der URL ändert. Was ist richtig?"
+  optionen:
+    - "Alle IDs durchprobieren, um das Ausmaß zu belegen"
+    - "Nicht weiter testen und die Beobachtung sachlich über den Sicherheitskontakt (z. B. security.txt) melden; dem Betreiber Zeit zur Behebung geben"
+    - "Sofort in sozialen Netzwerken veröffentlichen"
+    - "Die Daten herunterladen und dem Betreiber schicken"
+  richtig: [1]
+  erklaerung: "Das ist Responsible bzw. Coordinated Disclosure. Weiteres Ausprobieren oder Herunterladen kann strafbar sein und verletzt den Datenschutz der Betroffenen."
+  artikel: "#disclosure"
+  tags: [security, disclosure]
+
+- id: sec-kr-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Was überzeugt Arbeitgeber in der Security besonders?"
+  optionen:
+    - "Möglichst viele Zertifikate ohne Praxis"
+    - "Ein Portfolio mit Projekten, Write-ups und konkreten Erfolgen, z. B. 'Sicherheitstests eingeführt, 3 IDOR-Lücken gefunden'"
+    - "Die Anzahl installierter Hacking-Werkzeuge"
+    - "Ein Lebenslauf ohne Bezug zur IT"
+  richtig: [1]
+  erklaerung: "Nachweisbare Praxis zeigt, wie man denkt und arbeitet. Zertifikate ergänzen das."
+  artikel: "#portfolio"
+  tags: [security, karriere, portfolio]

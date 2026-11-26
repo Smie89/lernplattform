@@ -1,0 +1,169 @@
+# Fragen zur Lektion "Angriffe erkennen und auf Vorfälle reagieren"
+
+- id: sec-ir-001
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was gehört nicht in ein Anwendungslog?"
+  optionen:
+    - "Passwörter, auch falsch eingegebene"
+    - "Session-IDs und API-Tokens"
+    - "Fehlgeschlagene Anmeldungen mit Zeitpunkt, Benutzername und IP"
+    - "Vollständige Kreditkartennummern"
+  richtig: [0, 1, 3]
+  erklaerung: "Fehlgeschlagene Anmeldungen sind wichtige Sicherheitsereignisse. Secrets und sensible Daten würden das Log selbst zum Angriffsziel machen."
+  artikel: "#logging"
+  tags: [security, logging]
+
+- id: sec-ir-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum sollten Logs zentral gesammelt werden?"
+  optionen:
+    - "Weil es billiger ist"
+    - "Weil ein Angreifer mit Administratorrechten lokale Logs löschen kann und die Auswertung über viele Systeme nur zentral möglich ist"
+    - "Weil lokale Logs nicht lesbar sind"
+    - "Das ist nicht nötig"
+  richtig: [1]
+  erklaerung: "Zentrale, geschützte Logs mit einheitlicher Zeit sind die Grundlage eines SIEM."
+  artikel: "#logging"
+  tags: [security, logging]
+
+- id: sec-ir-003
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist die Hauptaufgabe eines SIEM?"
+  optionen:
+    - "Code kompilieren"
+    - "Logs aus vielen Quellen sammeln, vereinheitlichen, mit Erkennungsregeln auswerten und Alarme erzeugen"
+    - "Passwörter speichern"
+    - "Webseiten ausliefern"
+  richtig: [1]
+  erklaerung: "Beispiele sind Microsoft Sentinel, Splunk, Elastic Security und Wazuh."
+  artikel: "#soc-siem"
+  tags: [security, siem]
+
+- id: sec-ir-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Aufgabe hat typischerweise ein Tier-1-Analyst im SOC?"
+  optionen:
+    - "Neue Erkennungsregeln entwickeln"
+    - "Alarme sichten und entscheiden, ob es ein echter Vorfall oder ein Fehlalarm ist (Triage)"
+    - "Penetrationstests durchführen"
+    - "Die Firewall programmieren"
+  richtig: [1]
+  erklaerung: "Tier 1 sichtet und eskaliert; Tier 2 untersucht tiefer; Tier 3 jagt aktiv nach Angriffen und baut Regeln."
+  artikel: "#soc-siem"
+  tags: [security, soc]
+
+- id: sec-ir-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher Alarm aus dem Beispiel ist der kritischste?"
+  optionen:
+    - "12 Fehlversuche von 203.0.113.7"
+    - "Eine erfolgreiche Anmeldung von ben über 192.0.2.50 nach 7 Fehlversuchen"
+    - "Ein Tippfehler von anna"
+    - "Die Meldung 'Server listening on port 22'"
+  richtig: [1]
+  erklaerung: "Brute-Force-Versuche gibt es täglich. Ein erfolgreicher Versuch bedeutet vermutlich, dass der Angreifer jetzt im System ist."
+  artikel: "#erkennungsregel"
+  tags: [security, erkennung]
+
+- id: sec-ir-006
+  typ: single
+  schwierigkeit: 3
+  frage: "203.0.113.99 versucht alle 10 Minuten ein Passwort. Warum erkennt die Regel '5 Fehlversuche in 60 Sekunden' das nicht?"
+  optionen:
+    - "Weil die Regel fehlerhaft programmiert ist"
+    - "Weil im 60-Sekunden-Fenster nie mehr als ein Versuch liegt – ein 'Low and Slow'-Angriff unterläuft die Schwelle"
+    - "Weil die IP auf einer Ausnahmeliste steht"
+    - "Weil es sich um UDP handelt"
+  richtig: [1]
+  erklaerung: "Das ist eine bekannte Grenze der Regel; der Test dokumentiert sie. Eine zweite Regel mit Tagesfenster fängt den Angriff, erzeugt aber mehr Fehlalarme."
+  artikel: "#regeln-testen"
+  tags: [security, erkennung, testen]
+
+- id: sec-ir-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum testet test_log_analyse.py auch, dass ein einzelner Tippfehler keinen Alarm auslöst?"
+  optionen:
+    - "Damit die Testabdeckung höher ist"
+    - "Weil zu viele Fehlalarme zu Alarmmüdigkeit führen und echte Alarme dann übersehen werden"
+    - "Weil Tippfehler verboten sind"
+    - "Ohne Grund"
+  richtig: [1]
+  erklaerung: "Eine gute Erkennungsregel muss Angriffe finden und Normalverhalten in Ruhe lassen – beides gehört getestet."
+  artikel: "#fehlalarme"
+  tags: [security, erkennung, testen]
+
+- id: sec-ir-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Angreifer probiert das Passwort 'Sommer2026' bei 500 verschiedenen Benutzerkonten je einmal aus. Wie heißt das?"
+  optionen:
+    - "Brute Force auf ein Konto"
+    - "Password Spraying"
+    - "SQL-Injection"
+    - "Phishing"
+  richtig: [1]
+  erklaerung: "Pro Konto gibt es nur einen Fehlversuch, Regeln pro Benutzer schlagen nicht an. Man erkennt es an vielen verschiedenen Benutzernamen von einer Quelle."
+  artikel: "#fehlalarme"
+  tags: [security, erkennung]
+
+- id: sec-ir-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum sind Erkennungsregeln auf Verhalten (TTPs) robuster als auf IoCs wie IP-Adressen?"
+  optionen:
+    - "Weil IP-Adressen geheim sind"
+    - "Weil ein Angreifer IPs und Domains leicht wechseln kann, sein Vorgehen aber nur schwer"
+    - "Weil IoCs verboten sind"
+    - "Sie sind nicht robuster"
+  richtig: [1]
+  erklaerung: "IoCs sind schnell geprüft, aber kurzlebig. Verhalten wie 'Erfolg nach vielen Fehlversuchen' bleibt gleich."
+  artikel: "#ioc"
+  tags: [security, ioc, ttp]
+
+- id: sec-ir-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Server ist vermutlich kompromittiert. Warum sollte man ihn nicht einfach ausschalten?"
+  optionen:
+    - "Weil das zu lange dauert"
+    - "Weil der Arbeitsspeicher wichtige Spuren enthält, die beim Ausschalten verloren gehen – besser vom Netz isolieren"
+    - "Weil Server nie ausgeschaltet werden dürfen"
+    - "Weil der Angreifer dann gewarnt ist"
+  richtig: [1]
+  erklaerung: "Eindämmung heißt: Ausbreitung stoppen, ohne Beweise zu vernichten."
+  artikel: "#playbook"
+  tags: [security, incident-response]
+
+- id: sec-ir-011
+  typ: single
+  schwierigkeit: 1
+  frage: "In welcher Phase der Incident Response werden Zuständigkeiten, Playbooks und Übungen festgelegt?"
+  optionen:
+    - "Vorbereitung"
+    - "Eindämmung"
+    - "Wiederherstellung"
+    - "Nachbereitung"
+  richtig: [0]
+  erklaerung: "Was im Ernstfall gebraucht wird, muss vorher bereitstehen. Die Nachbereitung fließt wieder in die Vorbereitung ein."
+  artikel: "#incident-response"
+  tags: [security, incident-response]
+
+- id: sec-ir-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Innerhalb welcher Frist muss eine Datenschutzverletzung mit Risiko für Betroffene nach DSGVO der Aufsichtsbehörde gemeldet werden?"
+  optionen:
+    - "24 Stunden"
+    - "72 Stunden"
+    - "30 Tage"
+    - "Gar nicht"
+  richtig: [1]
+  erklaerung: "Die Frist beginnt mit dem Bekanntwerden. NIS2-Einrichtungen müssen zusätzlich innerhalb von 24 Stunden eine frühe Warnung abgeben."
+  artikel: "#meldepflichten"
+  tags: [security, dsgvo, nis2]

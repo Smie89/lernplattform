@@ -1,0 +1,183 @@
+# Fragen zur Lektion "Sicherheitstests und DevSecOps"
+
+- id: sec-st-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was bedeutet 'Shift Left' bei DevSecOps?"
+  optionen:
+    - "Sicherheit erst nach dem Release prüfen"
+    - "Sicherheitsaktivitäten möglichst früh im Entwicklungsprozess durchführen"
+    - "Den Code nach links einrücken"
+    - "Nur noch Pentests durchführen"
+  richtig: [1]
+  erklaerung: "Je früher eine Lücke gefunden wird, desto billiger ist sie zu beheben – wie bei jedem Fehler."
+  artikel: "#shift-left"
+  tags: [security, devsecops]
+
+- id: sec-st-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Im Bestell-Request lässt sich der Preis verändern, und der Server übernimmt ihn. Welche STRIDE-Kategorie ist das?"
+  optionen:
+    - "Spoofing"
+    - "Tampering"
+    - "Repudiation"
+    - "Denial of Service"
+  richtig: [1]
+  erklaerung: "Manipulation von Daten verletzt die Integrität. Gegenmaßnahme: Preis serverseitig aus der Datenbank nehmen."
+  artikel: "#threat-modeling"
+  tags: [security, stride]
+
+- id: sec-st-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Benutzer kann sich über das Feld 'istAdmin' im Profil-Request selbst zum Administrator machen. Welche STRIDE-Kategorie passt?"
+  optionen:
+    - "Information Disclosure"
+    - "Repudiation"
+    - "Elevation of Privilege"
+    - "Spoofing"
+  richtig: [2]
+  erklaerung: "Rechteausweitung. Gegenmaßnahme: Request-Klassen (DTOs), die nur erlaubte Felder enthalten."
+  artikel: "#threat-modeling"
+  tags: [security, stride]
+
+- id: sec-st-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum enthält das Beispielprojekt Tests, die zeigen, dass die Angriffe gegen unsicher.py funktionieren?"
+  optionen:
+    - "Um Angreifern zu helfen"
+    - "Damit nachgewiesen ist, dass die Angriffs-Eingaben wirklich wirken – sonst würde ein grüner Test gegen sicher.py nichts beweisen"
+    - "Weil unsicher.py in Produktion läuft"
+    - "Aus Versehen"
+  richtig: [1]
+  erklaerung: "Ein Sicherheitstest, der nie rot war, beweist nichts. Erst der gelungene Angriff auf den unsicheren Code zeigt, dass der Test eine Lücke erkennen kann."
+  artikel: "#regressionstests"
+  tags: [security, testen]
+
+- id: sec-st-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dienen die GemeinsameTests, die für beide Varianten laufen?"
+  optionen:
+    - "Sie messen die Geschwindigkeit"
+    - "Sie stellen sicher, dass die sichere Variante die normale Funktion behält – eine Lösung, die alles verweigert, wäre sicher, aber nutzlos"
+    - "Sie ersetzen die Angriffstests"
+    - "Sie prüfen die Codeformatierung"
+  richtig: [1]
+  erklaerung: "Sicherheitstests sind meist Negativtests. Die positiven Fälle gehören trotzdem dazu."
+  artikel: "#regressionstests"
+  tags: [security, testen]
+
+- id: sec-st-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Lücken in unsicher.py findet Bandit nicht?"
+  optionen:
+    - "XSS"
+    - "Path Traversal"
+    - "IDOR"
+    - "SQL-Injection"
+  richtig: [0, 1, 2]
+  erklaerung: "Bandit findet nur die SQL-Injection (B608) und MD5 (B324) – also 2 von 6. Für die anderen fehlt dem Werkzeug Kontext oder Fachwissen."
+  artikel: "#sast"
+  tags: [security, sast, bandit]
+
+- id: sec-st-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein SAST-Werkzeug meldet einen Befund, der nach Prüfung keiner ist. Wie gehst du richtig damit um?"
+  optionen:
+    - "Das Werkzeug für das ganze Projekt abschalten"
+    - "Den Befund einzeln und mit Begründung unterdrücken, z. B. # nosec B608 mit Kommentar"
+    - "Alle Befunde dieser Regel pauschal ausblenden"
+    - "Den Code löschen"
+  richtig: [1]
+  erklaerung: "Begründete Einzelfall-Ausnahmen bleiben nachvollziehbar; pauschales Abschalten versteckt künftige echte Befunde."
+  artikel: "#sast"
+  tags: [security, sast]
+
+- id: sec-st-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine neue kritische Lücke in einer verbreiteten Bibliothek wird bekannt. Was hilft am schnellsten bei der Frage 'Sind wir betroffen?'"
+  optionen:
+    - "Eine SBOM, die alle enthaltenen Komponenten und Versionen auflistet"
+    - "Ein Pentest"
+    - "Ein ZAP-Baseline-Scan"
+    - "Die Anzahl der Codezeilen"
+  richtig: [0]
+  erklaerung: "Mit einer Software Bill of Materials (z. B. CycloneDX) lässt sich in Minuten suchen, wo die Bibliothek steckt – auch als transitive Abhängigkeit."
+  artikel: "#sca"
+  tags: [security, sca, sbom]
+
+- id: sec-st-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Was unterscheidet DAST von SAST?"
+  optionen:
+    - "DAST prüft den Quellcode, SAST die laufende Anwendung"
+    - "DAST greift die laufende Anwendung von außen an, SAST analysiert den Quellcode ohne Ausführung"
+    - "Es gibt keinen Unterschied"
+    - "DAST läuft nur auf Mobilgeräten"
+  richtig: [1]
+  erklaerung: "DAST findet Konfigurations- und Laufzeitprobleme, SAST zeigt unsichere Muster mit genauer Codezeile. Beide ergänzen sich."
+  artikel: "#dast"
+  tags: [security, dast, sast]
+
+- id: sec-st-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum eignet sich ein ZAP-Baseline-Scan für jede Pipeline, ein aktiver Scan aber nur für eigene Testumgebungen?"
+  optionen:
+    - "Der Baseline-Scan ist passiv, der aktive Scan führt echte Angriffe aus, verändert Daten und erzeugt Last"
+    - "Der aktive Scan ist kostenpflichtig"
+    - "Der Baseline-Scan findet mehr"
+    - "Es gibt keinen Unterschied"
+  richtig: [0]
+  erklaerung: "Aktive Scans gehören nie gegen Produktion oder fremde Systeme."
+  artikel: "#dast"
+  tags: [security, dast, zap]
+
+- id: sec-st-011
+  typ: single
+  schwierigkeit: 1
+  frage: "Was muss vor jedem Penetrationstest feststehen?"
+  optionen:
+    - "Nur das Werkzeug"
+    - "Ein schriftlicher Auftrag mit Scope, Zeitraum, erlaubten Methoden und Notfallkontakt"
+    - "Dass der Test nachts stattfindet"
+    - "Nichts, Pentester dürfen alles"
+  richtig: [1]
+  erklaerung: "Ohne schriftliche Erlaubnis ist ein Angriff kein Test, sondern strafbar. Die Rules of Engagement legen den Rahmen fest."
+  artikel: "#pentest"
+  tags: [security, pentest]
+
+- id: sec-st-012
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Pentester bekommt Testkonten und die API-Dokumentation, aber keinen Quellcode. Welche Art von Test ist das?"
+  optionen:
+    - "Black Box"
+    - "Grey Box"
+    - "White Box"
+    - "Bug Bounty"
+  richtig: [1]
+  erklaerung: "Grey Box ist das häufigste Vorgehen: Mit Testkonten lassen sich z. B. Zugriffskontrollen zwischen Rollen effizient prüfen."
+  artikel: "#pentest"
+  tags: [security, pentest]
+
+- id: sec-st-013
+  typ: single
+  schwierigkeit: 2
+  frage: "In welcher Reihenfolge ordnet man Prüfungen in einer Security-Pipeline sinnvollerweise an?"
+  optionen:
+    - "Zufällig"
+    - "Schnelle Prüfungen (Tests, SAST, Secret Scanning) zuerst, langsame (DAST nach dem Deployment) später"
+    - "Immer zuerst den aktiven DAST-Scan"
+    - "Nur einmal im Jahr alles zusammen"
+  richtig: [1]
+  erklaerung: "Schnelle Rückmeldung in Minuten ist entscheidend, damit Entwickler die Ergebnisse nutzen."
+  artikel: "#pipeline"
+  tags: [security, ci]

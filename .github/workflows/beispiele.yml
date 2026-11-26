@@ -91,3 +91,26 @@ jobs:
         run: python auswertung.py
       - name: Tests (Qualitätsschwellen, metamorphe Tests)
         run: python -m unittest -v
+
+  security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beispiele/security
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Sicherheitstests (Angriffe gegen unsicher.py und sicher.py)
+        run: python -m unittest -v
+      - name: Erkennungsregel auf dem Beispiel-Log
+        run: python log_analyse.py auth.log
+      - name: Bandit installieren
+        run: pip install bandit==1.9.4
+      - name: "SAST: sicherer Code ohne Befunde"
+        run: bandit sicher.py datenbank.py log_analyse.py
+      - name: "SAST-Grenzen: Bandit findet in unsicher.py genau 2 der 6 Lücken"
+        run: |
+          bandit -q -f json -o bandit.json unsicher.py || true
+          python -c "import json; ids = sorted({r['test_id'] for r in json.load(open('bandit.json'))['results']}); print('Befunde:', ids); assert ids == ['B324', 'B608'], ids"

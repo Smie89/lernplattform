@@ -1,0 +1,9 @@
+{
+  "label": "🔐 Cybersecurity",
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "slug": "/cybersecurity",
+    "description": "Grundlagen, Web-Schwachstellen, Authentifizierung und Kryptografie, Sicherheitstests und DevSecOps, Härtung, Angriffserkennung und Incident Response, Berufseinstieg."
+  }
+}

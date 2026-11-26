@@ -1,0 +1,169 @@
+---
+title: Berufseinstieg, Recht und Lernpfad
+description: Berufsbilder in der Cybersecurity und der Weg vom Softwaretest dorthin, Zertifizierungen, legale Übungsumgebungen, die rechtlichen Grenzen (§ 202a ff. StGB), Responsible Disclosure, ein Lernpfad für 12 Monate und typische Fragen im Vorstellungsgespräch.
+tags: [security, karriere, recht, zertifizierung]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './07-karriere-und-recht.fragen.yaml';
+
+# Berufseinstieg, Recht und Lernpfad
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die wichtigsten **Berufsbilder** der Cybersecurity unterscheiden,
+- einschätzen, welcher Weg von **Softwaretest und Testautomation** aus am besten passt,
+- sinnvolle **Zertifizierungen** und **legale Übungsumgebungen** auswählen,
+- die **rechtlichen Grenzen** beim Üben und im Beruf benennen,
+- einen eigenen **Lernpfad** und ein **Portfolio** planen.
+:::
+
+## Berufsbilder \{#berufsbilder}
+
+| Rolle | Was man tut | wichtige Fähigkeiten |
+|---|---|---|
+| **SOC-Analyst** | Alarme sichten, Vorfälle untersuchen, eskalieren (oft Schichtdienst) | Logs lesen, Netzwerk, Betriebssysteme, SIEM-Abfragen |
+| **Incident Responder / Forensiker** | Vorfälle eindämmen, Spuren sichern und auswerten | Windows- und Linux-Interna, Ruhe unter Druck, saubere Dokumentation |
+| **Penetration Tester** | Systeme und Anwendungen im Auftrag angreifen, Berichte schreiben | Web, Netzwerk, Active Directory, Skripting, Berichte |
+| **Application Security Engineer** | Entwicklungsteams beraten, Code-Reviews, Bedrohungsmodellierung, Sicherheitstests | Programmieren, Web-Schwachstellen, Architektur |
+| **DevSecOps / Cloud Security Engineer** | Sicherheit in Pipelines und Cloud-Infrastruktur automatisieren | CI/CD, Container, Cloud, Infrastructure as Code |
+| **Security-Tester** (QA) | Sicherheitstests in Testkonzepte und Testautomation integrieren | Testentwurf, Testautomation, OWASP WSTG |
+| **Detection Engineer** | Erkennungsregeln entwickeln und testen | SIEM-Abfragesprachen, ATT&CK, Programmieren |
+| **Informationssicherheitsbeauftragter / GRC** | Richtlinien, Risikoanalysen, Audits, ISO 27001, NIS2 | Normen, Kommunikation, Risikomanagement |
+
+### Der Weg vom Testen in die Security \{#vom-testen}
+
+Wer aus Softwaretest und Testautomation kommt, bringt viel mit, was in der Security gesucht wird:
+
+| aus dem Testen | in der Security |
+|---|---|
+| Negativtests, Grenzwerte, „Was passiert, wenn …?“ | Angriffs-Eingaben, Missbrauchsfälle |
+| [Risikobasiertes Testen](../01-softwaretest/06-testmanagement.mdx#risikobasiert) | Risikobewertung, Priorisierung nach CVSS und Kontext |
+| Gute Fehlerberichte | Pentest-Befunde, Schwachstellenmeldungen |
+| API-Tests (REST Assured, HttpClient) | Tests für Zugriffskontrolle, Authentifizierung |
+| CI/CD, Docker, Linux | DevSecOps, Security-Pipelines |
+| Exploratives Testen mit Fehlerhypothese | manueller Pentest |
+
+Die **natürlichsten Einstiege** sind deshalb **Security-Tester**, **Application Security** und **DevSecOps** – oft zuerst
+**im eigenen Team**: Sicherheitstests in die bestehende Testsuite aufnehmen, ZAP in die Pipeline bringen, bei der
+Bedrohungsmodellierung mitmachen. So entsteht Erfahrung, die im Lebenslauf zählt, bevor man die Stelle wechselt.
+
+## Zertifizierungen \{#zertifizierungen}
+
+Zertifikate ersetzen keine Praxis, öffnen aber Türen – besonders bei Personalabteilungen und Dienstleistern.
+
+| Zertifikat | Niveau | Schwerpunkt |
+|---|---|---|
+| **CompTIA Security+** | Einstieg | breites Grundlagenwissen, international bekannt |
+| **ISTQB Advanced Level Security Tester** | Fortgeschritten (Foundation Level vorausgesetzt) | Sicherheitstests aus Testersicht – passt direkt an ISTQB-Kenntnisse an |
+| **eJPT** (INE) | praktischer Einstieg | erster praktischer Pentest in einer Laborumgebung |
+| **OSCP** (OffSec) | anspruchsvoll, praktisch | 24-Stunden-Prüfung mit echten Angriffen, sehr angesehen für Pentester |
+| **CEH** (EC-Council) | mittel | bekannt, eher theoretisch |
+| **BSI IT-Grundschutz-Praktiker**, ISO/IEC 27001 Foundation | Einstieg Management | Informationssicherheitsmanagement in Deutschland |
+| **CISSP** | erfahren | Management und Architektur, setzt mehrere Jahre Berufserfahrung voraus |
+| Cloud-Zertifikate (z. B. Azure Security Engineer, AWS Security) | mittel | Cloud-Sicherheit |
+
+Anforderungen, Preise und Prüfungsversionen ändern sich – vor der Anmeldung immer die Seite des Anbieters prüfen.
+
+## Legale Übungsumgebungen \{#uebungsumgebungen}
+
+| Umgebung | was man übt |
+|---|---|
+| **PortSwigger Web Security Academy** | kostenlose Labs zu jeder Web-Schwachstelle, sehr gut erklärt |
+| **OWASP Juice Shop** | absichtlich unsicherer Webshop zum lokalen Angreifen: `docker run --rm -p 3000:3000 bkimminich/juice-shop` |
+| **TryHackMe** | geführte Lernpfade für Einsteiger, Red und Blue Team |
+| **Hack The Box** | Maschinen und Labs zum Angreifen, auch Academy-Kurse |
+| **OverTheWire** | Linux- und Shell-Grundlagen als Spiel (das Spiel „Bandit“ hat nichts mit dem SAST-Werkzeug zu tun) |
+| **CTFs** (Capture the Flag), z. B. picoCTF | Wettbewerbe mit Aufgaben aus allen Bereichen |
+| **Eigenes Labor** | VMs oder Container auf dem eigenen Rechner, z. B. das [Beispielprojekt](https://github.com/Smie89/lernplattform/tree/main/beispiele/security) |
+
+Für die **Blue-Team-Seite** (Erkennung) eignen sich z. B. Wazuh oder Elastic in einer eigenen VM, gefüttert mit Logs aus dem
+eigenen Labor, sowie die Defensiv-Pfade von TryHackMe.
+
+## Rechtliche Grenzen \{#recht}
+
+:::danger[Ohne Erlaubnis ist es kein Test]
+Der Unterschied zwischen einem Pentest und einer Straftat ist **die schriftliche Erlaubnis** des Berechtigten. Gute Absicht,
+Neugier oder „ich wollte nur zeigen, dass es unsicher ist“ schützen nicht.
+:::
+
+Wichtige Vorschriften des deutschen Strafgesetzbuchs (vereinfacht):
+
+| Paragraf | Inhalt |
+|---|---|
+| **§ 202a StGB** – Ausspähen von Daten | sich unbefugt Zugang zu besonders gesicherten Daten verschaffen, indem man eine Zugangssicherung überwindet |
+| **§ 202b StGB** – Abfangen von Daten | unbefugt Daten aus einer nichtöffentlichen Datenübermittlung abfangen, z. B. fremden WLAN-Verkehr mitschneiden |
+| **§ 202c StGB** – Vorbereiten („Hackerparagraf“) | Passwörter oder Programme herstellen, beschaffen oder weitergeben, **um** eine solche Tat vorzubereiten |
+| **§ 303a / § 303b StGB** | Datenveränderung, Computersabotage (z. B. DoS-Angriffe, Daten löschen) |
+
+Zu § 202c: Sicherheitswerkzeuge wie nmap, ZAP oder Metasploit zu besitzen und für **legitime** Tests zu nutzen, ist nach
+verbreiteter Auffassung und der Rechtsprechung nicht strafbar – entscheidend ist der **Zweck**. Trotzdem gilt im Beruf:
+
+- **Schriftlicher Auftrag** mit Scope, Zeitraum, erlaubten Methoden, Ansprechpartnern (siehe [Pentest](./04-sicherheitstests-devsecops.mdx#pentest)).
+- **Auch beim Arbeitgeber** nicht eigenmächtig Kollegen-Rechner scannen oder Passwörter testen.
+- **Daten Dritter**, auf die man stößt, nicht weiter ansehen, kopieren oder weitergeben; DSGVO gilt auch im Pentest.
+- Bei Übungsplattformen nur die **freigegebenen Ziele** angreifen, nicht die Plattform selbst.
+
+### Eine Lücke gefunden – was nun? \{#disclosure}
+
+Wer zufällig eine Lücke bei einem fremden Dienst bemerkt, sollte **nicht weiter testen**, sondern sie verantwortungsvoll
+melden (**Responsible bzw. Coordinated Disclosure**):
+
+1. Meldeweg suchen: Bug-Bounty-Programm, Sicherheitskontakt in `/.well-known/security.txt`, sonst offizieller Kontakt.
+2. Sachlich beschreiben, was man beobachtet hat – ohne die Lücke weiter auszunutzen oder Daten abzurufen.
+3. Dem Betreiber **Zeit zur Behebung** geben, bevor man öffentlich darüber spricht (üblich sind etwa 90 Tage).
+4. Wenn keine Reaktion kommt oder man unsicher ist: Das **BSI** und Organisationen wie CERTs können vermitteln.
+
+## Ein Lernpfad für 12 Monate \{#lernpfad}
+
+| Zeitraum | Ziele | konkret |
+|---|---|---|
+| **Monat 1–3: Grundlagen** | Linux, Netzwerk, Web, diese Lektionen | Bereiche 🐧 Linux und 🔐 Cybersecurity durcharbeiten, alle Quizze; Beispielprojekt nachbauen und die Übungsideen lösen; PortSwigger: SQL-Injection, XSS, Access Control |
+| **Monat 4–6: Praxis im eigenen Umfeld** | Sicherheitstests im Job | Zugriffskontroll-Tests für eine API im eigenen Projekt; ZAP-Baseline-Scan in die Pipeline; Bedrohungsmodellierung für eine neue Funktion anstoßen; Juice Shop lokal lösen |
+| **Monat 7–9: Vertiefen** | Richtung wählen: AppSec/Pentest oder Blue Team | Red: Hack The Box / TryHackMe-Pfade, OWASP WSTG. Blue: eigenes Labor mit Wazuh, Sigma-Regeln schreiben und testen |
+| **Monat 10–12: Nachweisen** | Zertifikat und Portfolio | Security+ oder ISTQB Security Tester; je nach Richtung eJPT; Portfolio aufbauen, Bewerbungen |
+
+### Portfolio \{#portfolio}
+
+Arbeitgeber wollen sehen, **was** man kann – nicht nur Zertifikate:
+
+- **GitHub-Projekte** wie das Beispielprojekt hier: Schwachstelle, Behebung, Test, CI – das zeigt genau die Denkweise, die AppSec braucht.
+- **Write-ups** gelöster CTF-Aufgaben oder Labs (nur wo die Plattform das erlaubt – bei aktiven Hack-The-Box-Maschinen z. B. nicht).
+- **Erkennungsregeln** mit Tests und Beschreibung, was sie erkennen und was nicht.
+- **Konkrete Erfolge aus dem Job**: „Sicherheitstests für 40 API-Endpunkte eingeführt, dabei 3 IDOR-Lücken gefunden“.
+
+## Typische Fragen im Vorstellungsgespräch \{#interview}
+
+- Erkläre den Unterschied zwischen **Authentifizierung und Autorisierung**.
+- Wie entsteht eine **SQL-Injection**, und wie verhinderst du sie? Warum reichen Eingabefilter nicht?
+- Was ist **XSS**, und welche Arten gibt es?
+- Wie speichert man **Passwörter** richtig – und warum nicht mit SHA-256?
+- Was passiert, wenn du `https://example.com` im Browser aufrufst (DNS, TCP, **TLS**, HTTP)?
+- Du siehst eine erfolgreiche Anmeldung nach 200 Fehlversuchen. **Was tust du als Erstes?**
+- Was ist der Unterschied zwischen **SAST und DAST**? Was findet keines von beiden?
+- Wie würdest du die **Zugriffskontrolle** einer API testen?
+- Erzähle von einer Lücke oder einem Fehler, den du gefunden hast – **wie** bist du darauf gekommen?
+
+Zu fast allen Fragen steht die Antwort in diesem Bereich. Die letzte Frage beantwortet man am besten mit einer echten
+Geschichte – zum Beispiel, wie die Race Condition SHOP-1 im Mini-Shop durch exploratives Testen mit einer Fehlerhypothese
+gefunden wurde (siehe [KI-Assistenten](../06-ki/05-ki-assistenten-entwicklung.mdx#echte-fehler)).
+
+## Typische Fehler \{#typische-fehler}
+
+- **Ohne Erlaubnis** „mal eben“ fremde Systeme oder das Firmennetz scannen.
+- Nur **Werkzeuge bedienen** lernen, ohne zu verstehen, was sie tun.
+- **Zertifikate sammeln** ohne Praxis und Portfolio.
+- Die eigenen Stärken aus dem **Testen unterschätzen**.
+- Eine gefundene Lücke **öffentlich machen**, bevor der Betreiber sie beheben konnte.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Rollen reichen vom **SOC-Analysten** über **Pentester** und **AppSec** bis **GRC**; vom Testen aus passen **Security-Testing,
+  AppSec und DevSecOps** am besten.
+- Zertifikate: **Security+** oder **ISTQB Security Tester** zum Einstieg, **eJPT/OSCP** für Pentest, **CISSP** später.
+- Üben nur in **legalen Umgebungen**: PortSwigger Academy, Juice Shop, TryHackMe, Hack The Box, CTFs, eigenes Labor.
+- **§ 202a–c, 303a/b StGB**: Ohne schriftliche Erlaubnis ist ein Angriff strafbar; entscheidend ist der Zweck.
+- Lücken bei Fremden **verantwortungsvoll melden** und nicht weiter testen.
+- **Portfolio** mit Projekten, Write-ups und konkreten Erfolgen zählt mehr als jedes einzelne Zertifikat.
+
+<Quiz fragen={fragen} titel="Quiz: Berufseinstieg, Recht und Lernpfad" />
