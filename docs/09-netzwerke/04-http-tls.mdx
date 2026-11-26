@@ -1,0 +1,200 @@
+---
+title: HTTP und TLS im Detail
+description: HTTP als Text über TCP – eine Anfrage von Hand geschickt –, Aufbau von Anfrage und Antwort, Methoden und ihre Eigenschaften, wichtige Header, Cookies, Caching, HTTP/2 und HTTP/3, der TLS-Handshake mit Zertifikatskette, Proxys und Load Balancer sowie die Analyse mit curl -v.
+tags: [netzwerk, http, tls, https]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './04-http-tls.fragen.yaml';
+
+# HTTP und TLS im Detail
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, dass **HTTP/1.1 Text über TCP** ist, und Anfragen und Antworten lesen,
+- **Methoden** mit ihren Eigenschaften (sicher, idempotent) einordnen,
+- die wichtigsten **Header**, **Cookies** und **Caching** verstehen,
+- Unterschiede von **HTTP/1.1, HTTP/2 und HTTP/3** benennen,
+- den **TLS-Handshake** und die **Zertifikatskette** erklären,
+- eine Verbindung mit **curl -v** Schritt für Schritt analysieren.
+:::
+
+## HTTP ist Text über TCP \{#text}
+
+Browser, curl und REST Assured verstecken es, aber eine HTTP/1.1-Anfrage ist schlicht **strukturierter Text**, der über eine
+TCP-Verbindung geschickt wird. Das Beispielprojekt macht genau das – ohne HTTP-Bibliothek:
+
+```python title="http_von_hand.py"
+anfrage = (
+    f"GET {pfad} HTTP/1.1\r\n"
+    f"Host: {host}\r\n"
+    "User-Agent: lernplattform-beispiel\r\n"
+    "Connection: close\r\n"
+    "\r\n"                            # Leerzeile = Ende der Header
+)
+with socket.create_connection((host, port), timeout=zeitlimit) as verbindung:   # TCP-Handshake
+    verbindung.sendall(anfrage.encode("ascii"))
+```
+
+Die echte Antwort des Testservers aus den Tests (Kommentare ergänzt):
+
+```text
+HTTP/1.0 200 OK                          ← Statuszeile: Version, Code, Text
+Server: BaseHTTP/0.6 Python/3.10.6
+Date: Thu, 26 Nov 2026 13:47:43 GMT
+Content-Type: application/json           ← Header
+Content-Length: 16
+                                         ← Leerzeile
+{"status": "ok"}                         ← Body
+```
+
+## Aufbau von Anfrage und Antwort \{#aufbau}
+
+| Teil | Anfrage | Antwort |
+|---|---|---|
+| erste Zeile | **Methode, Pfad, Version**: `POST /api/warenkoerbe HTTP/1.1` | **Version, Statuscode, Text**: `HTTP/1.1 201 Created` |
+| Header | `Host`, `Content-Type`, `Authorization`, `Accept`, `Cookie` … | `Content-Type`, `Location`, `Set-Cookie`, `Cache-Control` … |
+| Leerzeile | trennt Header und Body | trennt Header und Body |
+| Body | optional, z. B. JSON | optional, z. B. JSON oder HTML |
+
+## Methoden \{#methoden}
+
+| Methode | Zweck | sicher | idempotent |
+|---|---|---|---|
+| **GET** | lesen | ✔ | ✔ |
+| **HEAD** | wie GET, nur Header | ✔ | ✔ |
+| **POST** | anlegen, Aktion auslösen | – | – |
+| **PUT** | vollständig ersetzen | – | ✔ |
+| **PATCH** | teilweise ändern | – | – (meist) |
+| **DELETE** | löschen | – | ✔ |
+| **OPTIONS** | erlaubte Methoden abfragen (u. a. für CORS) | ✔ | ✔ |
+
+- **Sicher**: verändert nichts auf dem Server. Ein GET, das Daten löscht, ist ein Fehler – und ein Testfall.
+- **Idempotent**: mehrfach ausgeführt hat dieselbe Wirkung wie einmal. Ein doppelt gesendetes PUT ist harmlos, ein doppeltes
+  POST erzeugt womöglich zwei Bestellungen – genau das war [SHOP-1](../01-softwaretest/05-white-box-erfahrungsbasiert.mdx#doppelklick).
+  Deshalb wiederholen Clients und Proxys bei Fehlern nur idempotente Anfragen automatisch.
+
+## Wichtige Header \{#header}
+
+| Header | Richtung | Bedeutung |
+|---|---|---|
+| `Host` | Anfrage | welcher Name gemeint ist – ein Server bedient oft viele Domains |
+| `Content-Type` | beide | Format des Bodys, z. B. `application/json; charset=utf-8` |
+| `Accept` | Anfrage | gewünschtes Antwortformat |
+| `Authorization` | Anfrage | Zugangsdaten, z. B. `Bearer eyJhbGci…` |
+| `Location` | Antwort | URL einer neu angelegten Ressource (201) oder des Umleitungsziels (301, 302) |
+| `Set-Cookie` / `Cookie` | Antwort / Anfrage | Cookie setzen / mitschicken |
+| `Cache-Control` | beide | Caching-Regeln |
+| `Content-Length` / `Transfer-Encoding: chunked` | beide | Länge des Bodys bzw. Übertragung in Stücken |
+
+## Cookies und Sitzungen \{#cookies}
+
+HTTP selbst ist **zustandslos** – jede Anfrage steht für sich. Sitzungen entstehen über **Cookies**: Der Server schickt
+`Set-Cookie: sitzung=abc123; Path=/; Secure; HttpOnly; SameSite=Lax`, der Browser schickt es bei jeder weiteren Anfrage als
+`Cookie: sitzung=abc123` mit. Die Attribute sind sicherheitsrelevant und in der Lektion
+[Authentifizierung](../07-cybersecurity/03-authentifizierung-kryptografie.mdx#sessions) erklärt.
+
+## Caching \{#caching}
+
+| Header | Wirkung |
+|---|---|
+| `Cache-Control: max-age=3600` | Antwort darf eine Stunde zwischengespeichert werden |
+| `Cache-Control: no-store` | nie speichern (für persönliche oder sensible Daten) |
+| `ETag: "v42"` + `If-None-Match: "v42"` | „hat sich etwas geändert?“ – sonst Antwort `304 Not Modified` ohne Body |
+
+Caching ist ein häufiger Grund für verwirrende Testergebnisse: Der Browser zeigt eine **alte Version** einer Datei.
+Beim Bau dieser Plattform lieferte der Browser-Cache eine veraltete `app.js` des Mini-Shops – erst ein Neuladen ohne Cache
+zeigte die Änderung. In UI-Tests startet deshalb jeder Test mit einem **frischen Browser-Kontext**.
+
+## HTTP/1.1, HTTP/2 und HTTP/3 \{#versionen}
+
+| | HTTP/1.1 | HTTP/2 | HTTP/3 |
+|---|---|---|---|
+| Format | Text | binär | binär |
+| Transport | TCP | TCP | **QUIC über UDP** |
+| Anfragen pro Verbindung | nacheinander | viele **gleichzeitig** (Multiplexing) | viele gleichzeitig, ohne gegenseitiges Blockieren bei Paketverlust |
+| Verschlüsselung | optional | in Browsern nur mit TLS | immer (TLS 1.3 eingebaut) |
+
+Die Bedeutung von Methoden, Statuscodes und Headern ist in allen Versionen **gleich** – Tests auf API-Ebene merken davon
+meist nichts.
+
+## TLS: die Verbindung absichern \{#tls}
+
+**HTTPS** ist HTTP über **TLS**. Der Ablauf bei TLS 1.3, vereinfacht:
+
+1. **ClientHello**: Der Client schickt unterstützte Verfahren, einen Schlüsselanteil und den gewünschten Servernamen (**SNI**).
+2. **ServerHello**: Der Server wählt die Verfahren, schickt seinen Schlüsselanteil, sein **Zertifikat** und einen Nachweis,
+   dass er den privaten Schlüssel besitzt.
+3. Der Client **prüft das Zertifikat**: gültige **Kette** bis zu einer vertrauenswürdigen Zertifizierungsstelle, **Name** passt,
+   **nicht abgelaufen**.
+4. Beide berechnen daraus den gemeinsamen **Sitzungsschlüssel** – ab jetzt ist alles verschlüsselt.
+
+Die **Zertifikatskette**: Das Serverzertifikat ist von einer **Zwischenzertifizierungsstelle** unterschrieben, diese von einer
+**Root-CA**, deren Zertifikat im Betriebssystem bzw. Browser hinterlegt ist. Schickt der Server die Zwischenzertifikate nicht
+mit, funktioniert die Seite in manchen Browsern – in anderen Clients (curl, Java, .NET) aber nicht. Ein typischer Fall von
+„im Browser geht es, im API-Test nicht“.
+
+| Fehlermeldung | Ursache |
+|---|---|
+| certificate has expired | Zertifikat abgelaufen |
+| hostname mismatch / name does not match | Zertifikat gilt für einen anderen Namen, z. B. Aufruf per IP-Adresse |
+| unable to get local issuer certificate | Kette unvollständig oder interne CA dem Client unbekannt |
+| self-signed certificate | selbst signiert, keiner vertrauenswürdigen CA zugeordnet |
+
+Für Testumgebungen mit **interner CA**: das CA-Zertifikat dem Testsystem bekannt machen – nicht die Prüfung abschalten (siehe
+[TLS und HTTPS](../07-cybersecurity/03-authentifizierung-kryptografie.mdx#tls)).
+
+## Proxys und Load Balancer \{#proxy}
+
+Zwischen Client und Anwendung sitzen oft weitere Stationen:
+
+- **Forward-Proxy** im Firmennetz: Alle ausgehenden Anfragen laufen darüber. Tests, die ins Internet müssen, brauchen dann
+  die Variablen `HTTP_PROXY`/`HTTPS_PROXY` – ein Klassiker für „lokal geht es, im Firmennetz nicht“.
+- **Reverse-Proxy** bzw. **Load Balancer** (nginx, Traefik, Cloud-Load-Balancer) vor der Anwendung: beendet oft TLS, verteilt
+  auf mehrere Instanzen und reicht die ursprüngliche Client-Adresse im Header `X-Forwarded-For` weiter.
+
+Status `502 Bad Gateway` und `504 Gateway Timeout` kommen vom **Proxy**, nicht von der Anwendung: Er hat keine bzw. keine
+rechtzeitige Antwort bekommen.
+
+## Analyse mit curl -v \{#curl}
+
+`curl -v` zeigt alle Schichten einer Verbindung:
+
+```text
+* Host shop.example.org:443 was resolved.            ← DNS
+*   Trying 203.0.113.42:443...
+* Connected to shop.example.org (203.0.113.42)       ← TCP
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* Server certificate:                                ← TLS
+*  subject: CN=shop.example.org
+*  expire date: Feb 12 23:59:59 2027 GMT
+*  issuer: C=US; O=Let's Encrypt; CN=R11
+> GET /api/produkte HTTP/2                           ← Anfrage (">")
+> Host: shop.example.org
+> Accept: */*
+>
+< HTTP/2 200                                         ← Antwort ("<")
+< content-type: application/json; charset=utf-8
+```
+
+So sieht man auf einen Blick, **an welcher Stelle** es hakt. Die Ausgabe oben ist ein Beispiel mit Dokumentationsadressen.
+
+## Typische Fehler \{#typische-fehler}
+
+- POST-Anfragen **automatisch wiederholen** – sie sind nicht idempotent.
+- GET-Endpunkte, die **Daten ändern**.
+- **Caching** übersehen – der Test sieht eine alte Version.
+- Zertifikatsfehler durch **Abschalten der Prüfung** „lösen“ statt die Ursache zu beheben.
+- **Proxy-Einstellungen** in der CI vergessen.
+- 502 oder 504 bei der **Anwendung** suchen statt beim Proxy.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- HTTP/1.1 ist **Text über TCP**: Startzeile, Header, Leerzeile, Body.
+- Methoden: **sicher** (GET, HEAD) und **idempotent** (GET, PUT, DELETE) – POST ist beides nicht.
+- Header steuern Format, Authentifizierung, Cookies und **Caching**.
+- HTTP/2 bündelt Anfragen über eine Verbindung, HTTP/3 nutzt **QUIC über UDP**.
+- TLS prüft **Kette, Name und Gültigkeit** des Zertifikats; interne CAs bekannt machen statt Prüfung abschalten.
+- Proxys und Load Balancer liefern 502/504; **curl -v** zeigt DNS, TCP, TLS und HTTP auf einen Blick.
+
+<Quiz fragen={fragen} titel="Quiz: HTTP und TLS im Detail" />

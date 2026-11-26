@@ -1,0 +1,151 @@
+# Fragen zur Lektion "Schichtenmodell, IP-Adressen und Subnetze"
+
+- id: nw-ip-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Auf welcher Schicht arbeiten TCP und UDP?"
+  optionen:
+    - "Anwendungsschicht"
+    - "Transportschicht"
+    - "Vermittlungsschicht (Internet)"
+    - "Bitübertragung"
+  richtig: [1]
+  erklaerung: "Die Transportschicht verbindet Programme über Ports. IP (Schicht 3) verbindet Rechner."
+  artikel: "#schichten"
+  tags: [netzwerk, osi]
+
+- id: nw-ip-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie viele nutzbare Hostadressen hat ein /26-Netz?"
+  optionen:
+    - "26"
+    - "62"
+    - "64"
+    - "254"
+  richtig: [1]
+  erklaerung: "6 Hostbits ergeben 64 Adressen, abzüglich Netz- und Broadcastadresse bleiben 62."
+  artikel: "#ipv4"
+  tags: [netzwerk, subnetz]
+
+- id: nw-ip-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Liegen 192.168.10.37 und 192.168.10.70 bei Präfix /26 im selben Netz?"
+  optionen:
+    - "Ja, die ersten drei Zahlen sind gleich"
+    - "Nein – /26 teilt in Blöcke zu 64 Adressen: .0–.63 und .64–.127"
+    - "Ja, alle 192.168-Adressen sind ein Netz"
+    - "Das hängt vom Router ab"
+  richtig: [1]
+  erklaerung: "Bei /24 lägen sie im selben Netz. Der Test test_gleiches_netz_haengt_vom_praefix_ab prüft beide Fälle."
+  artikel: "#ipv4"
+  tags: [netzwerk, subnetz]
+
+- id: nw-ip-004
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Welche Adressen sind private Adressen?"
+  optionen:
+    - "10.4.2.1"
+    - "172.20.0.5"
+    - "192.168.178.20"
+    - "8.8.8.8"
+  richtig: [0, 1, 2]
+  erklaerung: "Private Bereiche: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. 8.8.8.8 ist öffentlich."
+  artikel: "#privat-nat"
+  tags: [netzwerk, ip]
+
+- id: nw-ip-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Testrechner hat die Adresse 169.254.13.7. Was bedeutet das meist?"
+  optionen:
+    - "Er ist korrekt im Firmennetz"
+    - "Er hat keine Adresse per DHCP bekommen und sich selbst eine vergeben – meist ein Fehler"
+    - "Er ist ein Router"
+    - "Er nutzt IPv6"
+  richtig: [1]
+  erklaerung: "169.254.x.x (Link-Local) entsteht, wenn kein DHCP-Server antwortet."
+  artikel: "#privat-nat"
+  tags: [netzwerk, ip]
+
+- id: nw-ip-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Wohin schickt ein Rechner ein Paket an eine Adresse außerhalb seines Netzes?"
+  optionen:
+    - "An alle Rechner im Netz"
+    - "An sein Standard-Gateway (Router)"
+    - "Direkt an das Ziel"
+    - "An den DNS-Server"
+  richtig: [1]
+  erklaerung: "Router leiten das Paket anhand ihrer Routingtabellen Hop für Hop weiter."
+  artikel: "#routing"
+  tags: [netzwerk, routing]
+
+- id: nw-ip-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Test verbindet sich mit 'localhost:5000' und scheitert, obwohl der Dienst läuft. Der Dienst lauscht auf 127.0.0.1. Was ist eine mögliche Ursache?"
+  optionen:
+    - "localhost wird zu ::1 (IPv6) aufgelöst, der Dienst lauscht aber nur auf IPv4"
+    - "Port 5000 ist für Tests verboten"
+    - "localhost ist immer ein anderer Rechner"
+    - "Die MAC-Adresse fehlt"
+  richtig: [0]
+  erklaerung: "Deshalb verwenden Tests oft ausdrücklich 127.0.0.1 statt localhost."
+  artikel: "#ipv6"
+  tags: [netzwerk, ipv6]
+
+- id: nw-ip-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedes Protokoll seiner Schicht im TCP/IP-Modell zu."
+  paare:
+    - ["HTTP", "Anwendung"]
+    - ["TCP", "Transport"]
+    - ["IP", "Internet"]
+    - ["Ethernet", "Netzzugang"]
+  erklaerung: "Beim Senden wird jede Schicht in die darunterliegende eingepackt (Kapselung)."
+  artikel: "#schichten"
+  tags: [netzwerk, osi]
+
+- id: nw-ip-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Präfix die Anzahl nutzbarer Hosts zu."
+  paare:
+    - ["/24", "254"]
+    - ["/26", "62"]
+    - ["/28", "14"]
+    - ["/30", "2"]
+  erklaerung: "Nutzbare Hosts = 2^(32 − Präfix) − 2."
+  artikel: "#ipv4"
+  tags: [netzwerk, subnetz]
+
+- id: nw-ip-010
+  typ: lueckentext
+  schwierigkeit: 3
+  frage: "Ergänze für 192.168.10.37/26 die fehlenden Werte."
+  text: "Netzadresse: 192.168.10.___ · Broadcast: 192.168.10.___ · Maske: 255.255.255.___"
+  luecken:
+    - ["0"]
+    - ["63"]
+    - ["192"]
+  erklaerung: "Der erste /26-Block reicht von .0 bis .63; die Maske hat 26 Einsen: 255.255.255.192."
+  artikel: "#ipv4"
+  tags: [netzwerk, subnetz]
+
+- id: nw-ip-011
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Eine HTTP-Anfrage wird verschickt. In welcher Reihenfolge wird eingepackt (innen nach außen)?"
+  elemente:
+    - "HTTP-Anfrage"
+    - "TCP-Segment"
+    - "IP-Paket"
+    - "Ethernet-Rahmen"
+  erklaerung: "Kapselung: Jede Schicht packt die Daten der darüberliegenden ein. Der Empfänger packt in umgekehrter Reihenfolge aus."
+  artikel: "#schichten"
+  tags: [netzwerk, osi]

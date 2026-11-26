@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Netzwerkanalyse mit Wireshark und Browser-Werkzeugen"
+
+- id: nw-an-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist der Unterschied zwischen Mitschnitt- und Anzeigefilter in Wireshark?"
+  optionen:
+    - "Es gibt keinen"
+    - "Der Mitschnittfilter bestimmt vorher, was gespeichert wird; der Anzeigefilter blendet danach nur aus"
+    - "Der Anzeigefilter löscht Pakete"
+    - "Mitschnittfilter gibt es nur unter Linux"
+  richtig: [1]
+  erklaerung: "Im Zweifel breit mitschneiden und mit Anzeigefiltern eingrenzen – Verworfenes ist für immer weg."
+  artikel: "#filter"
+  tags: [netzwerk, wireshark]
+
+- id: nw-an-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Im Mitschnitt folgt auf ein SYN sofort ein RST. Was bedeutet das?"
+  optionen:
+    - "Erfolgreicher Verbindungsaufbau"
+    - "Connection refused – auf dem Port lauscht kein Dienst"
+    - "Ein Timeout"
+    - "Ein TLS-Fehler"
+  richtig: [1]
+  erklaerung: "Bei einem Timeout sähe man wiederholte SYNs ohne Antwort."
+  artikel: "#erkennen"
+  tags: [netzwerk, wireshark]
+
+- id: nw-an-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Du willst Tests gegen localhost mitschneiden, siehst in Wireshark aber nichts. Was ist die wahrscheinlichste Ursache?"
+  optionen:
+    - "localhost-Verkehr ist verschlüsselt"
+    - "Es wird auf der falschen Schnittstelle mitgeschnitten – nötig ist der Loopback-Adapter"
+    - "Wireshark kann kein HTTP"
+    - "Tests erzeugen keinen Verkehr"
+  richtig: [1]
+  erklaerung: "Verkehr an localhost verlässt den Rechner nie und erscheint nur auf dem Loopback-Adapter."
+  artikel: "#wireshark"
+  tags: [netzwerk, wireshark]
+
+- id: nw-an-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Im Mitschnitt gibt es zwischen HTTP-Anfrage und Antwort eine Lücke von 4 Sekunden, ohne Neuübertragungen. Wo liegt das Problem vermutlich?"
+  optionen:
+    - "Im Netz"
+    - "Beim Server, der lange für die Bearbeitung braucht"
+    - "Im DNS"
+    - "Im Browser-Cache"
+  richtig: [1]
+  erklaerung: "Das Netz hat die Anfrage zügig zugestellt; die Zeit verbringt die Anwendung (z. B. mit einer langsamen Datenbankabfrage)."
+  artikel: "#erkennen"
+  tags: [netzwerk, analyse]
+
+- id: nw-an-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum solltest du eine HAR-Datei nicht unbereinigt an ein Ticket hängen?"
+  optionen:
+    - "Weil sie zu groß ist"
+    - "Weil sie Cookies, Tokens und Formulardaten im Klartext enthält"
+    - "Weil sie nur in Chrome lesbar ist"
+    - "Weil sie Viren enthält"
+  richtig: [1]
+  erklaerung: "Bereinigen oder nur HAR-Dateien aus Testumgebungen mit Testkonten weitergeben."
+  artikel: "#browser"
+  tags: [netzwerk, har, sicherheit]
+
+- id: nw-an-006
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Im öffentlichen WLAN eines Cafés darf man den Verkehr der anderen Gäste mitschneiden, solange man nichts verändert."
+  richtig: [1]
+  erklaerung: "Falsch. Das Abfangen fremder Daten ist nach § 202b StGB strafbar. Mitschneiden nur im eigenen Netz oder mit Auftrag."
+  artikel: "#wireshark"
+  tags: [netzwerk, recht]
+
+- id: nw-an-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was zeigt die Netzwerkansicht der Browser-Entwicklertools?"
+  optionen:
+    - "Methode, Status, Größe und Dauer jeder Anfrage"
+    - "Header und Body von Anfrage und Antwort – auch bei HTTPS"
+    - "Einen Wasserfall mit DNS-, Verbindungs-, TLS- und Wartezeit"
+    - "Den Verkehr aller anderen Programme auf dem Rechner"
+  richtig: [0, 1, 2]
+  erklaerung: "Die Entwicklertools sehen nur den Verkehr des Browsers – dafür bequem und entschlüsselt."
+  artikel: "#browser"
+  tags: [netzwerk, browser]
+
+- id: nw-an-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Wireshark-Anzeigefilter seine Wirkung zu."
+  paare:
+    - ["tcp.port == 5000", "Verkehr auf Port 5000"]
+    - ["http.response.code >= 400", "Nur Fehlerantworten"]
+    - ["tcp.flags.reset == 1", "Verbindungsabbrüche"]
+    - ["tcp.analysis.retransmission", "Neuübertragungen"]
+    - ["dns", "Namensauflösungen"]
+  erklaerung: "Anzeigefilter lassen sich beliebig kombinieren, z. B. mit && und ||."
+  artikel: "#filter"
+  tags: [netzwerk, wireshark]
+
+- id: nw-an-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Welches Werkzeug passt?"
+  paare:
+    - ["Linux-Server ohne Oberfläche", "tcpdump mit -w, Auswertung später in Wireshark"]
+    - ["Web-Anwendung im Browser", "Netzwerkansicht der Entwicklertools"]
+    - ["Fehlgeschlagener Playwright-Test", "Playwright-Trace im Trace Viewer"]
+    - ["Verkehr eines eigenen Programms auf dem Rechner", "Wireshark"]
+  erklaerung: "Für Web-Anwendungen ist der Browser oft am schnellsten, für alles andere Wireshark bzw. tcpdump."
+  artikel: "#tcpdump"
+  tags: [netzwerk, werkzeuge]
+
+- id: nw-an-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den tcpdump-Befehl: Datenbankverkehr auf Port 5432 in die Datei datenbank.pcap schreiben."
+  sprache: bash
+  text: "sudo tcpdump -i any ___ 5432 -___ datenbank.pcap"
+  luecken:
+    - ["port"]
+    - ["w"]
+  exakt: true
+  erklaerung: "Die .pcap-Datei lässt sich anschließend in Wireshark öffnen und mit Anzeigefiltern auswerten."
+  artikel: "#tcpdump"
+  tags: [netzwerk, tcpdump]
+
+- id: nw-an-011
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Ein Mitschnitt im Testnetz zeigt diesen TCP-Stream. Welche Zeile ist ein Sicherheitsbefund?"
+  sprache: http
+  code: |
+    POST /api/anmelden HTTP/1.1
+    Host: test.example.org
+    Content-Type: application/json
+    Authorization: Basic YW5uYTpTb21tZXIyMDI2
+  richtig: [3]
+  erklaerung: "Basic-Authentifizierung ist nur Base64 (hier anna:Sommer2026) – und die Verbindung ist unverschlüsseltes HTTP. Zugangsdaten gehen im Klartext über die Leitung."
+  artikel: "#erkennen"
+  tags: [netzwerk, sicherheit]

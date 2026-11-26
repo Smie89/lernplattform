@@ -1,0 +1,149 @@
+---
+title: Netzwerkanalyse mit Wireshark und Browser-Werkzeugen
+description: Netzwerkverkehr mitschneiden und auswerten – Wireshark mit Mitschnitt- und Anzeigefiltern, TCP-Stream verfolgen, Handshake und Fehler erkennen, tcpdump auf Servern, die Netzwerkansicht der Browser-Entwicklertools und HAR-Dateien, Playwright-Traces sowie die rechtlichen Grenzen.
+tags: [netzwerk, wireshark, tcpdump, analyse]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './05-netzwerkanalyse.fragen.yaml';
+
+# Netzwerkanalyse mit Wireshark und Browser-Werkzeugen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- Netzwerkverkehr mit **Wireshark** und **tcpdump** mitschneiden,
+- **Mitschnitt- und Anzeigefilter** unterscheiden und einsetzen,
+- einen **TCP-Stream** verfolgen und Handshake, Fehler und Neuübertragungen erkennen,
+- die **Netzwerkansicht der Browser** und **HAR-Dateien** für die Fehlersuche nutzen,
+- die **rechtlichen Grenzen** des Mitschneidens einhalten.
+:::
+
+:::danger[Nur eigener Verkehr]
+Mitschneiden ist nur im **eigenen** Netz, auf **eigenen** Geräten oder mit **ausdrücklichem Auftrag** erlaubt. Fremden
+Datenverkehr abzufangen ist nach § 202b StGB strafbar (siehe [Rechtliche Grenzen](../07-cybersecurity/07-karriere-und-recht.mdx#recht)),
+und auch im Firmennetz sind Mitschnitte wegen Datenschutz und Mitbestimmung meist geregelt.
+:::
+
+## Wann braucht man das? \{#wann}
+
+Logs und Fehlermeldungen zeigen, was eine Anwendung **glaubt**. Ein Mitschnitt zeigt, was **wirklich** über die Leitung ging:
+
+- Ein Test bekommt eine unerwartete Antwort – wurde die Anfrage überhaupt so geschickt?
+- Verbindungen brechen sporadisch ab – wer schickt das Reset?
+- Ein Dienst ist „langsam“ – liegt es am Netz (Neuübertragungen, Latenz) oder an der Anwendung?
+- Sicherheitsanalyse: Werden Daten unverschlüsselt übertragen?
+
+## Wireshark \{#wireshark}
+
+**Wireshark** (kostenlos, Windows/macOS/Linux) schneidet Pakete auf einer Netzwerkschnittstelle mit und zerlegt sie in alle
+Schichten. Für Verkehr auf dem eigenen Rechner – etwa Tests gegen `localhost` – wählt man den **Loopback-Adapter**
+(unter Windows über das mitinstallierte Npcap).
+
+Das Fenster hat drei Bereiche:
+
+1. **Paketliste** – ein Paket pro Zeile: Zeit, Quelle, Ziel, Protokoll, Kurzinfo
+2. **Paketdetails** – das gewählte Paket nach Schichten aufgeklappt: Ethernet, IP, TCP, HTTP
+3. **Rohdaten** – die Bytes in Hexadezimal und als Text
+
+### Mitschnitt- und Anzeigefilter \{#filter}
+
+| | Mitschnittfilter (Capture Filter) | Anzeigefilter (Display Filter) |
+|---|---|---|
+| wann | **vor** dem Mitschnitt | **danach**, beliebig änderbar |
+| wirkt | nur passende Pakete werden gespeichert | blendet aus, verwirft nichts |
+| Syntax | BPF, wie tcpdump: `port 5000`, `host 10.0.0.5` | Wireshark-eigene: `tcp.port == 5000` |
+
+Nützliche Anzeigefilter:
+
+```text
+tcp.port == 5000                          Verkehr des Mini-Shops
+http.request.method == "POST"             nur POST-Anfragen
+http.response.code >= 400                 nur Fehlerantworten
+ip.addr == 192.0.2.50                     alles von/zu einer Adresse
+tcp.flags.syn == 1 && tcp.flags.ack == 0  Verbindungsversuche (erstes SYN)
+tcp.flags.reset == 1                      Verbindungsabbrüche (RST)
+tcp.analysis.retransmission               Neuübertragungen – Hinweis auf Paketverlust
+dns                                       DNS-Abfragen und -Antworten
+tls.handshake.type == 1                   TLS ClientHello (enthält den Servernamen, SNI)
+```
+
+### Einem Gespräch folgen \{#stream}
+
+Rechtsklick auf ein Paket → **Folgen → TCP-Stream** zeigt das komplette Gespräch als Text: bei HTTP/1.1 Anfrage und Antwort
+genau so, wie [http_von_hand.py](./04-http-tls.mdx#text) sie verschickt. Bei HTTPS sieht man dagegen nur verschlüsselte
+Daten – und genau das soll so sein.
+
+### Was man im Mitschnitt erkennt \{#erkennen}
+
+| Beobachtung | Bedeutung |
+|---|---|
+| SYN, SYN-ACK, ACK | erfolgreicher [TCP-Handshake](./02-tcp-udp-ports.mdx#tcp) |
+| SYN, darauf sofort RST | **Connection refused** – kein Dienst auf dem Port |
+| SYN, SYN, SYN … ohne Antwort | **Timeout** – Firewall oder Ziel nicht erreichbar |
+| viele Retransmissions, Duplicate ACKs | Paketverlust, überlastete Leitung |
+| große Zeitlücke zwischen Anfrage und Antwort | der **Server** braucht lange, nicht das Netz |
+| HTTP-Anfrage im Klartext mit `Authorization`-Header | **Zugangsdaten unverschlüsselt** – ein Sicherheitsbefund |
+
+Mit den Tests aus [beispiele/netzwerk](https://github.com/Smie89/lernplattform/tree/main/beispiele/netzwerk) lässt sich das
+gut üben: Loopback mitschneiden, `python -m unittest -v` starten, dann Handshake, HTTP-Anfrage, UDP-Datagramm und den
+abgelehnten Verbindungsversuch (SYN → RST) im Mitschnitt suchen.
+
+### HTTPS entschlüsseln (nur eigene Verbindungen) \{#tls-entschluesseln}
+
+Für die Fehlersuche an eigenen Anwendungen können Browser und curl die TLS-Sitzungsschlüssel in eine Datei schreiben, wenn
+die Umgebungsvariable `SSLKEYLOGFILE` gesetzt ist. Wireshark liest diese Datei
+(Einstellungen → Protocols → TLS) und zeigt dann auch HTTPS im Klartext. Die Datei enthält Geheimnisse – nach der Analyse
+löschen.
+
+## tcpdump auf Servern \{#tcpdump}
+
+Auf Servern ohne Oberfläche schneidet man mit **tcpdump** mit und wertet die Datei später in Wireshark aus:
+
+```bash
+sudo tcpdump -i any port 5432 -w datenbank.pcap      # Datenbankverkehr in Datei schreiben
+sudo tcpdump -i any -nn host 10.0.0.5 and port 443   # live anzeigen, ohne Namensauflösung
+sudo tcpdump -i any -c 100 'tcp[tcpflags] & tcp-rst != 0'   # die ersten 100 Resets
+```
+
+In **Docker**-Umgebungen kann man einen Hilfscontainer mit Werkzeugen an das Netzwerk eines anderen Containers hängen
+(`--network container:<name>`) und dort mitschneiden.
+
+## Browser-Entwicklertools und HAR \{#browser}
+
+Für Web-Anwendungen ist die **Netzwerkansicht der Entwicklertools** (`F12` → Netzwerk) oft das schnellste Werkzeug – ohne
+Installation und mit entschlüsseltem HTTPS:
+
+- alle Anfragen mit **Methode, Status, Größe, Dauer**
+- **Header**, **Body** und **Antwort** jeder Anfrage
+- **Wasserfall**: Wie lange dauerten DNS, Verbindung, TLS, Warten auf den Server (TTFB) und Download?
+- „**Cache deaktivieren**“ – gegen veraltete Dateien
+- **Drosselung** auf langsames Mobilfunknetz – realistische Bedingungen testen
+
+Eine **HAR-Datei** (HTTP Archive) speichert alle Anfragen einer Sitzung als JSON. Sie ist ideal für Fehlerberichte:
+Entwickler sehen genau, was passiert ist.
+
+:::warning[HAR-Dateien enthalten Geheimnisse]
+In einer HAR-Datei stehen **Cookies, Tokens und Formulardaten** im Klartext. Vor dem Anhängen an ein Ticket bereinigen
+oder nur aus einer Testumgebung mit Testkonten verwenden.
+:::
+
+Auch Testwerkzeuge zeichnen Netzwerkverkehr auf: Ein **Playwright-Trace** enthält alle Anfragen eines fehlgeschlagenen Tests
+samt Screenshots und lässt sich im Trace Viewer Schritt für Schritt ansehen – das Gegenstück zum HAR für automatisierte Tests.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Fremden Verkehr** ohne Erlaubnis mitschneiden.
+- Mitschnittfilter zu eng – genau das gesuchte Paket fehlt. Im Zweifel breit mitschneiden, mit Anzeigefiltern eingrenzen.
+- Auf der **falschen Schnittstelle** mitschneiden (z. B. WLAN statt Loopback für Tests gegen `localhost`).
+- **HAR-Dateien** und Mitschnitte mit Zugangsdaten unbereinigt weitergeben.
+- Mitschnitte laufen lassen, bis die **Festplatte voll** ist.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Mitschnitte zeigen, was **wirklich** übertragen wurde – nur im eigenen Netz oder mit Auftrag.
+- **Wireshark**: Mitschnittfilter vor, **Anzeigefilter** nach dem Mitschnitt; **TCP-Stream folgen** zeigt ganze Gespräche.
+- Muster erkennen: Handshake, SYN → RST (refused), SYN ohne Antwort (Timeout), Retransmissions (Paketverlust).
+- **tcpdump** auf Servern, Auswertung in Wireshark.
+- **Browser-Entwicklertools** und **HAR-Dateien** für Web-Anwendungen; HAR enthält Geheimnisse.
+
+<Quiz fragen={fragen} titel="Quiz: Netzwerkanalyse" />

@@ -1,0 +1,156 @@
+# Fragen zur Lektion "HTTP und TLS im Detail"
+
+- id: nw-http-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was trennt bei HTTP/1.1 die Header vom Body?"
+  optionen:
+    - "Ein Semikolon"
+    - "Eine Leerzeile"
+    - "Das Wort BODY"
+    - "Ein eigenes TCP-Paket"
+  richtig: [1]
+  erklaerung: "Startzeile, Header, Leerzeile, Body – http_von_hand.py zeigt das als reinen Text."
+  artikel: "#aufbau"
+  tags: [netzwerk, http]
+
+- id: nw-http-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum wiederholen Clients und Proxys bei Fehlern GET-Anfragen automatisch, POST-Anfragen aber nicht?"
+  optionen:
+    - "Weil POST langsamer ist"
+    - "GET ist idempotent und sicher; ein wiederholtes POST kann z. B. eine zweite Bestellung anlegen"
+    - "Weil POST verschlüsselt ist"
+    - "Aus Zufall"
+  richtig: [1]
+  erklaerung: "Ein doppeltes POST war genau die Ursache von SHOP-1 (Doppelklick)."
+  artikel: "#methoden"
+  tags: [netzwerk, http]
+
+- id: nw-http-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein UI-Test sieht nach einer Änderung noch die alte Version einer JavaScript-Datei. Was ist eine häufige Ursache?"
+  optionen:
+    - "TCP hat Pakete verloren"
+    - "Caching im Browser"
+    - "Ein DNS-Fehler"
+    - "Der Test ist zu schnell"
+  richtig: [1]
+  erklaerung: "Genau das passierte beim Bau dieser Plattform. Jeder UI-Test sollte deshalb mit einem frischen Browser-Kontext starten."
+  artikel: "#caching"
+  tags: [netzwerk, http, caching]
+
+- id: nw-http-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Worüber läuft HTTP/3?"
+  optionen:
+    - "TCP"
+    - "QUIC über UDP"
+    - "FTP"
+    - "Direkt über IP ohne Transportschicht"
+  richtig: [1]
+  erklaerung: "QUIC bringt eigene Zuverlässigkeit und TLS 1.3 mit und vermeidet, dass ein verlorenes Paket alle Anfragen blockiert."
+  artikel: "#versionen"
+  tags: [netzwerk, http]
+
+- id: nw-http-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was prüft ein Client beim TLS-Handshake am Zertifikat des Servers?"
+  optionen:
+    - "Ob die Kette bis zu einer vertrauenswürdigen Root-CA reicht"
+    - "Ob der Name zur aufgerufenen Domain passt"
+    - "Ob das Zertifikat noch gültig ist"
+    - "Ob der Server schnell genug antwortet"
+  richtig: [0, 1, 2]
+  erklaerung: "Schlägt eine dieser Prüfungen fehl, bricht der Client die Verbindung ab – und das ist gut so."
+  artikel: "#tls"
+  tags: [netzwerk, tls]
+
+- id: nw-http-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Die Seite öffnet sich im Browser, der API-Test meldet aber 'unable to get local issuer certificate'. Was ist eine typische Ursache?"
+  optionen:
+    - "Der API-Test nutzt HTTP/1.1"
+    - "Der Server schickt die Zwischenzertifikate nicht mit oder die interne CA ist dem Testsystem unbekannt"
+    - "Das Zertifikat ist abgelaufen"
+    - "DNS ist falsch"
+  richtig: [1]
+  erklaerung: "Browser ergänzen fehlende Zwischenzertifikate oft selbst, curl, Java und .NET nicht. Lösung: Kette vollständig ausliefern bzw. CA bekannt machen."
+  artikel: "#tls"
+  tags: [netzwerk, tls]
+
+- id: nw-http-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Test bekommt '504 Gateway Timeout'. Wo suchst du zuerst?"
+  optionen:
+    - "Im Testcode"
+    - "Beim Proxy bzw. Load Balancer und der Frage, warum die Anwendung dahinter nicht rechtzeitig antwortet"
+    - "Im DNS"
+    - "Im Browser-Cache"
+  richtig: [1]
+  erklaerung: "502 und 504 erzeugt der Proxy, nicht die Anwendung selbst."
+  artikel: "#proxy"
+  tags: [netzwerk, http]
+
+- id: nw-http-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Header seine Bedeutung zu."
+  paare:
+    - ["Host", "Welcher Name ist gemeint – ein Server bedient viele Domains"]
+    - ["Content-Type", "Format des Bodys"]
+    - ["Authorization", "Zugangsdaten, z. B. Bearer-Token"]
+    - ["Location", "URL der neu angelegten Ressource oder des Umleitungsziels"]
+    - ["Cache-Control", "Regeln für das Zwischenspeichern"]
+  erklaerung: "Header sind ein häufiger Gegenstand von API- und Sicherheitstests."
+  artikel: "#header"
+  tags: [netzwerk, http]
+
+- id: nw-http-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Sicher und idempotent? Ordne zu."
+  paare:
+    - ["GET", "sicher und idempotent"]
+    - ["PUT", "nicht sicher, aber idempotent"]
+    - ["POST", "weder sicher noch idempotent"]
+  erklaerung: "Sicher = ändert nichts; idempotent = mehrfach ausgeführt wie einmal."
+  artikel: "#methoden"
+  tags: [netzwerk, http]
+
+- id: nw-http-010
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Was zeigt curl -v beim Aufruf einer HTTPS-Adresse? Bringe die Schritte in die Reihenfolge, in der sie passieren."
+  elemente:
+    - "Name wird per DNS aufgelöst"
+    - "TCP-Verbindung zu Port 443"
+    - "TLS-Handshake und Zertifikatsprüfung"
+    - "HTTP-Anfrage wird gesendet"
+    - "HTTP-Antwort mit Statuscode kommt zurück"
+  erklaerung: "So sieht man auf einen Blick, an welcher Stelle eine Verbindung scheitert."
+  artikel: "#curl"
+  tags: [netzwerk, curl]
+
+- id: nw-http-011
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die erste Zeile der Anfrage und den Pflicht-Header von HTTP/1.1."
+  sprache: http
+  text: |
+    ___ /api/produkte HTTP/1.1
+    ___: shop.example.org
+    Accept: application/json
+  luecken:
+    - ["GET"]
+    - ["Host"]
+  exakt: true
+  erklaerung: "Der Host-Header ist in HTTP/1.1 Pflicht, weil ein Server unter einer IP-Adresse viele Domains bedienen kann."
+  artikel: "#aufbau"
+  tags: [netzwerk, http]

@@ -1,0 +1,152 @@
+# Fragen zur Lektion "DNS"
+
+- id: nw-dns-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welcher DNS-Eintrag ordnet einem Namen eine IPv4-Adresse zu?"
+  optionen:
+    - "AAAA"
+    - "A"
+    - "MX"
+    - "CNAME"
+  richtig: [1]
+  erklaerung: "AAAA ist das Gegenstück für IPv6, MX nennt den Mailserver, CNAME ist ein Alias."
+  artikel: "#eintraege"
+  tags: [netzwerk, dns]
+
+- id: nw-dns-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Die Testumgebung wurde auf einen neuen Server umgezogen. Einige Kollegen landen noch beim alten. Was ist die wahrscheinliche Ursache?"
+  optionen:
+    - "Der neue Server ist defekt"
+    - "Die alte Antwort ist noch im DNS-Cache, bis ihre TTL abläuft"
+    - "Die Kollegen nutzen IPv6"
+    - "Der Router ist zu langsam"
+  richtig: [1]
+  erklaerung: "Vor geplanten Umzügen die TTL rechtzeitig senken; lokal hilft ipconfig /flushdns bzw. resolvectl flush-caches."
+  artikel: "#ttl"
+  tags: [netzwerk, dns, ttl]
+
+- id: nw-dns-003
+  typ: single
+  schwierigkeit: 2
+  frage: "dig liefert für shop.example.org eine andere Adresse als die Anwendung verwendet. Was ist eine mögliche Erklärung?"
+  optionen:
+    - "dig ist veraltet"
+    - "Ein Eintrag in der hosts-Datei – dig ignoriert sie, die Anwendung nicht"
+    - "Die Anwendung nutzt UDP"
+    - "DNS funktioniert nur im Browser"
+  richtig: [1]
+  erklaerung: "getent hosts zeigt die Auflösung so, wie Programme sie sehen – inklusive hosts-Datei."
+  artikel: "#werkzeuge"
+  tags: [netzwerk, dns]
+
+- id: nw-dns-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie kannst du testen, ob die neue Umgebung unter dem echten Namen funktioniert, bevor DNS umgestellt wird?"
+  optionen:
+    - "Gar nicht"
+    - "Den Namen in der hosts-Datei des Testrechners auf die neue Adresse zeigen lassen"
+    - "Den Namen in einen CNAME ändern"
+    - "Den Router neu starten"
+  richtig: [1]
+  erklaerung: "Die hosts-Datei hat Vorrang vor DNS – nach dem Test den Eintrag wieder entfernen."
+  artikel: "#tests"
+  tags: [netzwerk, dns, testen]
+
+- id: nw-dns-005
+  typ: single
+  schwierigkeit: 3
+  frage: "Was ist ein Subdomain Takeover?"
+  optionen:
+    - "Ein Angreifer errät ein Passwort"
+    - "Ein CNAME zeigt auf einen gelöschten Cloud-Dienst, den ein Angreifer neu registriert – damit kontrolliert er die Subdomain"
+    - "Eine zu lange TTL"
+    - "Ein Tippfehler in der Domain"
+  richtig: [1]
+  erklaerung: "Verwaiste DNS-Einträge sollten beim Abbau von Diensten immer mit entfernt werden."
+  artikel: "#sicherheit"
+  tags: [netzwerk, dns, sicherheit]
+
+- id: nw-dns-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie lösen sich Container in einem Docker-Compose-Projekt gegenseitig auf?"
+  optionen:
+    - "Über ihre Dienstnamen, dank eines eingebauten DNS-Servers von Docker"
+    - "Nur über feste IP-Adressen"
+    - "Über die hosts-Datei des Rechners"
+    - "Gar nicht"
+  richtig: [0]
+  erklaerung: "Deshalb kann die API die Datenbank einfach unter dem Namen 'db' erreichen."
+  artikel: "#tests"
+  tags: [netzwerk, dns, docker]
+
+- id: nw-dns-007
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Auch die Antwort 'Name existiert nicht' kann eine Zeit lang gecacht werden."
+  richtig: [0]
+  erklaerung: "Wahr. Wer einen Namen abfragt, bevor er angelegt ist, bekommt eine Weile weiter 'nicht gefunden'."
+  artikel: "#ttl"
+  tags: [netzwerk, dns, ttl]
+
+- id: nw-dns-008
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Stationen einer DNS-Auflösung ohne Cache-Treffer in die richtige Reihenfolge."
+  elemente:
+    - "Betriebssystem prüft hosts-Datei und lokalen Cache"
+    - "Anfrage an den DNS-Resolver"
+    - "Resolver fragt einen Root-Server"
+    - "Resolver fragt den TLD-Server (z. B. für .org)"
+    - "Autoritativer Server der Domain liefert die Antwort"
+  erklaerung: "Danach speichern Resolver und Betriebssystem die Antwort für die Dauer der TTL."
+  artikel: "#ablauf"
+  tags: [netzwerk, dns]
+
+- id: nw-dns-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Eintragstyp seine Aufgabe zu."
+  paare:
+    - ["A", "Name zu IPv4-Adresse"]
+    - ["AAAA", "Name zu IPv6-Adresse"]
+    - ["CNAME", "Alias auf einen anderen Namen"]
+    - ["MX", "Mailserver der Domain"]
+    - ["TXT", "Text, z. B. Domain-Nachweis oder SPF"]
+    - ["PTR", "Adresse zu Name (Reverse DNS)"]
+  erklaerung: "Mit dig <TYP> <name> lässt sich jeder Typ gezielt abfragen."
+  artikel: "#eintraege"
+  tags: [netzwerk, dns]
+
+- id: nw-dns-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze: Frage den Resolver 9.9.9.9 direkt und gib nur die Adresse aus."
+  sprache: bash
+  text: "dig ___9.9.9.9 +___ shop.example.org"
+  luecken:
+    - ["@"]
+    - ["short"]
+  exakt: true
+  erklaerung: "So umgeht man den lokalen Resolver – hilfreich, um Cache-Probleme einzugrenzen."
+  artikel: "#werkzeuge"
+  tags: [netzwerk, dns]
+
+- id: nw-dns-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Tests gegen shop.example.org landen immer auf dem eigenen Rechner. Welche Zeile der hosts-Datei ist schuld?"
+  sprache: text
+  code: |
+    127.0.0.1      localhost
+    ::1            localhost
+    127.0.0.1      shop.example.org
+    10.20.30.40    api.example.org
+  richtig: [2]
+  erklaerung: "Ein vergessener Eintrag aus einem früheren Test leitet den Namen auf localhost um. Die hosts-Datei hat Vorrang vor DNS."
+  artikel: "#tests"
+  tags: [netzwerk, dns]

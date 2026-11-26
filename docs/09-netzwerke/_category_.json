@@ -1,0 +1,9 @@
+{
+  "label": "🌐 Netzwerke",
+  "position": 9,
+  "link": {
+    "type": "generated-index",
+    "slug": "/netzwerke",
+    "description": "Schichtenmodell, IP-Adressen und Subnetze, TCP und UDP, DNS, HTTP und TLS im Detail, Netzwerkanalyse mit Wireshark."
+  }
+}

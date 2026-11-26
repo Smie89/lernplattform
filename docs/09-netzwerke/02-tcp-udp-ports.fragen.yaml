@@ -1,0 +1,146 @@
+# Fragen zur Lektion "TCP, UDP und Ports"
+
+- id: nw-tcp-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Wozu dienen Ports?"
+  optionen:
+    - "Sie identifizieren den Rechner im Netz"
+    - "Sie identifizieren das Programm bzw. den Dienst auf einem Rechner"
+    - "Sie verschlüsseln die Verbindung"
+    - "Sie ersetzen DNS"
+  richtig: [1]
+  erklaerung: "Die IP-Adresse führt zum Rechner, der Port zum Dienst darauf."
+  artikel: "#ports"
+  tags: [netzwerk, ports]
+
+- id: nw-tcp-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Test meldet 'Connection refused'. Was ist am wahrscheinlichsten?"
+  optionen:
+    - "Eine Firewall verwirft die Pakete"
+    - "Der Rechner ist erreichbar, aber auf dem Port lauscht kein Dienst"
+    - "Der DNS-Name ist falsch geschrieben"
+    - "Das Zertifikat ist abgelaufen"
+  richtig: [1]
+  erklaerung: "Der Rechner antwortet aktiv mit einer Ablehnung. Bei einer Firewall, die verwirft, gäbe es einen Timeout."
+  artikel: "#fehler"
+  tags: [netzwerk, fehlersuche]
+
+- id: nw-tcp-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Verbindungsversuch endet mit einem Timeout. Was kommt als Ursache in Frage?"
+  optionen:
+    - "Der Dienst ist nicht gestartet, der Rechner antwortet aber"
+    - "Eine Firewall verwirft die Pakete, die IP ist falsch oder der Rechner ist aus"
+    - "Der Port ist kleiner als 1024"
+    - "UDP wird verwendet"
+  richtig: [1]
+  erklaerung: "Beim Timeout kommt gar keine Antwort – irgendwo unterwegs verschwinden die Pakete."
+  artikel: "#fehler"
+  tags: [netzwerk, fehlersuche]
+
+- id: nw-tcp-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum eignet sich UDP für Videotelefonie besser als TCP?"
+  optionen:
+    - "Weil UDP verschlüsselt"
+    - "Weil ein verspätetes Paket wertlos ist – lieber überspringen als auf Neuübertragung warten"
+    - "Weil UDP zuverlässiger ist"
+    - "Weil TCP keine Audiodaten übertragen kann"
+  richtig: [1]
+  erklaerung: "TCP würde auf fehlende Pakete warten und so Verzögerungen erzeugen."
+  artikel: "#udp"
+  tags: [netzwerk, udp]
+
+- id: nw-tcp-005
+  typ: single
+  schwierigkeit: 3
+  frage: "Unter Windows scheiterte der Test für einen geschlossenen Port zunächst mit Timeout statt 'refused'. Warum?"
+  optionen:
+    - "Windows hat keine Ports"
+    - "Windows wiederholt den Verbindungsaufbau und meldet 'refused' erst nach etwa 2 Sekunden – das Zeitlimit von 2 Sekunden war zu knapp"
+    - "Der Test war falsch programmiert"
+    - "Python funktioniert unter Windows nicht"
+  richtig: [1]
+  erklaerung: "Linux meldet sofort. Solche Plattformunterschiede führen zu Tests, die nur auf einem System scheitern."
+  artikel: "#fehler"
+  tags: [netzwerk, plattform]
+
+- id: nw-tcp-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was ist bei Netzwerkzugriffen in Tests sinnvoll?"
+  optionen:
+    - "Immer ein Timeout setzen"
+    - "Freie Ports vom Betriebssystem vergeben lassen (Port 0)"
+    - "HTTP-Clients wiederverwenden"
+    - "Für jede Anfrage einen neuen HTTP-Client erzeugen"
+  richtig: [0, 1, 2]
+  erklaerung: "Neue Clients pro Anfrage erzeugen unnötig viele Verbindungen."
+  artikel: "#tests"
+  tags: [netzwerk, testen]
+
+- id: nw-tcp-007
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Bei UDP bestätigt der Empfänger jedes Paket, und verlorene Pakete werden automatisch neu gesendet."
+  richtig: [1]
+  erklaerung: "Falsch. Das macht TCP. UDP schickt Datagramme ohne Bestätigung und ohne Reihenfolge."
+  artikel: "#udp"
+  tags: [netzwerk, udp]
+
+- id: nw-tcp-008
+  typ: reihenfolge
+  schwierigkeit: 1
+  frage: "Bringe den TCP-Verbindungsaufbau in die richtige Reihenfolge."
+  elemente:
+    - "Client sendet SYN"
+    - "Server antwortet mit SYN-ACK"
+    - "Client sendet ACK"
+    - "Daten werden übertragen"
+  erklaerung: "Der Drei-Wege-Handshake kostet eine volle Hin-und-Rück-Zeit, bevor Daten fließen."
+  artikel: "#tcp"
+  tags: [netzwerk, tcp]
+
+- id: nw-tcp-009
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "TCP oder UDP? Ordne die Anwendung dem typischen Transportprotokoll zu."
+  paare:
+    - ["SSH-Sitzung", "TCP"]
+    - ["Einfache DNS-Abfrage", "UDP"]
+    - ["HTTP/3 (QUIC)", "UDP mit eigener Zuverlässigkeit"]
+    - ["Datenbankverbindung", "TCP mit Verbindungspool"]
+  erklaerung: "DNS nutzt für große Antworten auch TCP; HTTP/3 baut Zuverlässigkeit über QUIC auf UDP auf."
+  artikel: "#udp"
+  tags: [netzwerk, tcp, udp]
+
+- id: nw-tcp-010
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Fehlermeldung die wahrscheinliche Ursache zu."
+  paare:
+    - ["Connection refused", "Kein Dienst auf dem Port"]
+    - ["Timeout", "Firewall verwirft oder Rechner nicht erreichbar"]
+    - ["Connection reset", "Verbindung wurde mittendrin abgebrochen"]
+    - ["Name or service not known", "Hostname konnte nicht aufgelöst werden"]
+  erklaerung: "Die genaue Meldung ist der wichtigste Hinweis bei der Fehlersuche."
+  artikel: "#fehler"
+  tags: [netzwerk, fehlersuche]
+
+- id: nw-tcp-011
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Linux-Befehl, der alle lauschenden TCP- und UDP-Ports mit Prozess anzeigt."
+  sprache: bash
+  text: "sudo ___ -tulpn"
+  luecken:
+    - ["ss"]
+  exakt: true
+  erklaerung: "t = TCP, u = UDP, l = lauschend, p = Prozess, n = numerische Ausgabe. Unter Windows: Get-NetTCPConnection -State Listen."
+  artikel: "#werkzeuge"
+  tags: [netzwerk, linux]

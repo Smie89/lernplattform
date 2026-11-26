@@ -133,3 +133,16 @@ jobs:
           python-version: "3.12"
       - name: SQL-Tests (Abfragen, Constraints, Transaktionen, Indizes)
         run: python -m unittest -v
+
+  netzwerk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beispiele/netzwerk
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Netzwerk-Tests (Subnetze, HTTP von Hand, TCP, UDP, DNS)
+        run: python -m unittest -v
