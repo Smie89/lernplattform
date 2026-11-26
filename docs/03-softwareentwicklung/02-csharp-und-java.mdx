@@ -1,0 +1,314 @@
+---
+title: C# und Java im Vergleich
+description: Die beiden Sprachen der Testautomation nebeneinander – Typen und Geldbeträge, Properties und Getter, Records, null-Sicherheit, LINQ und Streams, Musterabgleich, Exceptions, Build-Werkzeuge und Tests. Mit ausführbaren Gegenstücken in beiden Sprachen.
+tags: [softwareentwicklung, csharp, java, linq, streams]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import fragen from './02-csharp-und-java.fragen.yaml';
+
+# C# und Java im Vergleich
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- Code in **C# und Java** lesen und die wichtigsten Unterschiede benennen,
+- **Geldbeträge** in beiden Sprachen korrekt darstellen,
+- **Records**, **null-Behandlung** und **Musterabgleich** einsetzen,
+- Datenauswertungen mit **LINQ** und **Streams** schreiben,
+- **Build-Werkzeuge** und **Test-Frameworks** beider Welten zuordnen.
+:::
+
+:::tip[Zwei ausführbare Gegenstücke]
+Alle Beispiele stammen aus zwei Dateien, die **dieselben Aufgaben** lösen – und deren Ergebnisse automatisch geprüft werden:
+- C#: [Bestellauswertung.cs](https://github.com/Smie89/lernplattform/blob/main/beispiele/entwicklung/src/Entwicklung.Beispiele/Sprachvergleich/Bestellauswertung.cs) mit NUnit-Tests
+- Java: [Sprachvergleich.java](https://github.com/Smie89/lernplattform/blob/main/beispiele/entwicklung-java/Sprachvergleich.java) – ausführbar mit `java Sprachvergleich.java`, prüft sich selbst
+:::
+
+## Auf einen Blick \{#ueberblick}
+
+| Thema | C# | Java |
+|---|---|---|
+| Plattform | .NET | JVM |
+| Projekt/Build | `.csproj`, `dotnet build` | `pom.xml` (Maven) oder Gradle |
+| Pakete | NuGet | Maven Central |
+| Benennung | Methoden und Properties **PascalCase**: `Berechne()` | Methoden **camelCase**: `berechne()` |
+| Namespace / Paket | `namespace Shop.Core;` | `package de.shop;` (= Ordnerstruktur) |
+| Datei ↔ Klasse | frei | `public`-Klasse muss wie die Datei heißen |
+| Text | `string` | `String` |
+| Typinferenz | `var` | `var` (ab Java 10) |
+| Unit-Tests | NUnit, xUnit, MSTest | JUnit 5, TestNG |
+
+## Typen und Geldbeträge \{#typen}
+
+Für **Geld** niemals `double` oder `float` – sie können Dezimalzahlen wie 0,10 nicht exakt darstellen.
+
+<Tabs groupId="sprache">
+<TabItem value="csharp" label="C#">
+
+```csharp
+decimal preis = 24.90m;                    // m = decimal-Literal
+decimal summe = preis * 2;                 // 49.80, exakt
+var gerundet = Math.Round(85.0425m, 2, MidpointRounding.AwayFromZero);   // 85.04
+
+Console.WriteLine(0.1 + 0.2 == 0.3);       // False (double!)
+Console.WriteLine(0.1m + 0.2m == 0.3m);    // True
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+BigDecimal preis = new BigDecimal("24.90");          // aus einem String, nicht aus 24.90!
+BigDecimal summe = preis.multiply(BigDecimal.valueOf(2));   // 49.80
+BigDecimal gerundet = new BigDecimal("85.0425").setScale(2, RoundingMode.HALF_UP);   // 85.04
+
+System.out.println(new BigDecimal("180").equals(new BigDecimal("180.00")));       // false (Scale!)
+System.out.println(new BigDecimal("180").compareTo(new BigDecimal("180.00")) == 0); // true
+```
+
+</TabItem>
+</Tabs>
+
+In Java gibt es **keine Operatoren** für `BigDecimal` (`+`, `*`), sondern Methoden – und `equals` vergleicht auch die Anzahl der Nachkommastellen. Für Werte deshalb `compareTo` (siehe [JUnit 5](../02-testautomation/03-java/01-junit5-grundlagen.mdx#erster-test)).
+
+## Properties und Getter \{#properties}
+
+<Tabs groupId="sprache">
+<TabItem value="csharp" label="C#">
+
+```csharp
+public class Kunde
+{
+    public string Name { get; }                 // nur lesbar, im Konstruktor gesetzt
+    public bool IstStammkunde { get; set; }     // lesen und schreiben
+    public int Bestellungen { get; private set; }
+
+    public Kunde(string name) => Name = name;
+}
+
+kunde.IstStammkunde = true;   // sieht aus wie ein Feld, ist aber eine Methode
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+public class Kunde {
+    private final String name;
+    private boolean stammkunde;
+
+    public Kunde(String name) { this.name = name; }
+
+    public String getName() { return name; }
+    public boolean isStammkunde() { return stammkunde; }
+    public void setStammkunde(boolean wert) { this.stammkunde = wert; }
+}
+
+kunde.setStammkunde(true);
+```
+
+</TabItem>
+</Tabs>
+
+## Records \{#records}
+
+Für **unveränderliche Datenklassen** haben beide Sprachen **Records** – mit Konstruktor, Gleichheit über die Werte und lesbarer Textausgabe:
+
+<Tabs groupId="sprache">
+<TabItem value="csharp" label="C#">
+
+```csharp
+public sealed record Position(string Artikel, string Kategorie, int Menge, decimal Einzelpreis)
+{
+    public decimal Summe => Menge * Einzelpreis;
+}
+
+var p = new Position("Buch", "Medien", 2, 24.90m);
+var mehr = p with { Menge = 3 };    // Kopie mit geändertem Wert
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+record Position(String artikel, String kategorie, int menge, BigDecimal einzelpreis) {
+    BigDecimal summe() {
+        return einzelpreis.multiply(BigDecimal.valueOf(menge));
+    }
+}
+
+var p = new Position("Buch", "Medien", 2, new BigDecimal("24.90"));
+p.artikel();   // Zugriff ohne "get"
+```
+
+</TabItem>
+</Tabs>
+
+Records sind ideal für **DTOs** in API-Tests, Testdaten und Wertobjekte.
+
+## null-Behandlung \{#null}
+
+`null` ist eine der häufigsten Fehlerquellen. Beide Sprachen helfen unterschiedlich:
+
+<Tabs groupId="sprache">
+<TabItem value="csharp" label="C#">
+
+```csharp
+// <Nullable>enable</Nullable>: der Compiler warnt bei möglichen null-Zugriffen
+string? vorname = null;               // ? = darf null sein
+var laenge = vorname?.Length;         // ?.  -> null statt NullReferenceException
+var anzeige = vorname ?? "Gast";      // ??  -> Ersatzwert
+
+public static string Anzeigename(string? vorname, string? nachname) =>
+    (vorname?.Trim(), nachname?.Trim()) switch
+    {
+        ({ Length: > 0 } v, { Length: > 0 } n) => $"{v} {n}",
+        (_, { Length: > 0 } n) => n,
+        _ => "Gast",
+    };
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+// Optional macht "vielleicht kein Wert" im Typ sichtbar
+static String anzeigename(String vorname, String nachname) {
+    var v = Optional.ofNullable(vorname).map(String::trim).filter(s -> !s.isEmpty());
+    var n = Optional.ofNullable(nachname).map(String::trim).filter(s -> !s.isEmpty());
+    if (v.isPresent() && n.isPresent()) return v.get() + " " + n.get();
+    return n.orElse("Gast");
+}
+```
+
+</TabItem>
+</Tabs>
+
+## LINQ und Streams \{#linq-streams}
+
+Datenauswertungen – filtern, sortieren, gruppieren – schreibt man in C# mit **LINQ**, in Java mit der **Stream-API**:
+
+<Tabs groupId="sprache">
+<TabItem value="csharp" label="C#">
+
+```csharp
+// Alle Artikel ab 25 € Positionssumme, teuerste zuerst
+positionen
+    .Where(p => p.Summe >= 25m)
+    .OrderByDescending(p => p.Summe)
+    .Select(p => p.Artikel)
+    .ToList();                          // ["Monitor", "Buch", "Kabel"]
+
+// Umsatz je Kategorie
+positionen
+    .GroupBy(p => p.Kategorie)
+    .ToDictionary(g => g.Key, g => g.Sum(p => p.Summe));   // Technik: 378.97, Medien: 49.80, ...
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+positionen.stream()
+    .filter(p -> p.summe().compareTo(new BigDecimal("25")) >= 0)
+    .sorted(Comparator.comparing(Position::summe).reversed())
+    .map(Position::artikel)
+    .toList();                          // [Monitor, Buch, Kabel]
+
+positionen.stream()
+    .collect(Collectors.groupingBy(Position::kategorie,
+        Collectors.reducing(BigDecimal.ZERO, Position::summe, BigDecimal::add)));
+```
+
+</TabItem>
+</Tabs>
+
+| LINQ | Stream |
+|---|---|
+| `Where` | `filter` |
+| `Select` | `map` |
+| `OrderBy` / `OrderByDescending` | `sorted(Comparator…)` / `.reversed()` |
+| `GroupBy` | `Collectors.groupingBy` |
+| `First` / `FirstOrDefault` | `findFirst()` (liefert `Optional`) |
+| `Any` / `All` | `anyMatch` / `allMatch` |
+| `Sum`, `Count` | `mapToInt(...).sum()`, `count()` |
+| `ToList()` | `toList()` |
+
+:::note[Ein echter Fund beim Schreiben dieser Lektion]
+In beiden Testdateien stand zuerst die Erwartung `Monitor, Kabel, Buch`. **Beide** Prüfungen schlugen fehl – zu Recht: Das Buch (2 × 24,90 € = 49,80 €) ist teurer als die Kabel (3 × 9,99 € = 29,97 €). Der Fehler lag in der **Erwartung**, nicht im Code. Auch Tests müssen stimmen – deshalb sieht man jeden neuen Test einmal rot oder prüft das Orakel genau.
+:::
+
+## Musterabgleich mit switch \{#switch}
+
+<Tabs groupId="sprache">
+<TabItem value="csharp" label="C#">
+
+```csharp
+public abstract record Zahlungsart;
+public sealed record Kreditkarte(string Endziffern) : Zahlungsart;
+public sealed record Rechnung(int ZahlungszielTage) : Zahlungsart;
+
+public static string Beschreibung(Zahlungsart z) => z switch
+{
+    Kreditkarte k => $"Kreditkarte **** {k.Endziffern}",
+    Rechnung { ZahlungszielTage: > 30 } r => $"Rechnung, {r.ZahlungszielTage} Tage (Freigabe nötig)",
+    Rechnung r => $"Rechnung, {r.ZahlungszielTage} Tage",
+    _ => throw new ArgumentOutOfRangeException(nameof(z)),
+};
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+sealed interface Zahlungsart permits Kreditkarte, Rechnung, Gutschein {}
+record Kreditkarte(String endziffern) implements Zahlungsart {}
+record Rechnung(int zahlungszielTage) implements Zahlungsart {}
+
+static String beschreibung(Zahlungsart z) {
+    return switch (z) {
+        case Kreditkarte k -> "Kreditkarte **** " + k.endziffern();
+        case Rechnung r when r.zahlungszielTage() > 30 -> "Rechnung, " + r.zahlungszielTage() + " Tage (Freigabe nötig)";
+        case Rechnung r -> "Rechnung, " + r.zahlungszielTage() + " Tage";
+        case Gutschein g -> "Gutschein …";
+    };   // kein default nötig: der Compiler kennt alle Fälle (sealed)
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Exceptions \{#exceptions}
+
+| | C# | Java |
+|---|---|---|
+| Geprüfte Exceptions | **gibt es nicht** | **checked exceptions** (z. B. `IOException`) müssen gefangen oder mit `throws` deklariert werden |
+| Ungültiges Argument | `ArgumentException`, `ArgumentOutOfRangeException` | `IllegalArgumentException` |
+| Ungültiger Zustand | `InvalidOperationException` | `IllegalStateException` |
+| Aufräumen | `using var x = …;` / `try … finally` | `try (var x = …) { … }` (try-with-resources) |
+
+## Asynchroner Code \{#async}
+
+C# hat `async`/`await` tief in der Sprache – Playwright für .NET ist komplett asynchron (`await Page.ClickAsync()`), und Testmethoden geben `Task` zurück. In Java arbeitet man klassisch synchron (Selenium, REST Assured) oder mit `CompletableFuture`; seit Java 21 machen **virtuelle Threads** blockierenden Code sehr günstig.
+
+## Typische Fehler \{#typische-fehler}
+
+- **`double` für Geld** – Rundungsfehler.
+- **`new BigDecimal(24.90)`** statt `new BigDecimal("24.90")` – der `double` bringt seine Ungenauigkeit mit.
+- **`BigDecimal.equals`** für Wertvergleiche – `180` ≠ `180.00`.
+- **Strings mit `==` vergleichen in Java** – vergleicht Referenzen; richtig ist `equals`. (In C# vergleicht `==` bei `string` den Inhalt.)
+- **null-Warnungen ignorieren** (C#) bzw. `Optional.get()` ohne Prüfung (Java).
+- **Konventionen der anderen Sprache** übernehmen – `getName()` in C#, `Name()` in Java.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Gleiche Konzepte, andere Schreibweise: **PascalCase vs. camelCase**, **Properties vs. Getter**, **NuGet vs. Maven**.
+- Geld: **`decimal`** bzw. **`BigDecimal`** (aus String, Vergleich mit `compareTo`).
+- **Records** in beiden Sprachen für Datenklassen; **`?`/`??`** bzw. **`Optional`** für fehlende Werte.
+- **LINQ ↔ Streams**: `Where`/`filter`, `Select`/`map`, `GroupBy`/`groupingBy`.
+- **Switch mit Musterabgleich** in beiden Sprachen; Java prüft bei `sealed` die Vollständigkeit.
+- Java hat **checked exceptions**, C# nicht.
+
+<Quiz fragen={fragen} titel="Quiz: C# und Java im Vergleich" />

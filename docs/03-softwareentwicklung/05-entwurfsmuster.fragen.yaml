@@ -1,0 +1,155 @@
+# Fragen zur Lektion "Entwurfsmuster"
+
+- id: se-em-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was sind Entwurfsmuster?"
+  optionen:
+    - "Fertige Bibliotheken zum Herunterladen"
+    - "Bewährte Lösungsschablonen für wiederkehrende Entwurfsprobleme"
+    - "Vorlagen für Benutzeroberflächen"
+    - "Regeln für die Code-Formatierung"
+  richtig: [1]
+  erklaerung: "Muster beschreiben bewährte Strukturen und geben ihnen Namen – sie sind Lösung und gemeinsame Sprache zugleich."
+  artikel: "#was"
+  tags: [entwurfsmuster]
+
+- id: se-em-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Verschiedene Rabattregeln sollen austauschbar und kombinierbar sein. Welches Muster passt?"
+  optionen:
+    - "Singleton"
+    - "Strategie"
+    - "Beobachter"
+    - "Builder"
+  richtig: [1]
+  erklaerung: "Jede Regel ist eine Strategie hinter dem Interface IRabattregel; der Preisrechner kennt nur das Interface."
+  artikel: "#strategie"
+  tags: [entwurfsmuster, strategie]
+
+- id: se-em-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Aus dem Code 'express' soll das passende Versandart-Objekt entstehen, ohne dass der Aufrufer die Klassen kennt. Welches Muster ist das?"
+  optionen:
+    - "Fabrikmethode"
+    - "Dekorierer"
+    - "Repository"
+    - "Beobachter"
+  richtig: [0]
+  erklaerung: "Die VersandartFabrik kapselt die Entscheidung, welches Objekt erzeugt wird."
+  artikel: "#fabrik"
+  tags: [entwurfsmuster, fabrik]
+
+- id: se-em-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Welches Muster steckt hinter 'EinWarenkorb().Mit(Buch, 2).Mit(Tasse).Bauen()'?"
+  optionen:
+    - "Strategie"
+    - "Builder"
+    - "Singleton"
+    - "Beobachter"
+  richtig: [1]
+  erklaerung: "Der Test Data Builder baut ein Objekt Schritt für Schritt mit sprechenden Methoden."
+  artikel: "#builder"
+  tags: [entwurfsmuster, builder]
+
+- id: se-em-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Zahlungsdienst soll zusätzlich jede Abbuchung protokollieren, ohne seinen Code zu ändern. Welches Muster passt?"
+  optionen:
+    - "Dekorierer"
+    - "Fabrikmethode"
+    - "Singleton"
+    - "Repository"
+  richtig: [0]
+  erklaerung: "Der Dekorierer implementiert dasselbe Interface, umhüllt den echten Dienst und ergänzt Verhalten."
+  artikel: "#dekorierer"
+  tags: [entwurfsmuster, dekorierer]
+
+- id: se-em-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Fake lehnt die ersten zwei Abbuchungen ab. Er wird von WiederholenderZahlungsdienst (3 Versuche) und darüber von ProtokollierenderZahlungsdienst umhüllt. Was ist das Ergebnis?"
+  optionen:
+    - "Abgelehnt nach dem ersten Versuch"
+    - "Genehmigt beim dritten Versuch"
+    - "Eine Exception"
+    - "Genehmigt beim ersten Versuch"
+  richtig: [1]
+  erklaerung: "Der Wiederholer versucht es bis zu dreimal; der dritte Aufruf wird genehmigt. Genau das prüft der Test Dekorierer_lassen_sich_verketten."
+  artikel: "#dekorierer"
+  tags: [entwurfsmuster, dekorierer]
+
+- id: se-em-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Nach einer neuen Bestellung sollen E-Mail-Versand und Lager reagieren, ohne dass die Bestellannahme sie kennt. Welches Muster passt?"
+  optionen:
+    - "Beobachter"
+    - "Builder"
+    - "Fabrikmethode"
+    - "Strategie"
+  richtig: [0]
+  erklaerung: "Die Bestellannahme bietet ein Ereignis an, Interessierte melden sich an – in C# mit event."
+  artikel: "#beobachter"
+  tags: [entwurfsmuster, beobachter]
+
+- id: se-em-008
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum ist das klassische Singleton für Tests problematisch?"
+  optionen:
+    - "Weil es zu langsam ist"
+    - "Weil es globalen Zustand darstellt, den Tests gegenseitig verändern, und sich nicht durch ein Testdouble ersetzen lässt"
+    - "Weil es nur in Java funktioniert"
+    - "Weil es zu viele Instanzen erzeugt"
+  richtig: [1]
+  erklaerung: "Besser: eine normale Klasse, die der DI-Container als Singleton registriert – Tests können dann eine eigene Instanz übergeben."
+  artikel: "#singleton"
+  tags: [entwurfsmuster, singleton, flaky]
+
+- id: se-em-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dient ein Repository?"
+  optionen:
+    - "Es speichert Quellcode"
+    - "Es kapselt die Datenhaltung hinter einer sammlungsartigen Schnittstelle"
+    - "Es erzeugt Benutzeroberflächen"
+    - "Es verteilt Ereignisse"
+  richtig: [1]
+  erklaerung: "IBestellRepository verbirgt, ob Bestellungen im Speicher oder in einer Datenbank liegen – die Fachlogik bleibt unverändert."
+  artikel: "#repository"
+  tags: [entwurfsmuster, repository]
+
+- id: se-em-010
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Muster begegnen dir in der Testautomation?"
+  optionen:
+    - "Page Object für Seiten der Oberfläche"
+    - "Test Data Builder für Testdaten"
+    - "Fabrik für die Browserauswahl"
+    - "Singleton für den Testzustand aller Tests"
+  richtig: [0, 1, 2]
+  erklaerung: "Ein Singleton für gemeinsamen Testzustand führt zu abhängigen, flaky Tests – das Gegenteil eines guten Musters."
+  artikel: "#muster-testautomation"
+  tags: [entwurfsmuster, testautomation]
+
+- id: se-em-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Fabrik wird für eine Klasse gebaut, von der es nur eine einzige Variante gibt und geben wird. Wie ist das zu bewerten?"
+  optionen:
+    - "Vorbildlich"
+    - "Übertrieben – Muster um ihrer selbst willen verletzen YAGNI und KISS"
+    - "Pflicht laut SOLID"
+    - "Nötig für Unit-Tests"
+  richtig: [1]
+  erklaerung: "Muster lösen konkrete Probleme. Ohne das Problem erhöhen sie nur die Komplexität."
+  artikel: "#typische-fehler"
+  tags: [entwurfsmuster, yagni]

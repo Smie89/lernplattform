@@ -1,0 +1,197 @@
+---
+title: Refactoring
+description: Code verbessern, ohne sein Verhalten zu ändern – Sicherheitsnetz aus Charakterisierungstests, die wichtigsten Refactorings in kleinen Schritten und ein vollständiges Vorher-nachher-Beispiel mit echten Testergebnissen.
+tags: [softwareentwicklung, refactoring, clean-code, tests]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './06-refactoring.fragen.yaml';
+
+# Refactoring
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, was **Refactoring** ist – und was nicht,
+- vor einem Umbau mit **Charakterisierungstests** ein Sicherheitsnetz spannen,
+- die wichtigsten Refactorings in **kleinen Schritten** anwenden,
+- unbeabsichtigte **Verhaltensänderungen** erkennen,
+- Refactoring im Alltag sinnvoll **einplanen**.
+:::
+
+## Was ist Refactoring? \{#was}
+
+> **Refactoring** ist die Verbesserung der **inneren Struktur** von Code, **ohne** sein **äußeres Verhalten** zu ändern.
+
+| Refactoring | **Kein** Refactoring |
+|---|---|
+| Methode umbenennen, Methode extrahieren | neue Funktion einbauen |
+| Konstante statt Magic Number | einen Fehler beheben |
+| Tupel durch eine benannte Klasse ersetzen | Performance-Optimierung, die das Ergebnis ändert |
+| `if`-Kette durch Polymorphie ersetzen | „Ich schreibe das mal schnell neu“ |
+
+Kent Beck: „Erst die Änderung leicht machen (das kann schwer sein), dann die leichte Änderung machen.“ – Refactoring und neue Funktionen also **nacheinander**, nicht gleichzeitig.
+
+## Das Sicherheitsnetz: Tests \{#sicherheitsnetz}
+
+Ohne Tests ist Refactoring Glücksspiel. Vor dem Umbau muss das **aktuelle Verhalten** durch Tests festgehalten sein.
+
+Fehlen sie (typisch bei Altcode), schreibt man zuerst **Charakterisierungstests**: Sie prüfen nicht, ob der Code **richtig** ist, sondern **was er heute tut**. Ihr Orakel ist der alte Code selbst.
+
+Im [Beispielprojekt](https://github.com/Smie89/lernplattform/blob/main/beispiele/entwicklung/tests/Entwicklung.Beispiele.Tests/Refactoring/RechnungTests.cs) läuft jede Eingabe durch den **alten** und den **neuen** Code – die Ergebnisse müssen gleich sein:
+
+```csharp
+[TestCaseSource(nameof(AlleFaelle))]   // 4 Warenkörbe × mit/ohne Stammkunde = 8 Fälle
+public void Nachher_liefert_exakt_dasselbe_wie_vorher(int fall, bool stammkunde)
+{
+    var vorher = RechnungVorher.Erstelle(/* Fall als Tupel-Liste */, stammkunde);
+    var nachher = RechnungNachher.Erstelle(/* Fall als Rechnungspositionen */, stammkunde);
+
+    Assert.That(nachher, Is.EqualTo(vorher.Replace(',', '.')));
+}
+```
+
+Die Fälle sind bewusst gewählt: unter und über der **Rabattschwelle**, mit **mehreren Positionen** – und ein **leerer** Warenkorb als Randfall.
+
+## Das Beispiel: vorher \{#vorher}
+
+```csharp
+public static string Erstelle(List<(string, int, decimal)> p, bool sk)
+{
+    var s = "";
+    decimal z = 0;
+    foreach (var x in p)
+    {
+        s += x.Item1 + " x" + x.Item2 + ": " + (x.Item3 * x.Item2).ToString("0.00") + " €\n";
+        z += x.Item3 * x.Item2;
+    }
+    decimal r = 0;
+    if (z >= 100) r = 0.1m;
+    if (sk) r = r + 0.05m;
+    var e = Math.Round(z - z * r, 2, MidpointRounding.AwayFromZero);
+    s += "Zwischensumme: " + z.ToString("0.00") + " €\n";
+    if (r > 0) s += "Rabatt: " + (r * 100).ToString("0") + " %\n";
+    s += "Gesamt: " + e.ToString("0.00") + " €\n";
+    return s;
+}
+```
+
+Gerüche (siehe [Clean Code](./03-clean-code.mdx#code-smells)): kryptische Namen, Tupel ohne Bedeutung (`Item3`), Magic Numbers, doppelte Berechnung `x.Item3 * x.Item2`, Fachlogik und Textaufbau vermischt, Boolean-Parameter `sk`.
+
+## Schritt für Schritt \{#schritte}
+
+Jeder Schritt ist **klein**, danach laufen die **Tests**. Wird ein Test rot, ist klar, welcher Schritt schuld war.
+
+| # | Refactoring | Ergebnis |
+|---|---|---|
+| 1 | **Umbenennen** | `sk` → `stammkunde`, `z` → `zwischensumme`, `r` → `rabattSatz`, `e` → `gesamt` |
+| 2 | **Konstante einführen** | `100` → `Rabattschwelle`, `0.1m` → `MengenRabatt`, `0.05m` → `StammkundenRabatt` |
+| 3 | **Tupel durch Typ ersetzen** | `(string, int, decimal)` → `record Rechnungsposition(Artikel, Menge, Einzelpreis)` mit `Summe` |
+| 4 | **Doppelte Berechnung entfernen** | `x.Item3 * x.Item2` → `position.Summe` |
+| 5 | **Methode extrahieren** | Rabattberechnung → `RabattSatz(...)`, Formatierung → `Euro(...)` |
+| 6 | **Berechnung und Darstellung trennen** | erst rechnen (`zwischensumme`, `rabattSatz`, `gesamt`), dann den Text bauen |
+| 7 | **String-Verkettung ersetzen** | `s += …` in Schleifen → `StringBuilder` |
+
+:::tip[Werkzeuge nutzen]
+Visual Studio, Rider und IntelliJ haben Refactorings eingebaut (z. B. Umbenennen mit **F2** bzw. **Shift+F6**, Methode extrahieren mit **Strg+R, M** bzw. **Strg+Alt+M**). Sie ändern alle Verwendungen gleichzeitig und sicher – viel zuverlässiger als Suchen und Ersetzen.
+:::
+
+## Das Beispiel: nachher \{#nachher}
+
+```csharp
+public sealed record Rechnungsposition(string Artikel, int Menge, decimal Einzelpreis)
+{
+    public decimal Summe => Einzelpreis * Menge;
+}
+
+public static class RechnungNachher
+{
+    private const decimal Rabattschwelle = 100m;
+    private const decimal MengenRabatt = 0.10m;
+    private const decimal StammkundenRabatt = 0.05m;
+
+    public static string Erstelle(IReadOnlyList<Rechnungsposition> positionen, bool stammkunde)
+    {
+        var zwischensumme = positionen.Sum(p => p.Summe);
+        var rabattSatz = RabattSatz(zwischensumme, stammkunde);
+        var gesamt = Math.Round(zwischensumme * (1 - rabattSatz), 2, MidpointRounding.AwayFromZero);
+
+        var text = new StringBuilder();
+        foreach (var position in positionen)
+            text.Append($"{position.Artikel} x{position.Menge}: {Euro(position.Summe)}\n");
+
+        text.Append($"Zwischensumme: {Euro(zwischensumme)}\n");
+        if (rabattSatz > 0)
+            text.Append($"Rabatt: {(rabattSatz * 100).ToString("0", CultureInfo.InvariantCulture)} %\n");
+        text.Append($"Gesamt: {Euro(gesamt)}\n");
+        return text.ToString();
+    }
+
+    private static decimal RabattSatz(decimal zwischensumme, bool stammkunde)
+    {
+        var satz = zwischensumme >= Rabattschwelle ? MengenRabatt : 0m;
+        return stammkunde ? satz + StammkundenRabatt : satz;
+    }
+
+    private static string Euro(decimal betrag) => $"{betrag.ToString("0.00", CultureInfo.InvariantCulture)} €";
+}
+```
+
+Echte Ausgabe für einen Monitor (349,00 €) und 3 Kabel (je 9,99 €), Stammkunde:
+
+```text
+Monitor x1: 349.00 €
+Kabel x3: 29.97 €
+Zwischensumme: 378.97 €
+Rabatt: 15 %
+Gesamt: 322.12 €
+```
+
+Ergebnis des Testlaufs: alle **8 Charakterisierungsfälle** grün – der neue Code verhält sich wie der alte.
+
+## Achtung: versteckte Verhaltensänderung \{#verhaltensaenderung}
+
+Ein genauer Blick zeigt einen Unterschied, den die Charakterisierungstests sichtbar gemacht haben: Der **alte** Code formatiert Beträge mit der **Spracheinstellung des Rechners** (`ToString("0.00")`) – auf einem deutschen System `49,80`, auf einem englischen `49.80`. Der **neue** Code verwendet bewusst immer `InvariantCulture` (`49.80`).
+
+Deshalb vergleicht der Test mit `vorher.Replace(',', '.')`. Das ist eine **bewusste, dokumentierte Entscheidung**: Das alte Verhalten war ein versteckter Fehler – je nach Server sahen Rechnungen anders aus (vgl. [Zeitzone und Sprache in der CI](../04-linux/07-linux-testautomation.mdx#locale)).
+
+:::warning[Verhalten nur bewusst ändern]
+Strenges Refactoring ändert **gar kein** Verhalten. Stellt man unterwegs einen Fehler fest, gilt: **notieren**, das Refactoring abschließen, dann den Fehler **als eigene Änderung** beheben – mit eigenem Test und eigenem Commit. So bleibt nachvollziehbar, was sich wann warum geändert hat.
+:::
+
+## Wann refaktorieren? \{#wann}
+
+- **Vor einer Änderung**: Code so umbauen, dass die neue Funktion leicht hineinpasst (z. B. Rabattregeln als [Strategien](./05-entwurfsmuster.mdx#strategie), bevor die Gutschein-Regel kommt).
+- **Beim Verstehen**: Wer Code lesen muss, kann Namen gleich verbessern (Pfadfinderregel).
+- **Im TDD-Zyklus**: Rot – Grün – **Refactor**.
+- **Nach einem Code-Review**, wenn Gerüche gefunden wurden.
+
+**Nicht** refaktorieren: kurz vor einem Release ohne Tests, gleichzeitig mit einer großen neuen Funktion, oder Code, der ohnehin bald ersetzt wird.
+
+## Refactoring von Testcode \{#testcode}
+
+Testcode verdient dieselbe Pflege. Typische Refactorings:
+- wiederholten Aufbau in einen **Test Data Builder** oder ein **Page Object** verschieben,
+- Magic Values durch **benannte Testdaten** ersetzen (`TestProdukte.Buch`),
+- `Thread.Sleep` durch **bedingtes Warten** ersetzen,
+- lange Tests in mehrere Tests mit **einem Verhalten** aufteilen.
+
+Und auch hier: Testcode ändert man in kleinen Schritten – die Tests müssen vorher und nachher dasselbe prüfen. Ein Test, der nach dem Umbau grün ist, aber nichts mehr prüft, ist schlimmer als keiner.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Refactoring ohne Tests** – das Verhalten ändert sich unbemerkt.
+- **Große Schritte** – bei einem roten Test weiß niemand, welche der zwanzig Änderungen schuld ist.
+- **Refactoring und neue Funktion in einem Commit** – Review und Fehlersuche werden schwer.
+- **„Kleine Verbesserungen“ am Verhalten** nebenbei – ohne Entscheidung und ohne eigenen Test.
+- **Suchen und Ersetzen statt IDE-Refactoring** – Treffer in Kommentaren und Strings werden mit ersetzt, echte Verwendungen übersehen.
+- **Endlos refaktorieren** – Ziel ist verständlicher Code, nicht perfekter.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Refactoring** verbessert die Struktur, **ohne das Verhalten zu ändern**.
+- Vorher ein **Sicherheitsnetz** aus Tests; bei Altcode **Charakterisierungstests**, deren Orakel der alte Code ist.
+- **Kleine Schritte**, nach jedem Schritt Tests: umbenennen, Konstanten, Typen statt Tupel, Methoden extrahieren, Logik und Darstellung trennen.
+- Gefundene **Verhaltensunterschiede** bewusst entscheiden und dokumentieren – im Beispiel die sprachabhängige Formatierung.
+- Refactoring und neue Funktionen **getrennt** committen.
+
+<Quiz fragen={fragen} titel="Quiz: Refactoring" />

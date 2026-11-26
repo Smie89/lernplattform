@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Zusammenarbeit mit Git, Pull Requests und CI/CD"
+
+- id: se-ci-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist der Unterschied zwischen 'git fetch' und 'git pull'?"
+  optionen:
+    - "Es gibt keinen"
+    - "fetch holt neue Commits nur ab, pull holt sie und arbeitet sie in den aktuellen Branch ein"
+    - "fetch lädt hoch, pull lädt herunter"
+    - "pull löscht lokale Änderungen"
+  richtig: [1]
+  erklaerung: "git pull ist im Wesentlichen fetch plus merge (oder rebase) in den aktuellen Branch."
+  artikel: "#remote"
+  tags: [git, remote]
+
+- id: se-ci-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Strategie beschreibt: main ist immer auslieferbar, jede Änderung auf einem kurzen Branch, Pull Request mit Review und CI, dann Merge?"
+  optionen:
+    - "Git Flow"
+    - "GitHub Flow"
+    - "Wasserfall"
+    - "Big Bang"
+  richtig: [1]
+  erklaerung: "GitHub Flow ist einfach und passt für die meisten Projekte. Git Flow arbeitet zusätzlich mit develop-, Release- und Hotfix-Branches."
+  artikel: "#branching"
+  tags: [git, branching]
+
+- id: se-ci-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie werden beim Trunk-Based Development unfertige Funktionen in main integriert, ohne Nutzer zu stören?"
+  optionen:
+    - "Gar nicht, sie bleiben monatelang auf einem Branch"
+    - "Hinter Feature Flags"
+    - "Als auskommentierter Code"
+    - "In einem separaten Repository"
+  richtig: [1]
+  erklaerung: "Feature Flags schalten unfertige Funktionen aus, sodass trotzdem täglich integriert werden kann."
+  artikel: "#branching"
+  tags: [git, trunk-based]
+
+- id: se-ci-004
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Was gehört zu einem guten Pull Request?"
+  optionen:
+    - "Eine Beschreibung: was, warum und wie getestet"
+    - "Grüne CI-Ergebnisse"
+    - "Möglichst viele unabhängige Änderungen auf einmal"
+    - "Ein Code-Review"
+  richtig: [0, 1, 3]
+  erklaerung: "Kleine PRs mit klarer Beschreibung werden gründlicher geprüft als große Sammel-PRs."
+  artikel: "#pull-request"
+  tags: [pull-request]
+
+- id: se-ci-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Welcher Review-Kommentar ist am besten formuliert?"
+  optionen:
+    - "Das ist falsch."
+    - "Was passiert hier, wenn die Liste leer ist? Ich glaube, dann fliegt eine Exception."
+    - "Hast du das überhaupt getestet?"
+    - "Bitte alles neu schreiben."
+  richtig: [1]
+  erklaerung: "Konkret, sachlich, als Frage formuliert und auf den Code bezogen – so funktionieren Reviews."
+  artikel: "#code-review"
+  tags: [code-review]
+
+- id: se-ci-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt ein Branch-Schutz mit Pflicht-Status-Checks auf main?"
+  optionen:
+    - "main kann nicht mehr gelesen werden"
+    - "Ein Merge ist erst möglich, wenn Build und Tests grün sind"
+    - "Tests werden automatisch repariert"
+    - "Nur der Administrator darf Code schreiben"
+  richtig: [1]
+  erklaerung: "Die CI wird zum Türsteher: Rote Tests kommen nicht nach main."
+  artikel: "#branch-schutz"
+  tags: [ci, branch-schutz]
+
+- id: se-ci-007
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist Continuous Integration?"
+  optionen:
+    - "Einmal im Monat alle Branches zusammenführen"
+    - "Jede Änderung wird sofort automatisch gebaut und getestet"
+    - "Software automatisch in Produktion bringen"
+    - "Mehrere Entwickler an einem Rechner"
+  richtig: [1]
+  erklaerung: "CI findet Fehler in Minuten statt in Wochen, weil jede Änderung sofort integriert und getestet wird."
+  artikel: "#ci"
+  tags: [ci]
+
+- id: se-ci-008
+  typ: single
+  schwierigkeit: 2
+  frage: "In welcher Reihenfolge sollten Stufen einer CI-Pipeline idealerweise laufen?"
+  optionen:
+    - "UI-Tests, dann API-Tests, dann Unit-Tests"
+    - "Build, statische Analyse, Unit-Tests, API-Tests, UI-Tests"
+    - "Zufällig"
+    - "Nur UI-Tests"
+  richtig: [1]
+  erklaerung: "Schnelle, günstige Prüfungen zuerst. Scheitern sie, laufen die langsamen Stufen gar nicht erst – das spart Zeit."
+  artikel: "#ci"
+  tags: [ci, testpyramide]
+
+- id: se-ci-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Was unterscheidet Continuous Delivery von Continuous Deployment?"
+  optionen:
+    - "Nichts"
+    - "Bei Delivery ist jede grüne Version auslieferbar, die Freigabe erfolgt bewusst; bei Deployment geht sie automatisch in Produktion"
+    - "Delivery betrifft nur mobile Apps"
+    - "Deployment verzichtet auf Tests"
+  richtig: [1]
+  erklaerung: "Diese Lernplattform nutzt Continuous Deployment: Jeder grüne Push auf main wird automatisch veröffentlicht."
+  artikel: "#cd"
+  tags: [cd]
+
+- id: se-ci-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine Bibliothek springt von Version 3.8.2 auf 4.0.0. Was bedeutet das nach SemVer?"
+  optionen:
+    - "Nur Fehlerkorrekturen"
+    - "Neue, abwärtskompatible Funktionen"
+    - "Inkompatible Änderungen – Anpassungen an den Tests sind wahrscheinlich"
+    - "Gar nichts"
+  richtig: [2]
+  erklaerung: "Ein MAJOR-Sprung bricht die Kompatibilität – vorher die Änderungshinweise lesen (z. B. NUnit 3 → 4: klassische Asserts nach ClassicAssert)."
+  artikel: "#semver"
+  tags: [semver]
+
+- id: se-ci-011
+  typ: single
+  schwierigkeit: 1
+  frage: "Die Korrektur des Doppelklick-Fehlers SHOP-1 ändert nichts an der API. Welche Version folgt auf 2.1.0?"
+  optionen:
+    - "3.0.0"
+    - "2.2.0"
+    - "2.1.1"
+    - "2.1.0-fix"
+  richtig: [2]
+  erklaerung: "Eine abwärtskompatible Fehlerkorrektur erhöht die PATCH-Stelle."
+  artikel: "#semver"
+  tags: [semver]
+
+- id: se-ci-012
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Ein roter Build in der CI kann ruhig ein paar Tage liegen bleiben, solange alle wissen, warum er rot ist."
+  richtig: [1]
+  erklaerung: "Falsch. Ein roter Build hat Vorrang – solange er rot ist, verdeckt er jeden neuen Fehler, und das Vertrauen in die CI sinkt."
+  artikel: "#ci"
+  tags: [ci]

@@ -1,0 +1,208 @@
+---
+title: Clean Code
+description: Verständlicher Code durch gute Namen, kleine Funktionen, sinnvolle Kommentare, saubere Fehlerbehandlung und die Prinzipien DRY, KISS und YAGNI – mit typischen Code Smells und einem echten Vorher-nachher-Beispiel.
+tags: [softwareentwicklung, clean-code, code-smells]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './03-clean-code.fragen.yaml';
+
+# Clean Code
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- **aussagekräftige Namen** wählen,
+- Funktionen **klein** und **fokussiert** halten,
+- entscheiden, wann ein **Kommentar** hilft und wann er schadet,
+- **Fehler** sauber behandeln,
+- **DRY**, **KISS** und **YAGNI** anwenden,
+- typische **Code Smells** erkennen.
+:::
+
+## Warum Clean Code? \{#warum}
+
+Code wird **viel öfter gelesen als geschrieben** – von Kolleginnen, von dir selbst in einem halben Jahr und beim Debuggen eines roten Tests um 23 Uhr. Clean Code ist Code, den ein anderer Entwickler **schnell verstehen und sicher ändern** kann.
+
+Das gilt für **Testcode genauso** wie für Produktivcode: Ein roter Test, den niemand versteht, wird eher deaktiviert als repariert.
+
+Ein echtes Beispiel aus [beispiele/entwicklung](https://github.com/Smie89/lernplattform/blob/main/beispiele/entwicklung/src/Entwicklung.Beispiele/Refactoring/RechnungVorher.cs) – der Code funktioniert, aber:
+
+```csharp
+public static string Erstelle(List<(string, int, decimal)> p, bool sk)
+{
+    var s = "";
+    decimal z = 0;
+    foreach (var x in p)
+    {
+        s += x.Item1 + " x" + x.Item2 + ": " + (x.Item3 * x.Item2).ToString("0.00") + " €\n";
+        z += x.Item3 * x.Item2;
+    }
+    decimal r = 0;
+    if (z >= 100) r = 0.1m;
+    if (sk) r = r + 0.05m;
+    // ...
+}
+```
+
+Was ist `sk`? Was steht in `x.Item3`? Warum 100 und 0.1? In der Lektion [Refactoring](./06-refactoring.mdx) wird daraus Schritt für Schritt sauberer Code – mit Tests, die beweisen, dass sich das Verhalten nicht ändert.
+
+## Namen \{#namen}
+
+Der wichtigste Hebel für lesbaren Code. Ein guter Name verrät **was** etwas ist oder tut – ohne Kommentar.
+
+| Schlecht | Besser | Warum |
+|---|---|---|
+| `sk` | `stammkunde` | keine Abkürzungen, die man raten muss |
+| `z`, `r` | `zwischensumme`, `rabattSatz` | sagt, was drinsteht |
+| `x.Item3` | `position.Einzelpreis` | Tupel-Positionen ersetzt durch benannte Typen |
+| `Verarbeiten()` | `RabattBerechnen()` | konkretes Verb |
+| `daten`, `info`, `manager` | `offeneBestellungen` | Allerweltswörter vermeiden |
+| `flag` | `istBezahlt` | Booleans als Frage: `ist…`, `hat…`, `darf…` |
+| `liste1`, `liste2` | `gueltigeEmails`, `ungueltigeEmails` | Unterschied im Namen |
+
+Regeln:
+- **Klassen** sind Substantive (`Warenkorb`, `Rabattrechner`), **Methoden** Verben (`Hinzufuegen`, `Berechne`).
+- **Einheitliche Begriffe**: nicht mal `Kunde`, mal `Client`, mal `User` für dasselbe.
+- **Länge passend zum Gültigkeitsbereich**: `i` in einer Zwei-Zeilen-Schleife ist in Ordnung, `i` als Feld nicht.
+- In **Tests**: der Name beschreibt das Verhalten (`Bestellen_ohne_Kundennamen_wirft_Exception`) – siehe [Testnamen](../02-testautomation/01-grundlagen/01-grundlagen-testautomation.mdx#testnamen).
+
+## Funktionen \{#funktionen}
+
+- **Klein**: Eine Methode sollte auf einen Bildschirm passen – besser noch auf ein Drittel davon.
+- **Eine Aufgabe**: Wenn du beschreiben musst „Sie berechnet den Rabatt **und** formatiert den Text **und** …“, sind es mehrere Methoden.
+- **Eine Abstraktionsebene**: Eine Methode, die fachlich arbeitet (`RabattSatz(...)`), sollte nicht nebenbei Strings zusammensetzen.
+- **Wenige Parameter**: 0–2 ideal, 3 grenzwertig, mehr → ein Parameterobjekt (`Bestellkontext`).
+- **Keine Boolean-Parameter, die das Verhalten umschalten** – `Erstelle(positionen, true)` ist am Aufrufort unverständlich. Benannte Argumente helfen: `Erstelle(positionen, stammkunde: true)`.
+- **Keine versteckten Nebenwirkungen**: `PruefePasswort()` darf nicht nebenbei die Sitzung zurücksetzen.
+
+```csharp
+// Nachher: kurze Methoden mit sprechenden Namen
+public static string Erstelle(IReadOnlyList<Rechnungsposition> positionen, bool stammkunde)
+{
+    var zwischensumme = positionen.Sum(p => p.Summe);
+    var rabattSatz = RabattSatz(zwischensumme, stammkunde);
+    var gesamt = Math.Round(zwischensumme * (1 - rabattSatz), 2, MidpointRounding.AwayFromZero);
+    // ... Text aufbauen ...
+}
+
+private static decimal RabattSatz(decimal zwischensumme, bool stammkunde)
+{
+    var satz = zwischensumme >= Rabattschwelle ? MengenRabatt : 0m;
+    return stammkunde ? satz + StammkundenRabatt : satz;
+}
+```
+
+## Magic Numbers \{#magic-numbers}
+
+Zahlen ohne Erklärung im Code („Magic Numbers“) zwingen den Leser zum Raten und werden bei Änderungen leicht übersehen:
+
+```csharp
+// ❌
+if (z >= 100) r = 0.1m;
+
+// ✅
+private const decimal Rabattschwelle = 100m;
+private const decimal MengenRabatt = 0.10m;
+
+if (zwischensumme >= Rabattschwelle) satz = MengenRabatt;
+```
+
+Das gilt auch für **Strings** wie Statuswerte (`"offen"`, `"bezahlt"`) – dafür gibt es Enums.
+
+## Kommentare \{#kommentare}
+
+Ein Kommentar ist oft das Eingeständnis, dass der Code nicht für sich spricht. Erst den Code verbessern, dann kommentieren.
+
+| Schlechter Kommentar | Problem |
+|---|---|
+| `i++; // i um eins erhöhen` | wiederholt nur den Code |
+| `// berechnet Rabatt` über einer Methode `Berechne()` | besserer Methodenname nötig |
+| `// TODO: später fixen` von 2019 | veraltet, nie erledigt |
+| auskommentierter Code | Git merkt sich alte Versionen – löschen |
+| ein Kommentar, der nicht mehr zum Code passt | **lügt** – schlimmer als keiner |
+
+Gute Kommentare erklären das **Warum**, das der Code nicht ausdrücken kann:
+
+```csharp
+// SHOP-1: Prüfen, bestellen und entfernen muss pro Warenkorb atomar sein.
+// Sonst kommen gleichzeitige Requests (Doppelklick) alle durch und erzeugen mehrere Bestellungen.
+lock (warenkorb) { ... }
+```
+
+Ebenfalls sinnvoll: Dokumentationskommentare (`///` bzw. `/** */`) für öffentliche APIs, rechtliche Hinweise, Warnungen vor nicht offensichtlichen Folgen.
+
+## Fehlerbehandlung \{#fehlerbehandlung}
+
+- **Exceptions statt Fehlercodes**: `throw new ArgumentOutOfRangeException(...)` statt `return -1`.
+- **Früh prüfen** (*fail fast*): ungültige Argumente am Anfang der Methode abweisen – wie im Konstruktor von `Lagerbestand`.
+- **Aussagekräftige Meldungen**: „Nur 2 Stück von Buch auf Lager.“ statt „Fehler“.
+- **Keine Exceptions verschlucken**:
+
+```csharp
+// ❌ Der Fehler verschwindet spurlos – der Test ist grün, die Daten sind falsch
+try { bestellService.Bestellen(warenkorb, kunde); }
+catch (Exception) { }
+
+// ✅ nur fangen, was man sinnvoll behandeln kann – sonst weiterwerfen
+try { zahlung.Abbuchen(kunde, betrag); }
+catch (HttpRequestException ex)
+{
+    logger.LogWarning(ex, "Zahlungsdienst nicht erreichbar");
+    return BestellErgebnis.Abgelehnt("Zahlung derzeit nicht möglich.");
+}
+```
+
+- **Nicht `null` zurückgeben**, wenn eine leere Liste genügt – das erspart dem Aufrufer `null`-Prüfungen.
+
+## DRY, KISS, YAGNI \{#prinzipien}
+
+| Prinzip | Bedeutung | Beispiel |
+|---|---|---|
+| **DRY** – *Don't Repeat Yourself* | Jedes Wissen hat **eine** Stelle im Code | Die Rabattschwelle steht einmal als Konstante, nicht in fünf `if`s |
+| **KISS** – *Keep It Simple, Stupid* | Die einfachste Lösung, die funktioniert | Ein `if` statt eines Regel-Frameworks für zwei Regeln |
+| **YAGNI** – *You Ain't Gonna Need It* | Nichts auf Vorrat bauen | Keine Konfigurierbarkeit für Währungen, die nie kommen |
+
+:::warning[DRY richtig verstehen]
+DRY bedeutet **gleiches Wissen** nicht zu wiederholen – nicht „ähnlich aussehender Code“. Zwei Regeln, die heute zufällig gleich aussehen, sich aber aus unterschiedlichen Gründen ändern, sollten getrennt bleiben. In **Tests** gilt DAMP vor DRY: lieber etwas Wiederholung, dafür ist jeder Test für sich lesbar (siehe [Tests strukturieren](../02-testautomation/01-grundlagen/03-tests-strukturieren.mdx#dry-damp)).
+:::
+
+## Code Smells \{#code-smells}
+
+„Code Smells“ (Gerüche) sind Hinweise auf tieferliegende Probleme – kein Fehler, aber ein Grund, genauer hinzusehen:
+
+| Smell | Erkennbar an | Gegenmittel |
+|---|---|---|
+| **Lange Methode** | scrollen nötig, viele Kommentare zur Gliederung | Methoden extrahieren |
+| **Große Klasse** („God Class“) | hunderte Zeilen, viele Aufgaben | aufteilen nach Verantwortung (SRP) |
+| **Lange Parameterliste** | `Erstelle(a, b, c, d, e, f)` | Parameterobjekt |
+| **Duplizierter Code** | Copy-Paste mit kleinen Änderungen | gemeinsame Methode |
+| **Magic Numbers** | `0.1m`, `86400` | benannte Konstanten |
+| **Primitive Obsession** | Geldbetrag als `decimal` + Währung als `string` überall | eigener Typ, z. B. `record Geld(decimal Betrag, string Waehrung)` |
+| **Feature Envy** | Methode greift ständig auf Daten einer anderen Klasse zu | Methode in diese Klasse verschieben |
+| **Switch-Ketten über Typen** | `if (v is Express) … else if …` | Polymorphie |
+| **Toter Code** | nie aufgerufen, auskommentiert | löschen |
+
+## Die Pfadfinderregel \{#pfadfinder}
+
+> Hinterlasse den Code immer etwas sauberer, als du ihn vorgefunden hast.
+
+Nicht alles auf einmal umbauen – aber bei jeder Änderung einen schlechten Namen verbessern, eine Methode extrahieren, einen toten Kommentar löschen. **Mit Tests als Sicherheitsnetz**, siehe [Refactoring](./06-refactoring.mdx).
+
+## Typische Fehler \{#typische-fehler}
+
+- **Abkürzungen und Einbuchstaben-Namen** außerhalb kleiner Schleifen.
+- **Kommentare statt besserer Namen** – und Kommentare, die veralten.
+- **Exceptions verschlucken** (`catch { }`).
+- **„Clever“ statt klar** – verschachtelte Ternäroperatoren und Einzeiler, die niemand versteht.
+- **Alles auf Vorrat** bauen (YAGNI verletzt).
+- **Großes Aufräumen ohne Tests** – das Verhalten ändert sich unbemerkt.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Code wird öfter gelesen als geschrieben – **Lesbarkeit** ist das Ziel, auch im Testcode.
+- **Namen** verraten Absicht; **Funktionen** sind klein, tun eine Sache, haben wenige Parameter.
+- **Konstanten** statt Magic Numbers; **Kommentare** erklären das Warum, nicht das Was.
+- **Fehler**: früh prüfen, Exceptions mit klarer Meldung, nie verschlucken.
+- **DRY, KISS, YAGNI**; **Code Smells** erkennen; **Pfadfinderregel** – mit Tests als Sicherheitsnetz.
+
+<Quiz fragen={fragen} titel="Quiz: Clean Code" />

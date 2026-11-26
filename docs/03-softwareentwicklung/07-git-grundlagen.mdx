@@ -1,0 +1,248 @@
+---
+title: Git – Grundlagen
+description: Versionsverwaltung mit Git – Repository, Arbeitsverzeichnis, Staging und Commit, gute Commit-Nachrichten, .gitignore, Branches, Merge und Merge-Konflikte lösen, Änderungen rückgängig machen. Mit echten Ausgaben.
+tags: [softwareentwicklung, git, versionsverwaltung]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './07-git-grundlagen.fragen.yaml';
+
+# Git – Grundlagen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die drei Bereiche **Arbeitsverzeichnis**, **Staging-Bereich** und **Repository** unterscheiden,
+- Änderungen **committen** und gute **Commit-Nachrichten** schreiben,
+- mit **`.gitignore`** festlegen, was nicht ins Repository gehört,
+- mit **Branches** arbeiten und sie **zusammenführen**,
+- einen **Merge-Konflikt** lösen,
+- Änderungen sicher **rückgängig** machen.
+:::
+
+## Warum Versionsverwaltung? \{#warum}
+
+**Git** speichert die komplette Geschichte eines Projekts: Wer hat wann was warum geändert? Man kann jederzeit zu einem früheren Stand zurück, parallel an verschiedenen Dingen arbeiten und Änderungen im Team zusammenführen.
+
+Für Testautomatisierer gehört **alles** in Git: Testcode, Testdaten, Konfiguration, CI-Pipelines, Skripte – damit jeder Testlauf einem **eindeutigen Stand** zugeordnet werden kann (siehe [Konfigurationsmanagement](../01-softwaretest/06-testmanagement.mdx#konfiguration)).
+
+## Die drei Bereiche \{#bereiche}
+
+```text
+ Arbeitsverzeichnis  ──git add──►  Staging-Bereich  ──git commit──►  Repository (.git)
+  (deine Dateien)                  (für den nächsten     (gespeicherte
+                                    Commit vorgemerkt)     Versionen)
+```
+
+- **Arbeitsverzeichnis**: die Dateien, wie sie gerade auf der Platte liegen.
+- **Staging-Bereich** (Index): Hier stellst du zusammen, was in den **nächsten Commit** soll – auch nur einzelne Dateien oder Teile.
+- **Repository**: die gespeicherten **Commits** im Ordner `.git`.
+
+## Der Grundablauf \{#grundablauf}
+
+Alle Ausgaben in dieser Lektion stammen aus einem echten Demo-Repository.
+
+```bash
+git init                         # neues Repository anlegen (oder: git clone <url>)
+git status --short               # Was hat sich geändert?
+```
+
+```text
+?? regeln.txt
+```
+
+`??` bedeutet: Die Datei ist **neu** und wird von Git noch nicht verfolgt.
+
+```bash
+git add regeln.txt               # in den Staging-Bereich
+git commit -m "Rabattregel dokumentiert"
+git log --oneline                # Historie anzeigen
+```
+
+Weitere wichtige Befehle:
+
+```bash
+git diff                         # Änderungen im Arbeitsverzeichnis (noch nicht gestaged)
+git diff --staged                # Änderungen, die in den nächsten Commit gehen
+git add -p                       # interaktiv nur Teile einer Datei stagen
+git log --oneline --graph --all  # Historie als Baum, alle Branches
+git show <commit>                # einen Commit im Detail
+```
+
+## Gute Commits \{#commits}
+
+Ein Commit soll **eine logische Änderung** enthalten – nicht „alles von heute“.
+
+Eine gute Commit-Nachricht:
+
+```text
+Doppelte Bestellungen bei Doppelklick verhindern (SHOP-1)
+
+Prüfen, bestellen und entfernen laufen jetzt pro Warenkorb in einer Sperre.
+Zusätzlich wird der Bestellen-Button während der Anfrage deaktiviert.
+Neuer API-Test mit 10 parallelen Bestellungen.
+```
+
+- **Erste Zeile**: kurze Zusammenfassung (ca. 50–70 Zeichen), im Imperativ oder als Aussage, **was** sich ändert.
+- **Leerzeile**, dann bei Bedarf das **Warum** und wichtige Details.
+- Ticket-Nummer, wenn vorhanden.
+
+| Schlecht | Besser |
+|---|---|
+| `fix` | `Grenzwert der Rabattschwelle korrigiert (>= statt >)` |
+| `Änderungen` | `Page Object für den Warenkorb ergänzt` |
+| `WIP`, `asdf` | *(vor dem Teilen zusammenfassen)* |
+
+:::tip[Refactoring getrennt committen]
+Ein Commit „Struktur verbessert“ und ein Commit „Gutschein-Rabatt ergänzt“ sind viel leichter zu prüfen als ein gemischter – siehe [Refactoring](./06-refactoring.mdx#typische-fehler).
+:::
+
+## .gitignore \{#gitignore}
+
+Nicht alles gehört ins Repository. Die Datei **`.gitignore`** listet Muster, die Git ignoriert:
+
+```text
+# Build-Ergebnisse
+bin/
+obj/
+target/
+
+# Testergebnisse, Screenshots, Traces
+TestResults/
+test-results/
+playwright-report/
+
+# IDE
+.vs/
+.idea/
+*.user
+
+# Geheimnisse – niemals einchecken!
+.env
+appsettings.Development.json
+```
+
+:::danger[Passwörter und Schlüssel]
+Was einmal committet und gepusht wurde, steht in der **Historie** – auch wenn man die Datei später löscht. Ein versehentlich eingecheckter Schlüssel muss als **kompromittiert** gelten und **ausgetauscht** werden.
+:::
+
+## Branches \{#branches}
+
+Ein **Branch** ist eine unabhängige Entwicklungslinie. Neue Funktionen oder Korrekturen entstehen auf eigenen Branches, damit `main` stabil bleibt.
+
+```bash
+git switch -c feature/stammkunde       # neuen Branch anlegen und wechseln
+# ... ändern, committen ...
+git switch main                        # zurück zu main
+git branch                             # alle lokalen Branches
+```
+
+Im Demo-Repository wurde auf `feature/stammkunde` die Stammkundenregel ergänzt, während auf `main` jemand die Rabattgrenze präzisierte. Die Historie verzweigt sich:
+
+```text
+$ git log --oneline --graph --all
+* 53b96c7 Stammkundenrabatt ergänzt
+| * d6640d1 Grenze der Rabattregel präzisiert
+|/
+* 38bb2eb Rabattregel dokumentiert
+```
+
+## Merge und Merge-Konflikt \{#merge}
+
+`git merge` führt einen Branch in den aktuellen ein. Haben beide Seiten **dieselbe Stelle** geändert, kann Git nicht entscheiden – es entsteht ein **Konflikt**:
+
+```text
+$ git merge feature/stammkunde
+Auto-merging regeln.txt
+CONFLICT (content): Merge conflict in regeln.txt
+Automatic merge failed; fix conflicts and then commit the result.
+
+$ git status --short
+UU regeln.txt
+```
+
+`UU` heißt: Datei hat Konflikte. Git markiert beide Versionen in der Datei:
+
+```text
+<<<<<<< HEAD
+Rabatt ab 100,00 Euro (einschliesslich): 10 Prozent
+=======
+Rabatt ab 100 Euro: 10 Prozent
+Stammkunden: zusaetzlich 5 Prozent
+>>>>>>> feature/stammkunde
+```
+
+- Zwischen `<<<<<<< HEAD` und `=======`: die Version des **aktuellen** Branches (`main`).
+- Zwischen `=======` und `>>>>>>>`: die Version des **eingemergten** Branches.
+
+**Lösen** heißt: die Datei so bearbeiten, wie sie **fachlich richtig** ist – oft eine Kombination beider Seiten –, die Markierungen entfernen, dann:
+
+```text
+Rabatt ab 100,00 Euro (einschliesslich): 10 Prozent
+Stammkunden: zusaetzlich 5 Prozent
+```
+
+```bash
+git add regeln.txt
+git commit                     # schließt den Merge ab
+```
+
+```text
+$ git log --oneline --graph
+*   cd24986 Merge branch 'feature/stammkunde'
+|\
+| * 53b96c7 Stammkundenrabatt ergänzt
+* | d6640d1 Grenze der Rabattregel präzisiert
+|/
+* 38bb2eb Rabattregel dokumentiert
+```
+
+:::warning[Nach einem Konflikt immer testen]
+Ein Konflikt, der „textlich gelöst“ ist, kann fachlich falsch sein – z. B. wenn beide Seiten den Rabatt unterschiedlich geändert haben. Nach dem Lösen **Build und Tests ausführen**, bevor der Merge geteilt wird.
+:::
+
+Merge abbrechen und zum Stand vor dem Merge zurück: `git merge --abort`.
+
+## Merge oder Rebase? \{#rebase}
+
+| | `git merge` | `git rebase` |
+|---|---|---|
+| Ergebnis | ein **Merge-Commit** verbindet die Linien | die eigenen Commits werden **auf den neuesten Stand** des Ziels **neu angewendet** – lineare Historie |
+| Historie | zeigt, wie parallel gearbeitet wurde | wirkt, als wäre alles nacheinander passiert |
+| Risiko | gering | verändert Commits (neue IDs) |
+
+:::danger[Goldene Regel]
+**Niemals Commits rebasen, die schon geteilt (gepusht) und von anderen verwendet werden.** Rebase erzeugt neue Commits; wer die alten hat, bekommt Chaos. Rebase ist für die **eigenen, lokalen** Commits gedacht – z. B. um den eigenen Feature-Branch vor dem Pull Request auf den aktuellen `main` zu setzen.
+:::
+
+## Änderungen rückgängig machen \{#rueckgaengig}
+
+| Situation | Befehl | Wirkung |
+|---|---|---|
+| Änderung an einer Datei verwerfen (nicht gestaged) | `git restore datei` | Datei wieder wie im letzten Commit – **Änderung ist weg** |
+| Datei aus dem Staging nehmen | `git restore --staged datei` | bleibt geändert, aber nicht mehr vorgemerkt |
+| letzte Commit-Nachricht korrigieren (noch nicht gepusht) | `git commit --amend` | ersetzt den letzten Commit |
+| geteilten Commit rückgängig machen | `git revert <commit>` | **neuer** Commit, der die Änderung umkehrt – Historie bleibt erhalten |
+| Änderungen kurz beiseitelegen | `git stash` / `git stash pop` | sichert und holt Änderungen zurück |
+| lokalen Branch auf einen älteren Stand setzen | `git reset --hard <commit>` | **verwirft** Commits und Änderungen – nur für Lokales, mit Vorsicht |
+
+Für bereits **gepushte** Commits ist `git revert` der sichere Weg – er schreibt die Geschichte nicht um.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Riesige Commits** mit „alles von heute“.
+- **Nichtssagende Nachrichten** wie `fix` oder `update`.
+- **Build-Ergebnisse und Secrets im Repository** – `.gitignore` von Anfang an.
+- **Konfliktmarker committen** (`<<<<<<<` steht im Code) – Build und Tests nach jedem Konflikt.
+- **Rebase oder `reset --hard` auf geteilten Branches**.
+- **Lange nicht mit `main` abgleichen** – je länger ein Branch lebt, desto größer die Konflikte.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Arbeitsverzeichnis → `git add` → Staging → `git commit` → Repository**.
+- **Kleine, logische Commits** mit aussagekräftiger Nachricht (Was – und Warum).
+- **`.gitignore`** für Build-Ergebnisse, Testartefakte und Geheimnisse.
+- **Branches** für parallele Arbeit; **Merge-Konflikte** fachlich lösen, Markierungen entfernen, danach testen.
+- **Merge** bewahrt die Geschichte, **Rebase** linearisiert sie – nie auf geteilten Commits.
+- Rückgängig: `restore`, `revert` (sicher für Geteiltes), `reset --hard` nur lokal.
+
+<Quiz fragen={fragen} titel="Quiz: Git – Grundlagen" />

@@ -1,0 +1,262 @@
+---
+title: Objektorientierung
+description: Klassen und Objekte, Kapselung, Vererbung, abstrakte Klassen, Interfaces und Polymorphie in C# und Java – mit getesteten Beispielen aus dem Shop-Umfeld.
+tags: [softwareentwicklung, oop, csharp, java]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import fragen from './01-objektorientierung.fragen.yaml';
+
+# Objektorientierung
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- **Klassen** und **Objekte** unterscheiden,
+- mit **Kapselung** dafür sorgen, dass Objekte immer in einem gültigen Zustand sind,
+- **Vererbung**, **abstrakte Klassen** und **Interfaces** sinnvoll einsetzen,
+- **Polymorphie** erklären und nutzen,
+- begründen, warum man **Komposition oft der Vererbung vorzieht**.
+:::
+
+:::tip[Getestete Beispiele]
+Die C#-Beispiele stammen aus dem Projekt [beispiele/entwicklung](https://github.com/Smie89/lernplattform/tree/main/beispiele/entwicklung) und sind dort mit NUnit getestet. Die Java-Fassungen sind sprachlich gleichwertig.
+:::
+
+## Klassen und Objekte \{#klassen-objekte}
+
+- Eine **Klasse** ist ein **Bauplan**: Sie beschreibt, welche **Daten** (Felder, Eigenschaften) und welches **Verhalten** (Methoden) ihre Objekte haben.
+- Ein **Objekt** ist eine **konkrete Instanz** dieser Klasse mit eigenen Werten – erzeugt mit `new`.
+
+```csharp
+var buch = new Lagerbestand("Buch", anfangsbestand: 5);    // Objekt 1
+var tasse = new Lagerbestand("Tasse", anfangsbestand: 20); // Objekt 2 – eigener Zustand
+buch.Entnehmen(2);   // ändert nur das Buch: 3 Stück
+```
+
+Ein **Konstruktor** sorgt dafür, dass ein Objekt von Anfang an **gültig** ist – hier: Artikelname vorhanden, Bestand nicht negativ.
+
+## Kapselung \{#kapselung}
+
+**Kapselung** heißt: Ein Objekt schützt seinen Zustand. Von außen sind nur die Methoden zugänglich, die die **Regeln** des Objekts durchsetzen.
+
+<Tabs groupId="sprache">
+<TabItem value="csharp" label="C#">
+
+```csharp
+public class Lagerbestand
+{
+    public Lagerbestand(string artikel, int anfangsbestand = 0)
+    {
+        if (string.IsNullOrWhiteSpace(artikel))
+            throw new ArgumentException("Artikel fehlt.", nameof(artikel));
+        if (anfangsbestand < 0)
+            throw new ArgumentOutOfRangeException(nameof(anfangsbestand), "Bestand darf nicht negativ sein.");
+
+        Artikel = artikel;
+        Menge = anfangsbestand;
+    }
+
+    public string Artikel { get; }
+
+    public int Menge { get; private set; }   // lesen: alle – ändern: nur diese Klasse
+
+    public void Entnehmen(int anzahl)
+    {
+        if (anzahl <= 0) throw new ArgumentOutOfRangeException(nameof(anzahl), "Anzahl muss positiv sein.");
+        if (anzahl > Menge) throw new InvalidOperationException($"Nur {Menge} Stück von {Artikel} auf Lager.");
+        Menge -= anzahl;
+    }
+
+    // Einlagern(...) analog
+}
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+public class Lagerbestand {
+
+    private final String artikel;
+    private int menge;                       // von außen nicht änderbar
+
+    public Lagerbestand(String artikel, int anfangsbestand) {
+        if (artikel == null || artikel.isBlank())
+            throw new IllegalArgumentException("Artikel fehlt.");
+        if (anfangsbestand < 0)
+            throw new IllegalArgumentException("Bestand darf nicht negativ sein.");
+        this.artikel = artikel;
+        this.menge = anfangsbestand;
+    }
+
+    public String getArtikel() { return artikel; }
+
+    public int getMenge() { return menge; }   // nur ein Getter, kein Setter
+
+    public void entnehmen(int anzahl) {
+        if (anzahl <= 0) throw new IllegalArgumentException("Anzahl muss positiv sein.");
+        if (anzahl > menge) throw new IllegalStateException("Nur " + menge + " Stück von " + artikel + " auf Lager.");
+        menge -= anzahl;
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Ohne Kapselung (`public int Menge;`) könnte jeder Code `bestand.Menge = -10` schreiben – und der Fehler würde erst viel später, an ganz anderer Stelle, auffallen.
+
+| Zugriff | C# | Java |
+|---|---|---|
+| überall sichtbar | `public` | `public` |
+| nur in der Klasse | `private` | `private` |
+| Klasse + Unterklassen | `protected` | `protected` (zusätzlich im Paket) |
+| im selben Projekt / Paket | `internal` | *(kein Modifizierer)* |
+
+:::tip[Gute Kapselung ist testbar]
+Der Test `Mehr_entnehmen_als_vorhanden_ist_nicht_moeglich` prüft nicht nur die Exception, sondern auch, dass die Menge **danach unverändert** ist. Ein Objekt soll auch nach einem Fehler gültig bleiben.
+:::
+
+## Vererbung und abstrakte Klassen \{#vererbung}
+
+Mit **Vererbung** übernimmt eine Klasse Daten und Verhalten einer **Basisklasse** und kann es erweitern oder überschreiben. Eine **abstrakte Klasse** kann nicht selbst instanziiert werden – sie legt fest, **was** alle Unterklassen können müssen.
+
+<Tabs groupId="sprache">
+<TabItem value="csharp" label="C#">
+
+```csharp
+public abstract class Versandart
+{
+    public abstract string Name { get; }
+
+    public abstract decimal Kosten(decimal bestellwert);   // jede Unterklasse MUSS das umsetzen
+
+    // gemeinsames Verhalten für alle
+    public string Beschreibung(decimal bestellwert) => $"{Name}: {Kosten(bestellwert):0.00} €";
+}
+
+public sealed class Standardversand : Versandart
+{
+    public override string Name => "Standard";
+    public override decimal Kosten(decimal bestellwert) => bestellwert >= 50m ? 0m : 4.90m;
+}
+
+public sealed class Expressversand : Versandart
+{
+    public override string Name => "Express";
+    public override decimal Kosten(decimal bestellwert) => 12.90m;
+}
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+public abstract class Versandart {
+
+    public abstract String name();
+
+    public abstract BigDecimal kosten(BigDecimal bestellwert);
+
+    public String beschreibung(BigDecimal bestellwert) {
+        return name() + ": " + kosten(bestellwert) + " €";
+    }
+}
+
+public final class Standardversand extends Versandart {
+    @Override public String name() { return "Standard"; }
+
+    @Override public BigDecimal kosten(BigDecimal bestellwert) {
+        return bestellwert.compareTo(new BigDecimal("50")) >= 0 ? BigDecimal.ZERO : new BigDecimal("4.90");
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+- `sealed` (C#) bzw. `final` (Java) verhindert, dass von einer Klasse weiter geerbt wird.
+- C# verlangt `virtual`/`abstract` in der Basisklasse und `override` in der Unterklasse. In Java sind Methoden standardmäßig überschreibbar; `@Override` lässt den Compiler prüfen, dass wirklich überschrieben wird.
+
+## Interfaces \{#interfaces}
+
+Ein **Interface** beschreibt eine **Fähigkeit** – nur **was**, nicht **wie**. Eine Klasse kann **mehrere** Interfaces implementieren, aber nur von **einer** Klasse erben.
+
+```csharp
+public interface IRabattregel
+{
+    decimal Satz(Bestellkontext bestellung);
+}
+
+public sealed class StammkundenRabatt : IRabattregel
+{
+    public decimal Satz(Bestellkontext b) => b.Stammkunde ? 0.05m : 0m;
+}
+```
+
+| | Abstrakte Klasse | Interface |
+|---|---|---|
+| gemeinsamer **Code** | ja | nur Standardmethoden (C# 8+/Java 8+), keine Felder |
+| **Zustand** (Felder) | ja | nein |
+| Anzahl pro Klasse | **eine** Basisklasse | **beliebig viele** |
+| Bedeutung | „ist ein“ (Express **ist eine** Versandart) | „kann“ (… **kann** einen Rabatt berechnen) |
+
+Interfaces sind die Grundlage für austauschbare Bausteine und [Testdoubles](../02-testautomation/02-csharp/02-testdoubles-nsubstitute.mdx) – und für die meisten [Entwurfsmuster](./05-entwurfsmuster.mdx).
+
+## Polymorphie \{#polymorphie}
+
+**Polymorphie** („Vielgestaltigkeit“): Code arbeitet mit der **Basisklasse** oder dem **Interface** – zur Laufzeit wird automatisch die Methode des **tatsächlichen Objekts** aufgerufen.
+
+```csharp
+var versandarten = new List<Versandart> { new Standardversand(), new Expressversand(), new Abholung() };
+
+foreach (var versand in versandarten)
+    Console.WriteLine(versand.Beschreibung(30m));
+```
+
+```text
+Standard: 4,90 €
+Express: 12,90 €
+Abholung: 0,00 €
+```
+
+Die Schleife kennt keine einzige konkrete Klasse. Kommt eine neue Versandart dazu, ändert sich an ihr **nichts** – ohne Polymorphie stünde hier eine wachsende `if`/`switch`-Kette.
+
+## Komposition statt Vererbung \{#komposition}
+
+Vererbung ist eine **sehr enge** Kopplung: Jede Änderung an der Basisklasse wirkt auf alle Unterklassen. Und sie passt nur, wenn wirklich „**ist ein**“ gilt.
+
+**Komposition** heißt: Ein Objekt **hat** andere Objekte und **delegiert** Arbeit an sie.
+
+```csharp
+// Vererbung wäre hier falsch: Ein Preisrechner IST KEINE Rabattregel.
+// Komposition: Der Preisrechner HAT Rabattregeln.
+public sealed class Preisrechner(IEnumerable<IRabattregel> regeln)
+{
+    public decimal RabattSatz(Bestellkontext b) => Math.Min(regeln.Sum(r => r.Satz(b)), 0.30m);
+}
+```
+
+:::warning[Typische Vererbungsfalle]
+Ein `Quadrat` erbt von `Rechteck` – mathematisch korrekt. Aber wenn `Rechteck` Breite und Höhe **unabhängig** setzen lässt, bricht das Quadrat diese Erwartung. Mehr dazu beim [Liskovschen Substitutionsprinzip](./04-solid.mdx#lsp).
+:::
+
+## Typische Fehler \{#typische-fehler}
+
+- **Öffentliche Felder** oder Setter für alles – Objekte können ungültig werden.
+- **Tiefe Vererbungshierarchien** (`Basis → Produkt → PhysischesProdukt → Buch → Fachbuch …`) – schwer zu verstehen und zu ändern.
+- **Vererbung nur zur Wiederverwendung von Code** – lieber Komposition.
+- **`instanceof`/`is`-Ketten** statt Polymorphie: `if (v is Express) … else if (v is Standard) …`.
+- **Konstruktoren, die ungültige Objekte zulassen** – z. B. Artikel ohne Namen.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Klasse** = Bauplan, **Objekt** = Instanz mit eigenem Zustand; der **Konstruktor** sorgt für einen gültigen Start.
+- **Kapselung**: Zustand `private`, Änderungen nur über Methoden, die Regeln prüfen.
+- **Abstrakte Klasse** („ist ein“, mit gemeinsamem Code) vs. **Interface** („kann“, beliebig viele).
+- **Polymorphie**: Code gegen Basisklasse/Interface schreiben, die konkrete Methode wird zur Laufzeit gewählt.
+- **Komposition** (hat ein) ist meist flexibler als **Vererbung** (ist ein).
+
+<Quiz fragen={fragen} titel="Quiz: Objektorientierung" />

@@ -60,3 +60,19 @@ jobs:
         run: shellcheck *.sh
       - name: Selbsttest der Skripte
         run: ./selbsttest.sh
+
+  entwicklung:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: C#-Beispiele (OOP, Muster, Refactoring, Sprachvergleich)
+        run: dotnet test beispiele/entwicklung
+      - name: Java-Sprachvergleich
+        run: java beispiele/entwicklung-java/Sprachvergleich.java

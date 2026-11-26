@@ -1,0 +1,164 @@
+# Fragen zur Lektion "Git – Grundlagen"
+
+- id: se-gi-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was bewirkt 'git add regeln.txt'?"
+  optionen:
+    - "Die Datei wird sofort gespeichert und gepusht"
+    - "Die Änderungen an der Datei werden für den nächsten Commit vorgemerkt (Staging)"
+    - "Die Datei wird gelöscht"
+    - "Ein neuer Branch wird angelegt"
+  richtig: [1]
+  erklaerung: "git add bringt Änderungen in den Staging-Bereich; erst git commit speichert sie im Repository."
+  artikel: "#bereiche"
+  tags: [git]
+
+- id: se-gi-002
+  typ: single
+  schwierigkeit: 1
+  frage: "'git status --short' zeigt '?? regeln.txt'. Was bedeutet das?"
+  optionen:
+    - "Die Datei hat einen Konflikt"
+    - "Die Datei ist neu und wird von Git noch nicht verfolgt"
+    - "Die Datei wurde gelöscht"
+    - "Die Datei ist gestaged"
+  richtig: [1]
+  erklaerung: "?? steht für 'untracked'. Erst mit git add wird die Datei verfolgt."
+  artikel: "#grundablauf"
+  tags: [git]
+
+- id: se-gi-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Commit-Nachricht ist am besten?"
+  optionen:
+    - "fix"
+    - "Änderungen von heute"
+    - "Grenzwert der Rabattschwelle korrigiert (>= statt >)"
+    - "asdf"
+  richtig: [2]
+  erklaerung: "Eine gute Nachricht beschreibt kurz, was sich ändert – bei Bedarf mit dem Warum in weiteren Zeilen."
+  artikel: "#commits"
+  tags: [git, commits]
+
+- id: se-gi-004
+  typ: multiple
+  schwierigkeit: 1
+  frage: "Was gehört typischerweise in die .gitignore?"
+  optionen:
+    - "bin/ und obj/ bzw. target/"
+    - "Testergebnisse und Screenshots wie TestResults/"
+    - "Dateien mit Passwörtern wie .env"
+    - "Der Quellcode der Tests"
+  richtig: [0, 1, 2]
+  erklaerung: "Build-Ergebnisse, Testartefakte und Geheimnisse gehören nicht ins Repository – der Testcode selbst natürlich schon."
+  artikel: "#gitignore"
+  tags: [git, gitignore]
+
+- id: se-gi-005
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Wenn man eine versehentlich eingecheckte Datei mit einem Passwort im nächsten Commit löscht, ist das Passwort aus Git verschwunden."
+  richtig: [1]
+  erklaerung: "Falsch. Es steht weiter in der Historie. Ein gepushtes Passwort muss als kompromittiert gelten und ausgetauscht werden."
+  artikel: "#gitignore"
+  tags: [git, sicherheit]
+
+- id: se-gi-006
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie legst du einen neuen Branch 'feature/gutschein' an und wechselst direkt dorthin?"
+  optionen:
+    - "git branch -d feature/gutschein"
+    - "git switch -c feature/gutschein"
+    - "git merge feature/gutschein"
+    - "git commit -b feature/gutschein"
+  richtig: [1]
+  erklaerung: "git switch -c erstellt den Branch und wechselt hinein (ältere Schreibweise: git checkout -b)."
+  artikel: "#branches"
+  tags: [git, branches]
+
+- id: se-gi-007
+  typ: single
+  schwierigkeit: 2
+  frage: "In einer Datei steht nach einem Merge '<<<<<<< HEAD ... ======= ... >>>>>>> feature/stammkunde'. Was steht zwischen '<<<<<<< HEAD' und '======='?"
+  optionen:
+    - "Die Version des eingemergten Branches"
+    - "Die Version des aktuellen Branches"
+    - "Die Version vom Server"
+    - "Eine Fehlermeldung"
+  richtig: [1]
+  erklaerung: "HEAD ist der aktuelle Branch. Der Teil nach ======= stammt aus dem Branch, der eingemergt wird."
+  artikel: "#merge"
+  tags: [git, merge]
+
+- id: se-gi-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie schließt man einen Merge ab, nachdem der Konflikt in regeln.txt gelöst ist?"
+  optionen:
+    - "git merge --abort"
+    - "git add regeln.txt und dann git commit"
+    - "git reset --hard"
+    - "Nichts, Git erkennt das automatisch"
+  richtig: [1]
+  erklaerung: "Die gelöste Datei wird gestaged und mit einem Commit der Merge abgeschlossen. --abort würde den Merge abbrechen."
+  artikel: "#merge"
+  tags: [git, merge]
+
+- id: se-gi-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Was sollte man nach dem Lösen eines Merge-Konflikts immer tun?"
+  optionen:
+    - "Den Branch löschen"
+    - "Build und Tests ausführen – textlich gelöst heißt nicht fachlich richtig"
+    - "Die Historie mit rebase umschreiben"
+    - "Den Konflikt dokumentieren und nichts weiter tun"
+  richtig: [1]
+  erklaerung: "Beide Seiten können sich fachlich widersprechen, auch wenn die Datei syntaktisch korrekt ist."
+  artikel: "#merge"
+  tags: [git, merge, tests]
+
+- id: se-gi-010
+  typ: single
+  schwierigkeit: 3
+  frage: "Was besagt die goldene Regel zu git rebase?"
+  optionen:
+    - "Rebase immer vor jedem Push auf main"
+    - "Niemals Commits rebasen, die bereits geteilt sind und von anderen verwendet werden"
+    - "Rebase nur auf main"
+    - "Rebase ist in Teams verboten"
+  richtig: [1]
+  erklaerung: "Rebase erzeugt neue Commits mit neuen IDs. Für eigene, lokale Commits ist es nützlich, für geteilte gefährlich."
+  artikel: "#rebase"
+  tags: [git, rebase]
+
+- id: se-gi-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein fehlerhafter Commit ist bereits gepusht und von Kollegen gezogen worden. Wie machst du ihn sicher rückgängig?"
+  optionen:
+    - "git reset --hard HEAD~1 und force push"
+    - "git revert <commit>"
+    - "Die Datei löschen"
+    - "git commit --amend"
+  richtig: [1]
+  erklaerung: "revert erzeugt einen neuen Commit, der die Änderung umkehrt – die geteilte Historie bleibt intakt."
+  artikel: "#rueckgaengig"
+  tags: [git, revert]
+
+- id: se-gi-012
+  typ: single
+  schwierigkeit: 1
+  frage: "Du musst kurz auf einen anderen Branch wechseln, willst deine halbfertigen Änderungen aber nicht committen. Was hilft?"
+  optionen:
+    - "git stash und später git stash pop"
+    - "git reset --hard"
+    - "git revert"
+    - "git merge --abort"
+  richtig: [0]
+  erklaerung: "stash legt die Änderungen beiseite, stash pop holt sie zurück."
+  artikel: "#rueckgaengig"
+  tags: [git, stash]

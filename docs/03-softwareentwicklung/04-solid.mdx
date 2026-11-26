@@ -1,0 +1,243 @@
+---
+title: SOLID-Prinzipien
+description: Die fünf SOLID-Prinzipien – Single Responsibility, Open/Closed, Liskov, Interface Segregation und Dependency Inversion – an Beispielen aus dem Mini-Shop, und warum sie Code testbar machen.
+tags: [softwareentwicklung, solid, architektur, testbarkeit]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './04-solid.fragen.yaml';
+
+# SOLID-Prinzipien
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- die fünf **SOLID-Prinzipien** erklären,
+- Verstöße im Code **erkennen**,
+- Code so gestalten, dass er **erweiterbar**, **austauschbar** und **testbar** ist,
+- die Prinzipien im **Mini-Shop** wiederfinden.
+:::
+
+## Überblick \{#ueberblick}
+
+SOLID fasst fünf Prinzipien für objektorientierten Entwurf zusammen (bekannt gemacht von Robert C. Martin):
+
+| | Prinzip | Kurz |
+|---|---|---|
+| **S** | Single Responsibility Principle | Eine Klasse hat **einen Grund, sich zu ändern** |
+| **O** | Open/Closed Principle | **Offen für Erweiterung**, geschlossen für Änderung |
+| **L** | Liskov Substitution Principle | Unterklassen müssen sich wie ihre Basisklasse **verhalten** |
+| **I** | Interface Segregation Principle | Viele **kleine, passende** Interfaces statt eines großen |
+| **D** | Dependency Inversion Principle | Von **Abstraktionen** abhängen, nicht von konkreten Klassen |
+
+Für Testautomatisierer besonders wichtig: SOLID-Code ist fast automatisch **gut testbar**.
+
+## S – Single Responsibility \{#srp}
+
+> Eine Klasse sollte nur **einen Grund haben, sich zu ändern**.
+
+Ein Verstoß – ein `BestellService`, der alles selbst macht:
+
+```csharp
+// ❌ Vier Gründe für Änderungen: Rabattregeln, Zahlungsanbieter, Datenbank, E-Mail-Text
+public class BestellService
+{
+    public void Bestellen(Warenkorb warenkorb, string email)
+    {
+        var rabatt = warenkorb.Zwischensumme >= 100 ? 0.10m : 0m;                 // Preislogik
+        var betrag = warenkorb.Zwischensumme * (1 - rabatt);
+        new HttpClient().PostAsync("https://pay.example/api", /* ... */);            // Zahlung
+        using var db = new SqlConnection("Server=prod;...");                         // Speichern
+        new SmtpClient("mail.firma.de").Send("shop@firma.de", email, "Danke", "..."); // E-Mail
+    }
+}
+```
+
+So ist es im Mini-Shop gelöst – jede Verantwortung in einer eigenen Klasse:
+
+| Verantwortung | Klasse |
+|---|---|
+| Preise und Rabatte | `Rabattrechner` |
+| Bezahlen | `IZahlungsdienst` |
+| Speichern | `IBestellRepository` |
+| Ablauf der Bestellung | `BestellService` – koordiniert die anderen |
+
+Ändern sich die Rabattregeln, ändert sich **nur** der `Rabattrechner` – und nur **dessen** Tests sind betroffen.
+
+## O – Open/Closed \{#ocp}
+
+> Software sollte **offen für Erweiterungen**, aber **geschlossen gegenüber Änderungen** sein.
+
+Neue Anforderungen sollen durch **neuen Code** umgesetzt werden, nicht durch Umbau von bestehendem, getestetem Code.
+
+```csharp
+// ❌ Jede neue Rabattart = Änderung an dieser Methode
+public decimal RabattSatz(decimal summe, bool stammkunde, string? gutschein)
+{
+    var satz = 0m;
+    if (summe >= 100) satz += 0.10m;
+    if (stammkunde) satz += 0.05m;
+    if (gutschein == "HERBST") satz += 0.10m;     // neu eingefügt
+    // if (geburtstag) ...                         // nächste Änderung
+    return satz;
+}
+```
+
+```csharp
+// ✅ Neue Regel = neue Klasse; der Preisrechner bleibt unverändert
+public interface IRabattregel
+{
+    decimal Satz(Bestellkontext bestellung);
+}
+
+public sealed class GutscheinRabatt(string code, decimal satz) : IRabattregel
+{
+    public decimal Satz(Bestellkontext b) =>
+        string.Equals(b.Gutscheincode, code, StringComparison.OrdinalIgnoreCase) ? satz : 0m;
+}
+
+var rechner = new Preisrechner([new MengenRabatt(), new StammkundenRabatt(), new GutscheinRabatt("HERBST", 0.10m)]);
+```
+
+Der Test `Neue_Regel_ohne_Aenderung_am_Preisrechner` im [Beispielprojekt](https://github.com/Smie89/lernplattform/blob/main/beispiele/entwicklung/tests/Entwicklung.Beispiele.Tests/Muster/PreisrechnerTests.cs) zeigt genau das. Das zugrunde liegende Muster heißt [Strategie](./05-entwurfsmuster.mdx#strategie).
+
+:::note[Nicht übertreiben]
+OCP heißt nicht, alles von Anfang an erweiterbar zu machen (YAGNI). Sinnvoll ist es an Stellen, die sich **erfahrungsgemäß oft ändern** – wie Rabattregeln.
+:::
+
+## L – Liskovsches Substitutionsprinzip \{#lsp}
+
+> Objekte einer Unterklasse müssen sich **überall** verwenden lassen, wo die Basisklasse erwartet wird – **ohne Überraschungen**.
+
+Der Klassiker:
+
+```csharp
+public class Rechteck
+{
+    public virtual int Breite { get; set; }
+    public virtual int Hoehe { get; set; }
+    public int Flaeche => Breite * Hoehe;
+}
+
+public class Quadrat : Rechteck
+{
+    public override int Breite { set { base.Breite = value; base.Hoehe = value; } }
+    public override int Hoehe  { set { base.Breite = value; base.Hoehe = value; } }
+}
+
+// Code, der mit Rechtecken arbeitet:
+void Vergroessern(Rechteck r) { r.Breite = 5; r.Hoehe = 4; }   // erwartet Fläche 20
+// Mit einem Quadrat: Fläche 16 – die Erwartung ist gebrochen.
+```
+
+Ein praxisnäherer Verstoß (angenommen, `Einlagern` wäre `virtual`):
+
+```csharp
+public class NurLeseLagerbestand : Lagerbestand
+{
+    public override void Einlagern(int anzahl) => throw new NotSupportedException();   // ❌
+}
+```
+
+Jeder Code, der einen `Lagerbestand` bekommt und `Einlagern` aufruft, stürzt mit dieser Unterklasse ab. Wenn eine Unterklasse Methoden der Basisklasse **nicht sinnvoll erfüllen** kann, stimmt die Vererbung nicht – Lösung: getrennte Interfaces (siehe ISP) oder Komposition.
+
+:::tip[LSP und Testdoubles]
+Auch ein **Fake** für Tests muss das Verhalten seines Interfaces einhalten. Ein Fake-Repository, das bei `Finde` immer `null` liefert, obwohl vorher gespeichert wurde, lässt Tests grün werden, die mit der echten Datenbank rot wären.
+:::
+
+## I – Interface Segregation \{#isp}
+
+> Clients sollen nicht von Methoden abhängen, die sie **nicht benutzen**.
+
+```csharp
+// ❌ Ein riesiges Interface für alles
+public interface IShopVerwaltung
+{
+    IReadOnlyList<Produkt> AlleProdukte();
+    void ProduktAnlegen(Produkt produkt);
+    void PreisAendern(string id, decimal preis);
+    void BestellungStornieren(string nummer);
+    byte[] UmsatzberichtAlsPdf(int jahr);
+}
+// Die Produktliste im Shop braucht nur AlleProdukte – muss aber alles kennen.
+// Ein Testdouble muss fünf Methoden implementieren, um eine zu nutzen.
+```
+
+```csharp
+// ✅ Kleine, passende Interfaces – wie im Mini-Shop
+public interface IProduktKatalog
+{
+    IReadOnlyList<Produkt> Alle();
+    Produkt? Finde(string id);
+}
+```
+
+Kleine Interfaces sind leichter zu verstehen, zu implementieren und zu **mocken**.
+
+## D – Dependency Inversion \{#dip}
+
+> Module hoher Ebene sollen nicht von Modulen niedriger Ebene abhängen. Beide sollen von **Abstraktionen** abhängen.
+
+```csharp
+// ❌ Fachlogik hängt direkt an der Technik – nicht ohne echte Zahlung und Datenbank testbar
+public class BestellService
+{
+    private readonly PayPalClient _zahlung = new();
+    private readonly SqlBestellRepository _repository = new("Server=prod;...");
+}
+```
+
+```csharp
+// ✅ Mini-Shop: Abhängigkeiten sind Interfaces und werden übergeben
+public sealed class BestellService(
+    Rabattrechner rabattrechner,
+    IZahlungsdienst zahlungsdienst,
+    IBestellRepository repository,
+    TimeProvider zeit)
+{ ... }
+```
+
+Die konkreten Klassen werden **an einer Stelle** zusammengesetzt – im Mini-Shop in `Program.cs` über den **DI-Container**:
+
+```csharp
+builder.Services.AddSingleton<IZahlungsdienst, DemoZahlungsdienst>();
+builder.Services.AddSingleton<IBestellRepository, InMemoryBestellRepository>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<BestellService>();
+```
+
+Und genau deshalb kann der Unit-Test **Testdoubles** übergeben – NSubstitute für Zahlung und Repository, `FakeTimeProvider` für eine feste Uhrzeit (siehe [BestellServiceTests](../02-testautomation/01-grundlagen/03-tests-strukturieren.mdx#testklasse)). Ohne DIP gäbe es diesen Test nicht.
+
+:::note[Dependency Inversion ≠ Dependency Injection]
+**Dependency Inversion** ist das **Prinzip** (von Abstraktionen abhängen). **Dependency Injection** ist eine **Technik**, es umzusetzen (Abhängigkeiten von außen übergeben, z. B. per Konstruktor oder DI-Container).
+:::
+
+## SOLID und Testbarkeit \{#testbarkeit}
+
+| Prinzip | Wirkung auf Tests |
+|---|---|
+| SRP | kleine Klassen → kleine, fokussierte Tests |
+| OCP | neue Funktion → neue Tests, bestehende bleiben unverändert grün |
+| LSP | Fakes und echte Implementierungen sind austauschbar |
+| ISP | kleine Interfaces → einfache Testdoubles |
+| DIP | Abhängigkeiten lassen sich durch Testdoubles ersetzen |
+
+Umgekehrt ist **schwer testbarer Code** ein guter Hinweis auf verletzte SOLID-Prinzipien: Wer für einen Unit-Test eine Datenbank braucht, hat ein DIP-Problem.
+
+## Typische Fehler \{#typische-fehler}
+
+- **God Classes**, die alles machen (SRP).
+- **`if`/`switch`-Ketten**, die bei jeder neuen Variante erweitert werden (OCP).
+- **Unterklassen, die Methoden mit `NotSupportedException` „abschalten“** (LSP).
+- **Riesige Interfaces** mit zwanzig Methoden (ISP).
+- **`new` für Dienste mitten in der Fachlogik** (DIP).
+- **SOLID dogmatisch anwenden** – für drei Zeilen Code braucht es keine fünf Interfaces.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **S**: ein Grund zur Änderung pro Klasse – im Mini-Shop getrennt in Rabattrechner, Zahlung, Repository, BestellService.
+- **O**: erweitern durch neue Klassen (`IRabattregel`), nicht durch Ändern bestehender.
+- **L**: Unterklassen und Fakes halten die Erwartungen der Basis ein.
+- **I**: kleine, passende Interfaces (`IProduktKatalog`).
+- **D**: von Interfaces abhängen und Abhängigkeiten übergeben – die Grundlage jedes Unit-Tests mit Testdoubles.
+
+<Quiz fragen={fragen} titel="Quiz: SOLID-Prinzipien" />

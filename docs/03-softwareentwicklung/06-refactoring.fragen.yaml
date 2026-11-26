@@ -1,0 +1,150 @@
+# Fragen zur Lektion "Refactoring"
+
+- id: se-rf-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist Refactoring?"
+  optionen:
+    - "Neue Funktionen einbauen"
+    - "Die innere Struktur von Code verbessern, ohne das äußere Verhalten zu ändern"
+    - "Fehler beheben"
+    - "Code komplett neu schreiben"
+  richtig: [1]
+  erklaerung: "Refactoring ändert nur die Struktur. Neue Funktionen und Fehlerbehebungen sind eigene Änderungen."
+  artikel: "#was"
+  tags: [refactoring]
+
+- id: se-rf-002
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Änderungen sind Refactorings?"
+  optionen:
+    - "Variable 'sk' in 'stammkunde' umbenennen"
+    - "Die Magic Number 100 durch die Konstante Rabattschwelle ersetzen"
+    - "Einen neuen Gutschein-Rabatt einführen"
+    - "Den Fehler 'kein Rabatt bei genau 100 €' beheben"
+  richtig: [0, 1]
+  erklaerung: "Umbenennen und Konstanten einführen ändern das Verhalten nicht. Neue Funktionen und Fehlerkorrekturen ändern es."
+  artikel: "#was"
+  tags: [refactoring]
+
+- id: se-rf-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist ein Charakterisierungstest?"
+  optionen:
+    - "Ein Test, der prüft, ob der Code der Spezifikation entspricht"
+    - "Ein Test, der das aktuelle Verhalten von bestehendem Code festhält – sein Orakel ist der alte Code"
+    - "Ein Performanztest"
+    - "Ein Test für die Benutzeroberfläche"
+  richtig: [1]
+  erklaerung: "Charakterisierungstests sichern das heutige Verhalten ab, bevor man Altcode umbaut – unabhängig davon, ob es 'richtig' ist."
+  artikel: "#sicherheitsnetz"
+  tags: [refactoring, tests]
+
+- id: se-rf-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum refaktoriert man in kleinen Schritten und führt nach jedem Schritt die Tests aus?"
+  optionen:
+    - "Damit es länger dauert"
+    - "Damit bei einem roten Test sofort klar ist, welcher Schritt das Verhalten verändert hat"
+    - "Weil IDEs große Schritte nicht unterstützen"
+    - "Weil Tests sonst nicht kompilieren"
+  richtig: [1]
+  erklaerung: "Kleine Schritte machen Fehler leicht lokalisierbar und jederzeit rückgängig machbar."
+  artikel: "#schritte"
+  tags: [refactoring]
+
+- id: se-rf-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches Refactoring ersetzt '(string, int, decimal)' und Zugriffe wie 'x.Item3'?"
+  optionen:
+    - "Methode extrahieren"
+    - "Tupel durch einen benannten Typ (record Rechnungsposition) ersetzen"
+    - "Konstante einführen"
+    - "Inline Method"
+  richtig: [1]
+  erklaerung: "Ein Record mit Artikel, Menge und Einzelpreis macht die Bedeutung sichtbar und kann Logik wie Summe aufnehmen."
+  artikel: "#schritte"
+  tags: [refactoring]
+
+- id: se-rf-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist Umbenennen mit der IDE (z. B. F2) besser als Suchen und Ersetzen?"
+  optionen:
+    - "Es ist farbiger"
+    - "Die IDE ändert genau alle Verwendungen des Symbols – nicht zufällige Treffer in Kommentaren oder Strings"
+    - "Suchen und Ersetzen funktioniert in C# nicht"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "IDE-Refactorings verstehen den Code und sind deshalb sicherer als Textersetzungen."
+  artikel: "#schritte"
+  tags: [refactoring, werkzeuge]
+
+- id: se-rf-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Welcher Unterschied zwischen RechnungVorher und RechnungNachher wurde durch die Charakterisierungstests sichtbar?"
+  optionen:
+    - "Der Rabatt wurde anders berechnet"
+    - "Der alte Code formatierte Beträge abhängig von der Spracheinstellung des Rechners (49,80 vs. 49.80)"
+    - "Der neue Code rundet nicht mehr"
+    - "Es gab keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Der neue Code nutzt bewusst InvariantCulture. Diese Verhaltensänderung wurde entschieden und dokumentiert, der Test berücksichtigt sie explizit."
+  artikel: "#verhaltensaenderung"
+  tags: [refactoring, locale]
+
+- id: se-rf-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Beim Refactoring entdeckst du einen Fehler im alten Code. Was ist das empfohlene Vorgehen?"
+  optionen:
+    - "Ihn sofort im selben Schritt mit beheben"
+    - "Notieren, das Refactoring abschließen und den Fehler danach als eigene Änderung mit eigenem Test beheben"
+    - "Ignorieren, weil Refactoring das Verhalten nicht ändern darf"
+    - "Die Tests anpassen, bis sie grün sind"
+  richtig: [1]
+  erklaerung: "Getrennte Änderungen bleiben nachvollziehbar – im Review und in der Git-Historie."
+  artikel: "#verhaltensaenderung"
+  tags: [refactoring]
+
+- id: se-rf-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bedeutet 'Erst die Änderung leicht machen, dann die leichte Änderung machen'?"
+  optionen:
+    - "Erst refaktorieren, damit die neue Funktion gut hineinpasst – dann die Funktion einbauen"
+    - "Erst die Funktion einbauen, dann aufräumen"
+    - "Nur leichte Änderungen durchführen"
+    - "Schwere Änderungen vermeiden"
+  richtig: [0]
+  erklaerung: "Refactoring bereitet die Änderung vor; beides geschieht nacheinander, nicht gleichzeitig."
+  artikel: "#was"
+  tags: [refactoring]
+
+- id: se-rf-010
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Refactoring und eine neue Funktion sollten im selben Commit landen, damit alles zusammen ist."
+  richtig: [1]
+  erklaerung: "Falsch. Getrennte Commits machen Reviews und Fehlersuche viel einfacher: Der eine ändert nur Struktur, der andere nur Verhalten."
+  artikel: "#typische-fehler"
+  tags: [refactoring, git]
+
+- id: se-rf-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist beim Refactoring von Testcode besonders wichtig?"
+  optionen:
+    - "Dass die Tests danach schneller sind"
+    - "Dass die Tests nachher noch dasselbe prüfen – ein grüner Test ohne Prüfung ist schlimmer als keiner"
+    - "Dass alle Tests in eine Datei kommen"
+    - "Dass keine Builder verwendet werden"
+  richtig: [1]
+  erklaerung: "Testcode-Refactoring darf die Aussagekraft nicht verlieren. Am sichersten: einen Fehler einbauen und prüfen, ob der Test noch rot wird."
+  artikel: "#testcode"
+  tags: [refactoring, tests]

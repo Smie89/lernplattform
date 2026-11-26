@@ -1,0 +1,150 @@
+# Fragen zur Lektion "SOLID-Prinzipien"
+
+- id: se-so-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was besagt das Single Responsibility Principle?"
+  optionen:
+    - "Jede Klasse hat genau eine Methode"
+    - "Eine Klasse hat nur einen Grund, sich zu ändern"
+    - "Jedes Projekt hat genau einen Entwickler"
+    - "Jede Methode hat genau einen Parameter"
+  richtig: [1]
+  erklaerung: "Eine Klasse soll eine Verantwortung haben. Ändern sich Rabattregeln, soll nur der Rabattrechner betroffen sein."
+  artikel: "#srp"
+  tags: [solid, srp]
+
+- id: se-so-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein BestellService berechnet Rabatte, ruft den Zahlungsanbieter auf, schreibt in die Datenbank und versendet E-Mails. Welches Prinzip ist hauptsächlich verletzt?"
+  optionen:
+    - "Liskov"
+    - "Single Responsibility"
+    - "Interface Segregation"
+    - "Keines"
+  richtig: [1]
+  erklaerung: "Die Klasse hat vier Gründe, sich zu ändern. Zusätzlich verletzt das direkte Erzeugen der Dienste auch DIP."
+  artikel: "#srp"
+  tags: [solid, srp]
+
+- id: se-so-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine neue Gutschein-Rabattregel soll eingeführt werden. Was entspricht dem Open/Closed-Prinzip?"
+  optionen:
+    - "Einen weiteren if-Zweig in die Rabattmethode einfügen"
+    - "Eine neue Klasse GutscheinRabatt, die IRabattregel implementiert – der Preisrechner bleibt unverändert"
+    - "Den Preisrechner kopieren und anpassen"
+    - "Die Regel in einem Kommentar dokumentieren"
+  richtig: [1]
+  erklaerung: "Erweitern durch neuen Code statt bestehenden, getesteten Code zu ändern."
+  artikel: "#ocp"
+  tags: [solid, ocp]
+
+- id: se-so-004
+  typ: single
+  schwierigkeit: 3
+  frage: "Eine Unterklasse NurLeseLagerbestand wirft bei Einlagern eine NotSupportedException. Welches Prinzip wird verletzt?"
+  optionen:
+    - "Single Responsibility"
+    - "Liskovsches Substitutionsprinzip"
+    - "Dependency Inversion"
+    - "DRY"
+  richtig: [1]
+  erklaerung: "Code, der einen Lagerbestand erwartet und Einlagern aufruft, bricht mit dieser Unterklasse – sie ist nicht austauschbar."
+  artikel: "#lsp"
+  tags: [solid, lsp]
+
+- id: se-so-005
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum verletzt ein Quadrat, das von einem Rechteck mit unabhängig setzbarer Breite und Höhe erbt, das LSP?"
+  optionen:
+    - "Weil Quadrate keine Rechtecke sind"
+    - "Weil Code, der Breite 5 und Höhe 4 setzt und Fläche 20 erwartet, mit einem Quadrat 16 erhält"
+    - "Weil Quadrate nur eine Seitenlänge haben dürfen"
+    - "Es verletzt das LSP nicht"
+  richtig: [1]
+  erklaerung: "Das Verhalten der Unterklasse widerspricht der Erwartung an die Basisklasse – sie ist nicht ohne Überraschung einsetzbar."
+  artikel: "#lsp"
+  tags: [solid, lsp]
+
+- id: se-so-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Testdouble muss fünf Methoden eines Interfaces implementieren, obwohl der Test nur eine braucht. Welches Prinzip hilft?"
+  optionen:
+    - "Open/Closed"
+    - "Interface Segregation – kleinere, passende Interfaces"
+    - "Single Responsibility für Tests"
+    - "YAGNI"
+  richtig: [1]
+  erklaerung: "Kleine Interfaces wie IProduktKatalog sind leicht zu verstehen, zu implementieren und zu mocken."
+  artikel: "#isp"
+  tags: [solid, isp]
+
+- id: se-so-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Was besagt das Dependency Inversion Principle?"
+  optionen:
+    - "Abhängigkeiten werden umgekehrt in die Datenbank geschrieben"
+    - "Module sollen von Abstraktionen abhängen, nicht von konkreten Implementierungen"
+    - "Jede Klasse erzeugt ihre Abhängigkeiten selbst"
+    - "Abhängigkeiten sind verboten"
+  richtig: [1]
+  erklaerung: "Der BestellService kennt nur IZahlungsdienst und IBestellRepository – welche Implementierung verwendet wird, entscheidet die Zusammensetzung von außen."
+  artikel: "#dip"
+  tags: [solid, dip]
+
+- id: se-so-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist der Unterschied zwischen Dependency Inversion und Dependency Injection?"
+  optionen:
+    - "Es gibt keinen"
+    - "Inversion ist das Prinzip, Injection eine Technik, es umzusetzen"
+    - "Injection ist ein Prinzip, Inversion ein Framework"
+    - "Inversion gibt es nur in Java"
+  richtig: [1]
+  erklaerung: "DIP fordert Abhängigkeit von Abstraktionen. DI übergibt die konkreten Objekte von außen – per Konstruktor oder DI-Container."
+  artikel: "#dip"
+  tags: [solid, dip]
+
+- id: se-so-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum kann der BestellServiceTest im Mini-Shop eine feste Uhrzeit und einen Fake-Zahlungsdienst verwenden?"
+  optionen:
+    - "Weil NSubstitute den Code automatisch umschreibt"
+    - "Weil der BestellService seine Abhängigkeiten (TimeProvider, IZahlungsdienst) über den Konstruktor bekommt"
+    - "Weil Tests immer im Debug-Modus laufen"
+    - "Weil der BestellService statische Methoden nutzt"
+  richtig: [1]
+  erklaerung: "Dependency Inversion macht die Abhängigkeiten austauschbar – die Grundlage für Unit-Tests mit Testdoubles."
+  artikel: "#dip"
+  tags: [solid, dip, testbarkeit]
+
+- id: se-so-010
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Code, für dessen Unit-Test eine echte Datenbank nötig ist, deutet oft auf ein verletztes Dependency Inversion Principle hin."
+  richtig: [0]
+  erklaerung: "Wahr. Hängt die Fachlogik direkt an der Datenbank-Klasse, lässt sie sich nicht durch ein Testdouble ersetzen."
+  artikel: "#testbarkeit"
+  tags: [solid, testbarkeit]
+
+- id: se-so-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Wann ist es sinnvoll, Code nach dem Open/Closed-Prinzip erweiterbar zu machen?"
+  optionen:
+    - "Immer und überall, von Anfang an"
+    - "An Stellen, die sich erfahrungsgemäß oft ändern, z. B. Rabattregeln"
+    - "Nie, das widerspricht KISS"
+    - "Nur in Java"
+  richtig: [1]
+  erklaerung: "Erweiterbarkeit auf Vorrat verletzt YAGNI. Sinnvoll ist sie dort, wo Änderungen tatsächlich häufig sind."
+  artikel: "#ocp"
+  tags: [solid, ocp, yagni]

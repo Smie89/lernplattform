@@ -1,0 +1,194 @@
+---
+title: Zusammenarbeit mit Git, Pull Requests und CI/CD
+description: Remote-Repositories, Branching-Strategien, Pull Requests und Code-Reviews, Branch-Schutz, Continuous Integration und Continuous Delivery am Beispiel der Pipelines dieser Lernplattform sowie Versionierung mit SemVer.
+tags: [softwareentwicklung, git, pull-request, ci-cd, github-actions]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './08-zusammenarbeit-ci-cd.fragen.yaml';
+
+# Zusammenarbeit mit Git, Pull Requests und CI/CD
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- mit **Remote-Repositories** arbeiten (`clone`, `fetch`, `pull`, `push`),
+- **Branching-Strategien** wie GitHub Flow und Trunk-Based Development einordnen,
+- **Pull Requests** erstellen und **Code-Reviews** durchführen,
+- erklären, was **Continuous Integration**, **Continuous Delivery** und **Continuous Deployment** sind,
+- eine **CI-Pipeline** mit Teststufen lesen und aufbauen,
+- Versionen nach **SemVer** vergeben.
+:::
+
+## Remote-Repositories \{#remote}
+
+Im Team gibt es ein **gemeinsames Repository** auf einem Server – GitHub, GitLab, Azure DevOps, Bitbucket. Lokal heißt es standardmäßig **`origin`**.
+
+```bash
+git clone https://github.com/Smie89/lernplattform.git   # Kopie holen
+git fetch                       # neue Commits vom Server holen (ändert noch nichts lokal)
+git pull                        # holen UND in den aktuellen Branch einarbeiten
+git push                        # eigene Commits hochladen
+git push -u origin feature/x    # neuen Branch erstmals hochladen und verknüpfen
+```
+
+:::tip[Regelmäßig abgleichen]
+Je länger ein Branch ohne Abgleich lebt, desto größer werden die [Konflikte](./07-git-grundlagen.mdx#merge). Mindestens täglich `main` in den eigenen Branch holen – oder ihn darauf rebasen, solange er noch nicht geteilt ist.
+:::
+
+## Branching-Strategien \{#branching}
+
+| Strategie | Ablauf | Passt für |
+|---|---|---|
+| **GitHub Flow** | `main` ist immer auslieferbar; jede Änderung auf einem kurzen Feature-Branch → Pull Request → Review + CI → Merge | die meisten Web- und Cloud-Projekte |
+| **Trunk-Based Development** | alle integrieren **mindestens täglich** in `main`; sehr kurze Branches; unfertige Funktionen hinter **Feature Flags** | Teams mit hoher Testautomatisierung und häufigen Releases |
+| **Git Flow** | `main` + `develop` + Feature-, Release- und Hotfix-Branches | Produkte mit festen, parallel gepflegten Versionen |
+
+Gemeinsam ist allen: **kurzlebige Branches** und **automatische Tests vor dem Merge**.
+
+## Pull Requests \{#pull-request}
+
+Ein **Pull Request** (GitLab: *Merge Request*) ist der Vorschlag, einen Branch in `main` zu übernehmen. Er bündelt:
+- die **Änderung** (Diff),
+- eine **Beschreibung**: was, warum, wie getestet,
+- die **Ergebnisse der CI** (Build, Tests, Analyse),
+- das **Code-Review** mit Kommentaren und Freigabe.
+
+Eine gute PR-Beschreibung:
+
+```text
+Doppelte Bestellungen bei Doppelklick verhindern (SHOP-1)
+
+Was:   Sperre pro Warenkorb beim Bestellen; Button während der Anfrage deaktiviert.
+Warum: Doppelklick erzeugte zwei Bestellungen und doppelte Abbuchung (SHOP-1).
+Tests: Neuer API-Test mit 10 parallelen Bestellungen (vorher 10, jetzt 1 Bestellung);
+       Doppelklick im Browser 10 von 10 Mal korrekt; alle 44 Tests grün.
+```
+
+:::tip[Kleine Pull Requests]
+200 geänderte Zeilen werden gründlich geprüft, 2.000 nur überflogen. Lieber mehrere kleine PRs – z. B. erst das Refactoring, dann die neue Funktion.
+:::
+
+## Code-Review \{#code-review}
+
+Ein Code-Review ist ein [statischer Test](../01-softwaretest/03-statischer-test.mdx) – meist ein informelles oder technisches Review. Eine Checkliste für Reviewer:
+
+- [ ] Erfüllt die Änderung die Anforderung? Sind **Fehlerfälle** behandelt?
+- [ ] Gibt es **Tests** für das neue Verhalten – auch für Grenzwerte und Fehler?
+- [ ] Sind **Namen** verständlich, ist der Code lesbar ([Clean Code](./03-clean-code.mdx))?
+- [ ] Gibt es **Duplikate**, Magic Numbers, verschluckte Exceptions?
+- [ ] Sicherheit: Eingaben geprüft? Keine **Secrets** im Code?
+- [ ] Ist die Änderung **so klein wie möglich** – ohne unbeteiligte Umbauten?
+
+Und für den Ton: Fragen statt Befehle („Was passiert hier bei einer leeren Liste?“), sachlich auf den Code bezogen, Lob für Gutes nicht vergessen.
+
+## Branch-Schutz \{#branch-schutz}
+
+Auf GitHub/GitLab lässt sich `main` **schützen**:
+- Änderungen nur über **Pull Requests**,
+- mindestens **eine Freigabe** im Review,
+- **Status-Checks** müssen grün sein (Build, Tests),
+- kein Force-Push.
+
+So wird die CI zum **Türsteher**: Rote Tests können nicht nach `main`.
+
+## Continuous Integration \{#ci}
+
+**Continuous Integration** (CI): Jede Änderung wird **sofort automatisch gebaut und getestet** – nicht erst Tage später. Ziel: Fehler in Minuten statt in Wochen finden.
+
+Diese Lernplattform hat selbst zwei echte Pipelines (GitHub Actions). Ein Ausschnitt aus [beispiele.yml](https://github.com/Smie89/lernplattform/blob/main/.github/workflows/beispiele.yml):
+
+```yaml
+name: Beispielprojekte testen
+
+on:
+  push:
+    branches: [main]
+    paths: ['beispiele/**', '.github/workflows/beispiele.yml']
+  pull_request:
+    paths: ['beispiele/**']
+
+jobs:
+  shop-dotnet:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beispiele/shop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet build
+      - name: Unit-Tests
+        run: dotnet test tests/Shop.Core.Tests --no-build
+      - name: API-Tests
+        run: dotnet test tests/Shop.Api.Tests --no-build
+      - name: Browser für UI-Tests installieren
+        run: pwsh tests/Shop.UiTests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+      - name: UI-Tests gegen die gestartete Anwendung
+        run: ../linux/tests-mit-app.sh
+```
+
+Weitere Jobs derselben Pipeline testen den Java-Shop (`mvnw verify`), prüfen die Bash-Skripte mit **ShellCheck** und führen die Beispiele dieses Bereichs aus. Die zweite Pipeline baut die Lernplattform, prüft alle Quizfragen und veröffentlicht sie.
+
+Gute Pipelines folgen der [Testpyramide](../02-testautomation/01-grundlagen/01-grundlagen-testautomation.mdx#testpyramide):
+
+```text
+ Build  →  statische Analyse  →  Unit-Tests  →  API-/Integrationstests  →  UI-Tests  →  Bericht
+  ↑ schnell und günstig                                              langsam und teuer ↑
+  scheitert hier etwas, laufen die teuren Stufen gar nicht erst
+```
+
+:::note[Was die Pipelines hier schon gefunden haben]
+Die CI dieser Plattform hat bereits ein echtes Problem sichtbar gemacht: Beim ersten Lauf meldete ShellCheck zwei Schwachstellen in einem Bash-Skript – der Job war rot, bis sie behoben waren. Genau so soll es sein: sofort und automatisch.
+:::
+
+**Regeln für CI:**
+- Die Pipeline ist **schnell** (Unit-Tests in Sekunden, alles unter ~15 Minuten), sonst wartet niemand darauf.
+- Ein **roter Build hat Vorrang** – er wird sofort repariert, nicht ignoriert.
+- **Flaky Tests** werden behoben oder in Quarantäne genommen, sonst verliert die CI ihr Vertrauen (siehe [Flaky Tests](../02-testautomation/01-grundlagen/02-flaky-tests.mdx#retries)).
+- **Artefakte** (Testberichte, Screenshots) bei Fehlschlag sichern (siehe [Linux in der CI](../04-linux/07-linux-testautomation.mdx#artefakte)).
+
+## Continuous Delivery und Deployment \{#cd}
+
+| Begriff | Bedeutung |
+|---|---|
+| **Continuous Integration** | jede Änderung wird automatisch gebaut und getestet |
+| **Continuous Delivery** | jede grüne Version ist **jederzeit auslieferbar**; die Freigabe in Produktion ist ein bewusster Knopfdruck |
+| **Continuous Deployment** | jede grüne Version geht **automatisch** in Produktion |
+
+Diese Plattform nutzt **Continuous Deployment**: Jeder Push auf `main` baut die Seite, prüft die Fragen (`npm run pruefen`) und veröffentlicht sie auf GitHub Pages – scheitert die Prüfung, wird nichts veröffentlicht.
+
+Je automatischer ausgeliefert wird, desto wichtiger sind die Tests – sie sind das einzige, was zwischen Commit und Kunden steht.
+
+## Versionierung mit SemVer \{#semver}
+
+**Semantic Versioning** (SemVer): `MAJOR.MINOR.PATCH`, z. B. `2.4.1`.
+
+| Teil | erhöhen bei … | Beispiel |
+|---|---|---|
+| **MAJOR** | inkompatiblen Änderungen (bricht bestehende Nutzer) | API-Feld umbenannt: `1.9.0` → `2.0.0` |
+| **MINOR** | neuen, abwärtskompatiblen Funktionen | Gutschein-Rabatt ergänzt: `2.0.0` → `2.1.0` |
+| **PATCH** | abwärtskompatiblen Fehlerkorrekturen | SHOP-1 behoben: `2.1.0` → `2.1.1` |
+
+Für Testautomatisierer heißt das: Ein **MAJOR**-Update einer Bibliothek (z. B. NUnit 3 → 4, Selenium 3 → 4) bedeutet fast immer Anpassungen an den Tests – vorher die Änderungshinweise lesen. Werkzeuge wie **Dependabot** oder **Renovate** schlagen Updates als Pull Requests vor; die CI zeigt sofort, ob sie etwas brechen.
+
+## Typische Fehler \{#typische-fehler}
+
+- **Direkt auf `main` pushen** ohne Review und CI.
+- **Riesige, langlebige Branches** – Konflikte und schwierige Reviews.
+- **PR ohne Beschreibung** und ohne Hinweis, wie getestet wurde.
+- **Rote Builds liegen lassen** – „der ist halt rot“.
+- **Langsame Pipelines** mit UI-Tests vor den Unit-Tests.
+- **Abhängigkeiten nie aktualisieren** – dann kommen alle MAJOR-Sprünge auf einmal.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Remote**: `clone`, `fetch`, `pull`, `push` – regelmäßig mit `main` abgleichen.
+- **GitHub Flow** und **Trunk-Based**: kurze Branches, Integration über Pull Requests oder täglich in `main`.
+- **Pull Request** = Änderung + Beschreibung + CI-Ergebnis + Review; klein halten.
+- **Branch-Schutz** macht grüne Tests zur Pflicht vor dem Merge.
+- **CI** baut und testet jede Änderung, **Continuous Delivery/Deployment** liefert automatisch aus – Pipeline schnell und nach der Testpyramide geordnet.
+- **SemVer**: MAJOR bricht, MINOR erweitert, PATCH korrigiert.
+
+<Quiz fragen={fragen} titel="Quiz: Zusammenarbeit mit Git, Pull Requests und CI/CD" />

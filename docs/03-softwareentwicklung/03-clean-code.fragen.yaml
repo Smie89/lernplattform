@@ -1,0 +1,155 @@
+# Fragen zur Lektion "Clean Code"
+
+- id: se-cc-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welcher Name ist für eine boolesche Variable am besten?"
+  optionen:
+    - "flag"
+    - "sk"
+    - "istStammkunde"
+    - "b1"
+  richtig: [2]
+  erklaerung: "Booleans liest man am besten als Frage: ist…, hat…, darf…"
+  artikel: "#namen"
+  tags: [clean-code, namen]
+
+- id: se-cc-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Woran erkennt man, dass eine Methode mehr als eine Aufgabe hat?"
+  optionen:
+    - "Sie hat einen Rückgabewert"
+    - "Ihre Beschreibung braucht mehrere 'und': berechnet den Rabatt und formatiert den Text und speichert"
+    - "Sie ist public"
+    - "Sie hat genau einen Parameter"
+  richtig: [1]
+  erklaerung: "Eine Methode sollte genau eine Sache tun. Mehrere 'und' in der Beschreibung sind ein Zeichen, sie aufzuteilen."
+  artikel: "#funktionen"
+  tags: [clean-code, funktionen]
+
+- id: se-cc-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist am Aufruf 'Erstelle(positionen, true)' problematisch?"
+  optionen:
+    - "Nichts"
+    - "Am Aufrufort ist nicht erkennbar, was true bedeutet"
+    - "true ist in C# kein gültiger Wert"
+    - "Methoden dürfen keine Listen bekommen"
+  richtig: [1]
+  erklaerung: "Boolean-Parameter sind am Aufrufort unverständlich. Benannte Argumente (stammkunde: true) oder getrennte Methoden helfen."
+  artikel: "#funktionen"
+  tags: [clean-code, funktionen]
+
+- id: se-cc-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie behebt man die Magic Number in 'if (z >= 100) r = 0.1m;'?"
+  optionen:
+    - "Einen Kommentar daneben schreiben"
+    - "Benannte Konstanten wie Rabattschwelle und MengenRabatt verwenden"
+    - "Die Zahl in einen String umwandeln"
+    - "Gar nicht, Zahlen sind selbsterklärend"
+  richtig: [1]
+  erklaerung: "Konstanten mit sprechenden Namen erklären die Bedeutung und stehen nur an einer Stelle (DRY)."
+  artikel: "#magic-numbers"
+  tags: [clean-code, magic-numbers]
+
+- id: se-cc-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Kommentare sind sinnvoll?"
+  optionen:
+    - "Ein Kommentar, der erklärt, WARUM eine Sperre nötig ist (Doppelklick-Fehler)"
+    - "'i++; // i um eins erhöhen'"
+    - "Dokumentationskommentare für eine öffentliche API"
+    - "Auskommentierter alter Code für alle Fälle"
+  richtig: [0, 2]
+  erklaerung: "Gute Kommentare erklären das Warum oder dokumentieren APIs. Wiederholungen des Codes und auskommentierter Code sind Ballast – Git merkt sich alte Versionen."
+  artikel: "#kommentare"
+  tags: [clean-code, kommentare]
+
+- id: se-cc-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist schlimmer als kein Kommentar?"
+  optionen:
+    - "Ein zu kurzer Kommentar"
+    - "Ein Kommentar, der nicht mehr zum Code passt"
+    - "Ein englischer Kommentar"
+    - "Ein Kommentar am Zeilenende"
+  richtig: [1]
+  erklaerung: "Ein veralteter Kommentar führt Leser in die Irre – er 'lügt'."
+  artikel: "#kommentare"
+  tags: [clean-code, kommentare]
+
+- id: se-cc-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist das Problem an 'catch (Exception) { }'?"
+  optionen:
+    - "Es ist zu langsam"
+    - "Der Fehler verschwindet spurlos – das System arbeitet mit falschen Daten weiter, Tests bleiben grün"
+    - "Es kompiliert nicht"
+    - "Es fängt zu wenige Exceptions"
+  richtig: [1]
+  erklaerung: "Verschluckte Exceptions verstecken Fehler. Nur fangen, was man sinnvoll behandeln kann, sonst weiterwerfen."
+  artikel: "#fehlerbehandlung"
+  tags: [clean-code, fehlerbehandlung]
+
+- id: se-cc-008
+  typ: single
+  schwierigkeit: 1
+  frage: "Wofür steht YAGNI?"
+  optionen:
+    - "You Ain't Gonna Need It – nichts auf Vorrat bauen"
+    - "Your API Gets New Interfaces"
+    - "Yet Another Generic Naming Idea"
+    - "You Always Get Nice Inputs"
+  richtig: [0]
+  erklaerung: "Funktionen, die vielleicht irgendwann gebraucht werden, kosten heute Zeit und erhöhen die Komplexität."
+  artikel: "#prinzipien"
+  tags: [clean-code, prinzipien]
+
+- id: se-cc-009
+  typ: single
+  schwierigkeit: 3
+  frage: "Zwei Validierungsregeln sehen heute gleich aus, ändern sich aber aus unterschiedlichen fachlichen Gründen. Was empfiehlt richtig verstandenes DRY?"
+  optionen:
+    - "Sofort zu einer Methode zusammenfassen"
+    - "Getrennt lassen – DRY betrifft gleiches Wissen, nicht ähnlich aussehenden Code"
+    - "Eine von beiden löschen"
+    - "In einen Kommentar auslagern"
+  richtig: [1]
+  erklaerung: "Wer zufällig gleichen Code zusammenlegt, koppelt Dinge, die sich unabhängig ändern – die nächste Änderung bricht die andere Regel."
+  artikel: "#prinzipien"
+  tags: [clean-code, dry]
+
+- id: se-cc-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Geldbetrag wird überall als decimal plus Währung als string herumgereicht. Wie heißt dieser Code Smell?"
+  optionen:
+    - "Feature Envy"
+    - "Primitive Obsession"
+    - "God Class"
+    - "Toter Code"
+  richtig: [1]
+  erklaerung: "Statt primitiver Typen hilft ein eigener Typ, z. B. record Geld(decimal Betrag, string Waehrung)."
+  artikel: "#code-smells"
+  tags: [clean-code, code-smells]
+
+- id: se-cc-011
+  typ: single
+  schwierigkeit: 1
+  frage: "Was besagt die Pfadfinderregel?"
+  optionen:
+    - "Code nur ändern, wenn ein Fehler gemeldet wurde"
+    - "Den Code bei jeder Änderung etwas sauberer hinterlassen, als man ihn vorgefunden hat"
+    - "Allen Code einmal im Jahr komplett neu schreiben"
+    - "Immer zu zweit programmieren"
+  richtig: [1]
+  erklaerung: "Kleine, stetige Verbesserungen – mit Tests als Sicherheitsnetz – halten Code dauerhaft wartbar."
+  artikel: "#pfadfinder"
+  tags: [clean-code]

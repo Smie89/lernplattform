@@ -1,0 +1,155 @@
+# Fragen zur Lektion "C# und Java im Vergleich"
+
+- id: se-cj-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Welcher Datentyp eignet sich in C# für Geldbeträge?"
+  optionen:
+    - "double"
+    - "float"
+    - "decimal"
+    - "int"
+  richtig: [2]
+  erklaerung: "decimal stellt Dezimalzahlen wie 0,10 exakt dar. double und float rechnen binär und erzeugen Rundungsfehler."
+  artikel: "#typen"
+  tags: [csharp, typen]
+
+- id: se-cj-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie erzeugt man in Java den Betrag 24,90 als BigDecimal korrekt?"
+  optionen:
+    - "new BigDecimal(24.90)"
+    - "new BigDecimal(\"24.90\")"
+    - "BigDecimal.of(24.90f)"
+    - "(BigDecimal) 24.90"
+  richtig: [1]
+  erklaerung: "Aus einem String bleibt der Wert exakt. new BigDecimal(24.90) übernimmt die Ungenauigkeit des double-Literals."
+  artikel: "#typen"
+  tags: [java, bigdecimal]
+
+- id: se-cj-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie sieht in Java typischerweise der Zugriff auf eine Eigenschaft 'stammkunde' aus, die in C# eine Property 'IstStammkunde' wäre?"
+  optionen:
+    - "kunde.IstStammkunde"
+    - "kunde.isStammkunde() und kunde.setStammkunde(true)"
+    - "kunde.stammkunde = true (öffentliches Feld)"
+    - "kunde.Property(\"stammkunde\")"
+  richtig: [1]
+  erklaerung: "Java nutzt Getter und Setter (bei boolean oft isXxx), C# Properties mit get und set."
+  artikel: "#properties"
+  tags: [java, csharp]
+
+- id: se-cj-004
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was bieten Records in C# und Java?"
+  optionen:
+    - "Kompakte Definition unveränderlicher Datenklassen"
+    - "Gleichheit über die Werte statt über die Referenz"
+    - "Automatische Speicherung in einer Datenbank"
+    - "Eine lesbare Textausgabe (ToString/toString)"
+  richtig: [0, 1, 3]
+  erklaerung: "Records erzeugen Konstruktor, Gleichheit und Textausgabe automatisch. Mit Datenbanken haben sie nichts zu tun."
+  artikel: "#records"
+  tags: [records]
+
+- id: se-cj-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was liefert in C# 'vorname ?? \"Gast\"', wenn vorname null ist?"
+  optionen:
+    - "null"
+    - "\"Gast\""
+    - "Eine NullReferenceException"
+    - "Einen leeren String"
+  richtig: [1]
+  erklaerung: "Der Null-Koaleszenz-Operator ?? liefert den rechten Wert, wenn der linke null ist."
+  artikel: "#null"
+  tags: [csharp, null]
+
+- id: se-cj-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist in Java das Gegenstück zu LINQs Where und Select?"
+  optionen:
+    - "find und get"
+    - "filter und map"
+    - "where und select"
+    - "grep und awk"
+  richtig: [1]
+  erklaerung: "Die Stream-API nutzt filter zum Auswählen und map zum Umwandeln."
+  artikel: "#linq-streams"
+  tags: [java, streams, linq]
+
+- id: se-cj-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Positionen: Buch 2 × 24,90 €, Monitor 1 × 349 €, Kabel 3 × 9,99 €. In welcher Reihenfolge liefert die Abfrage 'ab 25 € Positionssumme, teuerste zuerst' die Artikel?"
+  optionen:
+    - "Monitor, Kabel, Buch"
+    - "Monitor, Buch, Kabel"
+    - "Buch, Kabel, Monitor"
+    - "Kabel, Buch, Monitor"
+  richtig: [1]
+  erklaerung: "Die Summen sind 349,00 €, 49,80 € und 29,97 €. Genau diese Frage hat beim Schreiben der Lektion eine falsche Testerwartung aufgedeckt."
+  artikel: "#linq-streams"
+  tags: [linq, streams]
+
+- id: se-cj-008
+  typ: single
+  schwierigkeit: 3
+  frage: "Warum braucht der Java-switch über 'Zahlungsart' keinen default-Zweig?"
+  optionen:
+    - "Weil default in Java verboten ist"
+    - "Weil Zahlungsart sealed ist und der Compiler alle möglichen Fälle kennt"
+    - "Weil Records nie null sind"
+    - "Weil switch immer den ersten Fall nimmt"
+  richtig: [1]
+  erklaerung: "Bei einer sealed-Hierarchie prüft der Compiler die Vollständigkeit. Kommt ein neuer Typ hinzu, meldet er fehlende Fälle."
+  artikel: "#switch"
+  tags: [java, switch]
+
+- id: se-cj-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Exceptions gibt es nur in Java?"
+  optionen:
+    - "Checked Exceptions, die gefangen oder mit throws deklariert werden müssen"
+    - "NullPointerException"
+    - "Runtime-Exceptions"
+    - "Exceptions mit Nachricht"
+  richtig: [0]
+  erklaerung: "C# kennt keine checked exceptions. In Java müssen z. B. IOException behandelt oder deklariert werden."
+  artikel: "#exceptions"
+  tags: [java, exceptions]
+
+- id: se-cj-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum vergleicht man in Java Strings mit equals statt mit ==?"
+  optionen:
+    - "== ist in Java verboten"
+    - "== vergleicht Referenzen, equals den Inhalt"
+    - "equals ist schneller"
+    - "Es gibt keinen Unterschied"
+  richtig: [1]
+  erklaerung: "Zwei Strings mit gleichem Inhalt können verschiedene Objekte sein. In C# vergleicht == bei string dagegen den Inhalt."
+  artikel: "#typische-fehler"
+  tags: [java, strings]
+
+- id: se-cj-011
+  typ: single
+  schwierigkeit: 1
+  frage: "Welches Build-Werkzeug gehört zu Java, welches zu .NET?"
+  optionen:
+    - "Java: Maven/Gradle – .NET: dotnet CLI mit .csproj"
+    - "Java: NuGet – .NET: Maven"
+    - "Beide nutzen npm"
+    - "Java: dotnet – .NET: javac"
+  richtig: [0]
+  erklaerung: "Maven (pom.xml) oder Gradle für Java, die dotnet CLI mit .csproj-Dateien und NuGet-Paketen für .NET."
+  artikel: "#ueberblick"
+  tags: [java, csharp, build]

@@ -1,0 +1,155 @@
+# Fragen zur Lektion "Objektorientierung"
+
+- id: se-oo-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist der Unterschied zwischen einer Klasse und einem Objekt?"
+  optionen:
+    - "Es gibt keinen"
+    - "Die Klasse ist der Bauplan, das Objekt eine konkrete Instanz mit eigenen Werten"
+    - "Ein Objekt ist ein Bauplan für Klassen"
+    - "Klassen gibt es nur in Java"
+  richtig: [1]
+  erklaerung: "Aus einer Klasse können beliebig viele Objekte mit eigenem Zustand erzeugt werden."
+  artikel: "#klassen-objekte"
+  tags: [oop]
+
+- id: se-oo-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum hat 'Menge' im Lagerbestand einen privaten Setter?"
+  optionen:
+    - "Damit die Menge schneller gelesen wird"
+    - "Damit sie nur über Methoden geändert werden kann, die die Regeln prüfen (z. B. nie negativ)"
+    - "Weil C# keine öffentlichen Setter erlaubt"
+    - "Damit sie nicht gelesen werden kann"
+  richtig: [1]
+  erklaerung: "Kapselung: Lesen ist für alle erlaubt, Änderungen nur über Einlagern und Entnehmen, die ungültige Werte verhindern."
+  artikel: "#kapselung"
+  tags: [oop, kapselung]
+
+- id: se-oo-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Entnehmen von 3 Stück bei 2 vorhandenen wirft eine Exception. Was sollte danach gelten?"
+  optionen:
+    - "Die Menge ist -1"
+    - "Die Menge ist unverändert 2 – das Objekt bleibt gültig"
+    - "Die Menge ist 0"
+    - "Das Objekt ist unbrauchbar"
+  richtig: [1]
+  erklaerung: "Gut gekapselte Objekte prüfen vor der Änderung und bleiben auch nach einem Fehler in einem gültigen Zustand."
+  artikel: "#kapselung"
+  tags: [oop, kapselung]
+
+- id: se-oo-004
+  typ: single
+  schwierigkeit: 1
+  frage: "Was kennzeichnet eine abstrakte Klasse?"
+  optionen:
+    - "Sie kann nicht direkt instanziiert werden und kann abstrakte Methoden vorgeben"
+    - "Sie hat keine Methoden"
+    - "Sie kann nicht vererbt werden"
+    - "Sie ist dasselbe wie ein Interface"
+  richtig: [0]
+  erklaerung: "Abstrakte Klassen legen fest, was Unterklassen können müssen, und können gemeinsamen Code und Zustand enthalten."
+  artikel: "#vererbung"
+  tags: [oop, vererbung]
+
+- id: se-oo-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bewirkt 'sealed' (C#) bzw. 'final' (Java) an einer Klasse?"
+  optionen:
+    - "Die Klasse kann nicht instanziiert werden"
+    - "Von der Klasse kann nicht weiter geerbt werden"
+    - "Alle Felder sind privat"
+    - "Die Klasse ist threadsicher"
+  richtig: [1]
+  erklaerung: "sealed/final beendet die Vererbungskette. Das verhindert unbeabsichtigte Erweiterungen."
+  artikel: "#vererbung"
+  tags: [oop, vererbung]
+
+- id: se-oo-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu Interfaces sind richtig?"
+  optionen:
+    - "Eine Klasse kann mehrere Interfaces implementieren"
+    - "Interfaces beschreiben, was eine Klasse kann, nicht wie"
+    - "Interfaces können Felder mit Zustand enthalten"
+    - "Interfaces sind die Grundlage für austauschbare Bausteine und Testdoubles"
+  richtig: [0, 1, 3]
+  erklaerung: "Interfaces haben keinen Zustand. Klassen können beliebig viele implementieren, aber nur von einer Klasse erben."
+  artikel: "#interfaces"
+  tags: [oop, interfaces]
+
+- id: se-oo-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist Polymorphie?"
+  optionen:
+    - "Eine Klasse hat mehrere Konstruktoren"
+    - "Code arbeitet mit dem Basistyp, zur Laufzeit wird die Methode des tatsächlichen Objekts aufgerufen"
+    - "Eine Methode hat mehrere Parameter"
+    - "Ein Objekt wird kopiert"
+  richtig: [1]
+  erklaerung: "Die Schleife über alle Versandarten ruft Beschreibung() auf – jede Versandart berechnet dabei ihre eigenen Kosten."
+  artikel: "#polymorphie"
+  tags: [oop, polymorphie]
+
+- id: se-oo-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine neue Versandart 'Paketstation' kommt dazu. Was muss an der Schleife geändert werden, die alle Versandarten beschreibt?"
+  optionen:
+    - "Ein neuer else-if-Zweig"
+    - "Nichts – die neue Klasse erbt von Versandart und wird polymorph aufgerufen"
+    - "Die Schleife muss neu geschrieben werden"
+    - "Die Basisklasse muss geändert werden"
+  richtig: [1]
+  erklaerung: "Genau das ist der Vorteil der Polymorphie: Neue Varianten erfordern keine Änderung am verwendenden Code."
+  artikel: "#polymorphie"
+  tags: [oop, polymorphie]
+
+- id: se-oo-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Preisrechner soll Rabattregeln nutzen. Welche Beziehung ist richtig?"
+  optionen:
+    - "Preisrechner erbt von Rabattregel"
+    - "Preisrechner hat Rabattregeln (Komposition)"
+    - "Rabattregel erbt von Preisrechner"
+    - "Beide erben von Object, sonst nichts"
+  richtig: [1]
+  erklaerung: "Ein Preisrechner ist keine Rabattregel. Er hat welche und delegiert die Berechnung an sie – Komposition."
+  artikel: "#komposition"
+  tags: [oop, komposition]
+
+- id: se-oo-010
+  typ: single
+  schwierigkeit: 3
+  frage: "Code wie 'if (v is Express) ... else if (v is Standard) ...' deutet auf welches Problem hin?"
+  optionen:
+    - "Zu wenige Klassen"
+    - "Polymorphie wird nicht genutzt – das Verhalten gehört als Methode in die Klassen"
+    - "Fehlende Kapselung von Feldern"
+    - "Gar keines"
+  richtig: [1]
+  erklaerung: "Typabfragen-Ketten müssen bei jeder neuen Variante erweitert werden. Eine überschriebene Methode ist robuster."
+  artikel: "#typische-fehler"
+  tags: [oop, polymorphie]
+
+- id: se-oo-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist in Java das Gegenstück zum C#-Zugriffsmodifizierer 'internal' (nur innerhalb desselben Projekts)?"
+  optionen:
+    - "protected"
+    - "Kein Modifizierer (paketsichtbar)"
+    - "private"
+    - "static"
+  richtig: [1]
+  erklaerung: "Ohne Modifizierer ist ein Element in Java im selben Paket sichtbar – das kommt internal am nächsten."
+  artikel: "#kapselung"
+  tags: [oop, java, csharp]

@@ -1,0 +1,209 @@
+---
+title: Entwurfsmuster
+description: Bewährte Lösungen für wiederkehrende Entwurfsprobleme – Strategie, Fabrikmethode, Builder, Dekorierer, Beobachter, Singleton und Repository – mit getesteten C#-Beispielen und den Mustern, die in der Testautomation stecken.
+tags: [softwareentwicklung, design-patterns, entwurfsmuster]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './05-entwurfsmuster.fragen.yaml';
+
+# Entwurfsmuster
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- erklären, was **Entwurfsmuster** sind und wozu sie dienen,
+- **Strategie**, **Fabrikmethode**, **Builder**, **Dekorierer**, **Beobachter**, **Singleton** und **Repository** erkennen und einsetzen,
+- die Muster in **Testautomation** und **Mini-Shop** wiederfinden,
+- beurteilen, wann ein Muster **hilft** und wann es **übertrieben** ist.
+:::
+
+## Was sind Entwurfsmuster? \{#was}
+
+Entwurfsmuster (*Design Patterns*) sind **bewährte Lösungsschablonen** für wiederkehrende Probleme im Softwareentwurf. Bekannt wurden sie durch das Buch der „Gang of Four“ (Gamma, Helm, Johnson, Vlissides, 1994).
+
+Sie helfen doppelt:
+- **Lösung**: Man muss das Rad nicht neu erfinden.
+- **Sprache**: „Das ist ein Dekorierer“ erklärt in drei Wörtern eine ganze Struktur.
+
+| Gruppe | Frage | Muster in dieser Lektion |
+|---|---|---|
+| **Erzeugungsmuster** | Wie entstehen Objekte? | Fabrikmethode, Builder, Singleton |
+| **Strukturmuster** | Wie werden Objekte zusammengesetzt? | Dekorierer |
+| **Verhaltensmuster** | Wie arbeiten Objekte zusammen? | Strategie, Beobachter |
+
+Alle C#-Beispiele sind im Projekt [beispiele/entwicklung](https://github.com/Smie89/lernplattform/tree/main/beispiele/entwicklung) mit Tests hinterlegt.
+
+## Strategie \{#strategie}
+
+**Problem:** Ein Algorithmus soll **austauschbar** sein – z. B. verschiedene Rabattregeln.
+**Lösung:** Jede Variante ist eine eigene Klasse mit gemeinsamem Interface; der Verwender kennt nur das Interface.
+
+```csharp
+public interface IRabattregel
+{
+    decimal Satz(Bestellkontext bestellung);
+}
+
+public sealed class MengenRabatt : IRabattregel
+{
+    public decimal Satz(Bestellkontext b) => b.Zwischensumme >= 100m ? 0.10m : 0m;
+}
+
+public sealed class StammkundenRabatt : IRabattregel
+{
+    public decimal Satz(Bestellkontext b) => b.Stammkunde ? 0.05m : 0m;
+}
+
+public sealed class Preisrechner(IEnumerable<IRabattregel> regeln)
+{
+    public decimal RabattSatz(Bestellkontext b) => Math.Min(regeln.Sum(r => r.Satz(b)), 0.30m);
+}
+```
+
+Die Tests prüfen, dass der Preisrechner mit `MengenRabatt` + `StammkundenRabatt` **dieselben Ergebnisse** liefert wie der Rabattrechner des Mini-Shops (Grenzwerte 99,99 € und 100,00 €) – und dass eine neue Regel ohne Änderung am Preisrechner hinzukommt. Strategie ist die typische Umsetzung des [Open/Closed-Prinzips](./04-solid.mdx#ocp).
+
+:::tip[Strategie mit Lambdas]
+In C# und Java kann eine Strategie auch einfach eine Funktion sein: `Func<Bestellkontext, decimal>` bzw. `Function<Bestellkontext, BigDecimal>`. Eine eigene Klasse lohnt sich, wenn die Strategie Zustand, einen Namen oder eigene Tests braucht.
+:::
+
+## Fabrikmethode \{#fabrik}
+
+**Problem:** Welches Objekt erzeugt wird, hängt von einer Eingabe ab – der Aufrufer soll die konkreten Klassen nicht kennen.
+**Lösung:** Eine **Fabrik** kapselt die Erzeugung.
+
+```csharp
+public static class VersandartFabrik
+{
+    public static Versandart Erzeuge(string code) => code.ToLowerInvariant() switch
+    {
+        "standard" => new Standardversand(),
+        "express" => new Expressversand(),
+        "abholung" => new Abholung(),
+        _ => throw new ArgumentException($"Unbekannte Versandart '{code}'.", nameof(code)),
+    };
+}
+
+var versand = VersandartFabrik.Erzeuge(formular.Versand);   // z. B. "express"
+```
+
+In der **Testautomation** begegnet dir das Muster bei der Browserwahl: Eine `BrowserFabrik.Erzeuge("firefox")` liefert den passenden `IWebDriver` – die Tests kennen nur das Interface.
+
+## Builder \{#builder}
+
+**Problem:** Ein Objekt hat **viele optionale Teile**; Konstruktoren mit zehn Parametern sind unlesbar.
+**Lösung:** Ein **Builder** baut das Objekt Schritt für Schritt mit sprechenden Methoden.
+
+Im Mini-Shop als **Test Data Builder** ([WarenkorbBuilder](https://github.com/Smie89/lernplattform/blob/main/beispiele/shop/tests/Shop.Core.Tests/TestDaten/WarenkorbBuilder.cs)):
+
+```csharp
+var warenkorb = EinWarenkorb()
+    .Mit(TestProdukte.Buch, 2)
+    .Mit(TestProdukte.Tasse)
+    .Bauen();
+```
+
+Weitere Builder im Alltag: `StringBuilder`, `RequestSpecBuilder` in REST Assured, `WebApplication.CreateBuilder()` in ASP.NET Core.
+
+## Dekorierer \{#dekorierer}
+
+**Problem:** Ein Objekt soll **zusätzliches Verhalten** bekommen (Protokollieren, Wiederholen, Zwischenspeichern), ohne seinen Code zu ändern und ohne Unterklassen für jede Kombination.
+**Lösung:** Ein **Dekorierer** implementiert dasselbe Interface, **umhüllt** ein anderes Objekt und reicht Aufrufe weiter – mit Zusatzverhalten.
+
+```csharp
+public sealed class ProtokollierenderZahlungsdienst(IZahlungsdienst innerer, Action<string> protokoll)
+    : IZahlungsdienst
+{
+    public bool Abbuchen(string kunde, decimal betrag)
+    {
+        protokoll($"Abbuchung {betrag:0.00} € für {kunde} ...");
+        var ok = innerer.Abbuchen(kunde, betrag);
+        protokoll(ok ? "... genehmigt" : "... abgelehnt");
+        return ok;
+    }
+}
+
+// Dekorierer lassen sich verketten:
+IZahlungsdienst dienst = new ProtokollierenderZahlungsdienst(
+    new WiederholenderZahlungsdienst(echterDienst, versuche: 3),
+    Console.WriteLine);
+```
+
+Der Test `Dekorierer_lassen_sich_verketten` prüft mit einem Fake, der zweimal ablehnt: Nach dem dritten Versuch ist die Zahlung genehmigt.
+
+## Beobachter \{#beobachter}
+
+**Problem:** Wenn etwas passiert (neue Bestellung), sollen **mehrere andere Teile reagieren** (E-Mail, Lager, Statistik) – ohne dass der Auslöser sie alle kennt.
+**Lösung:** Der Auslöser bietet ein **Ereignis** an, Interessierte **melden sich an**. In C# sind das `event`s, in Java Listener-Interfaces.
+
+```csharp
+public sealed class Bestellannahme
+{
+    public event EventHandler<Bestellung>? BestellungEingegangen;
+
+    public Bestellung Annehmen(string kunde, decimal betrag)
+    {
+        var bestellung = new Bestellung(/* ... */);
+        BestellungEingegangen?.Invoke(this, bestellung);
+        return bestellung;
+    }
+}
+
+annahme.BestellungEingegangen += (_, b) => mailer.Senden(b.Kunde, "Bestätigung");
+annahme.BestellungEingegangen += (_, b) => lager.Reservieren(b.Nummer);
+```
+
+## Singleton \{#singleton}
+
+**Problem:** Von einer Klasse soll es **genau eine Instanz** geben.
+**Klassische Lösung:** privater Konstruktor + statische Instanz.
+
+```csharp
+public sealed class Konfiguration
+{
+    public static Konfiguration Instanz { get; } = new();
+    private Konfiguration() { }
+}
+```
+
+:::warning[Singleton mit Vorsicht]
+Das klassische Singleton ist ein **globaler Zustand** – und damit eine typische Ursache für [Flaky Tests](../02-testautomation/01-grundlagen/02-flaky-tests.mdx#gemeinsamer-zustand): Ein Test ändert die Konfiguration, der nächste läuft mit dem geänderten Wert. Außerdem lässt es sich nicht durch ein Testdouble ersetzen.
+**Besser:** eine normale Klasse, die der DI-Container als **Singleton registriert** (`AddSingleton<IKonfiguration, Konfiguration>()`). Es gibt trotzdem nur eine Instanz – aber Tests können eine eigene übergeben.
+:::
+
+## Repository \{#repository}
+
+**Problem:** Die Fachlogik soll nicht wissen, **wie** Daten gespeichert werden (SQL, Datei, Speicher).
+**Lösung:** Ein **Repository** bietet eine sammlungsartige Schnittstelle (`Speichern`, `Finde`) und kapselt die Datenhaltung.
+
+Im Mini-Shop: `IBestellRepository` mit `InMemoryBestellRepository` – später austauschbar gegen eine Datenbank-Implementierung, ohne den `BestellService` zu ändern. In Unit-Tests wird es durch ein Testdouble ersetzt.
+
+## Muster in der Testautomation \{#muster-testautomation}
+
+| Muster | in der Testautomation |
+|---|---|
+| **Page Object** | kapselt eine Seite der Oberfläche ([Page Object Model](../02-testautomation/04-browser/03-page-object-model.mdx)) |
+| **Builder** | Test Data Builder, `RequestSpecBuilder` |
+| **Fabrik** | Browser- oder Treiberauswahl |
+| **Fassade** | ein API-Client mit fachlichen Methoden (`ShopApiClient`) verbirgt HTTP-Details |
+| **Dekorierer** | Logging- oder Retry-Wrapper um Clients |
+| **Strategie** | austauschbare Warte- oder Wiederholungsstrategien |
+| **Fake / Stub / Mock** | Testdoubles ersetzen Abhängigkeiten |
+
+## Typische Fehler \{#typische-fehler}
+
+- **Muster um ihrer selbst willen** – eine Fabrik für eine einzige Klasse, eine Strategie für eine einzige Regel (YAGNI).
+- **Klassisches Singleton** mit veränderlichem Zustand – Tests beeinflussen sich gegenseitig.
+- **Musternamen falsch verwenden** – nicht jede Klasse, die etwas erzeugt, ist eine „Factory“.
+- **Dekorierer, die das Verhalten verändern** statt ergänzen – dann sind sie nicht mehr austauschbar (LSP).
+- **Beobachter ohne Abmelden** – angemeldete Handler halten Objekte am Leben (Speicherlecks).
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Entwurfsmuster sind **bewährte Lösungen** und **gemeinsame Sprache**.
+- **Strategie**: austauschbare Algorithmen hinter einem Interface – Umsetzung von Open/Closed.
+- **Fabrikmethode** kapselt die Erzeugung, **Builder** den schrittweisen Aufbau.
+- **Dekorierer** ergänzt Verhalten durch Umhüllen, **Beobachter** benachrichtigt Interessierte über Ereignisse.
+- **Singleton** besser über den DI-Container; **Repository** kapselt die Datenhaltung.
+- Page Object, Test Data Builder und API-Client sind Muster der **Testautomation**.
+
+<Quiz fragen={fragen} titel="Quiz: Entwurfsmuster" />
