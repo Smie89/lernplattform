@@ -167,3 +167,52 @@
   erklaerung: "Auf einen Zustand warten statt auf eine Zeit – schneller, wenn die App früh bereit ist, und zuverlässig, wenn sie länger braucht."
   artikel: "#praxis"
   tags: [bash, warten]
+
+# --- Interaktive Aufgaben ---
+
+- id: li-bs-013
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile bricht bei einem Dateinamen mit Leerzeichen?"
+  sprache: bash
+  code: |
+    #!/usr/bin/env bash
+    set -euo pipefail
+    bericht="$1"
+    if [ -f $bericht ]; then
+      echo "Bericht gefunden: $bericht"
+    fi
+  richtig: [3]
+  erklaerung: "Ohne Anführungszeichen wird $bericht an Leerzeichen zerlegt. Richtig: [ -f \"$bericht\" ]. ShellCheck meldet das als SC2086."
+  artikel: "#quoting"
+  tags: [bash, quoting]
+
+- id: li-bs-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Option von set -euo pipefail ihre Wirkung zu."
+  paare:
+    - ["-e", "Skript bricht beim ersten fehlgeschlagenen Befehl ab"]
+    - ["-u", "Zugriff auf nicht gesetzte Variablen ist ein Fehler"]
+    - ["-o pipefail", "Eine Pipeline schlägt fehl, wenn irgendein Teil fehlschlägt"]
+  erklaerung: "Ohne diese Optionen läuft ein Skript nach Fehlern einfach weiter und meldet am Ende womöglich Erfolg."
+  artikel: "#strict-mode"
+  tags: [bash, strict-mode]
+
+- id: li-bs-015
+  typ: lueckentext
+  schwierigkeit: 3
+  frage: "Ergänze das Skript: Die gestartete Anwendung soll beim Beenden des Skripts immer gestoppt werden."
+  sprache: bash
+  text: |
+    dotnet run --project src/Shop.Web &
+    app_pid=$___
+    ___ 'kill "$app_pid"' EXIT
+    ./tests-ausfuehren.sh
+  luecken:
+    - ["!"]
+    - ["trap"]
+  exakt: true
+  erklaerung: "$! ist die PID des zuletzt im Hintergrund gestarteten Prozesses; trap ... EXIT läuft auch, wenn die Tests fehlschlagen."
+  artikel: "#trap"
+  tags: [bash, trap]

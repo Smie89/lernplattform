@@ -153,3 +153,53 @@
   erklaerung: "org.junit.Test gehört zu JUnit 4. Ohne Vintage-Engine findet die Platform den Test nicht. Richtig ist org.junit.jupiter.api.Test."
   artikel: "#typische-fehler"
   tags: [junit, fehlersuche]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-ju-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder JUnit-5-Annotation ihre Bedeutung zu."
+  paare:
+    - ["@BeforeEach", "Vor jedem Test"]
+    - ["@AfterAll", "Einmal nach allen Tests der Klasse"]
+    - ["@ParameterizedTest", "Test mit mehreren Eingabewerten"]
+    - ["@Disabled", "Test vorübergehend nicht ausführen"]
+    - ["@Tag", "Test einer Kategorie zuordnen, z. B. für Filter"]
+  erklaerung: "@BeforeAll und @AfterAll laufen einmal pro Klasse und müssen standardmäßig static sein."
+  artikel: "#lebenszyklus"
+  tags: [junit, java]
+
+- id: ta-ju-013
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den parametrisierten JUnit-5-Test."
+  sprache: java
+  text: |
+    @___
+    @CsvSource({"99.99, 0.00", "100.00, 10.00"})
+    void rabattAnDerGrenze(BigDecimal summe, BigDecimal erwartet) {
+        assertEquals(erwartet, rechner.rabatt(summe));
+    }
+  luecken:
+    - ["ParameterizedTest"]
+  exakt: true
+  erklaerung: "@ParameterizedTest ersetzt @Test; die Werte kommen z. B. aus @CsvSource, @ValueSource oder @MethodSource."
+  artikel: "#parametrisiert"
+  tags: [junit, java]
+
+- id: ta-ju-014
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile vertauscht erwarteten und tatsächlichen Wert – mit irreführender Fehlermeldung als Folge?"
+  sprache: java
+  code: |
+    @Test
+    void endpreisAb100Euro() {
+        BigDecimal endpreis = rechner.endpreis(new BigDecimal("100.00"));
+        assertEquals(endpreis, new BigDecimal("90.00"));
+    }
+  richtig: [3]
+  erklaerung: "In JUnit gilt assertEquals(erwartet, tatsächlich). Vertauscht meldet der Test 'expected 100.00 but was 90.00' – genau falsch herum. AssertJ (assertThat(endpreis).isEqualTo(...)) vermeidet das."
+  artikel: "#assertions"
+  tags: [junit, java]

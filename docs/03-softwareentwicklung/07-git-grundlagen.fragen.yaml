@@ -162,3 +162,48 @@
   erklaerung: "stash legt die Änderungen beiseite, stash pop holt sie zurück."
   artikel: "#rueckgaengig"
   tags: [git, stash]
+
+# --- Interaktive Aufgaben ---
+
+- id: se-gi-013
+  typ: reihenfolge
+  schwierigkeit: 1
+  frage: "Bringe den Grundablauf einer Änderung in Git in die richtige Reihenfolge."
+  elemente:
+    - "Datei im Arbeitsverzeichnis ändern"
+    - "git status: Änderungen ansehen"
+    - "git add: Änderung vormerken (Staging Area)"
+    - "git commit: Änderung im Repository festhalten"
+    - "git push: Commits zum Remote übertragen"
+  erklaerung: "Arbeitsverzeichnis → Staging Area → lokales Repository → Remote."
+  artikel: "#grundablauf"
+  tags: [git]
+
+- id: se-gi-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Situation den passenden Git-Befehl zu."
+  paare:
+    - ["Neuen Branch anlegen und wechseln", "git switch -c feature/rabatt"]
+    - ["Änderungen eines Branches übernehmen", "git merge feature/rabatt"]
+    - ["Veröffentlichten Commit rückgängig machen", "git revert <commit>"]
+    - ["Vorgemerkte Datei wieder aus dem Staging nehmen", "git restore --staged datei.cs"]
+    - ["Verlauf kompakt anzeigen", "git log --oneline"]
+  erklaerung: "revert erzeugt einen neuen Gegen-Commit und ist deshalb für bereits gepushte Commits sicher."
+  artikel: "#rueckgaengig"
+  tags: [git]
+
+- id: se-gi-015
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die .gitignore für ein .NET-Projekt, damit Build-Ausgaben nicht eingecheckt werden."
+  sprache: text
+  text: |
+    ___/
+    obj/
+    *.user
+  luecken:
+    - ["bin"]
+  erklaerung: "bin/ und obj/ entstehen bei jedem Build neu und gehören nicht ins Repository."
+  artikel: "#gitignore"
+  tags: [git, gitignore]

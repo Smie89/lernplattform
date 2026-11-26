@@ -148,3 +148,46 @@
   erklaerung: "Eine minimierte RDP-Sitzung hat keine aktive Darstellung. Lösung: Sitzung nicht minimieren oder eine Konsolen-/VM-Sitzung nutzen."
   artikel: "#ci"
   tags: [wpf, ci]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-wp-012
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die AutomationId im XAML."
+  sprache: xml
+  text: |
+    <Button Content="Bestellen"
+            ___="BestellenKnopf"
+            Command="{Binding BestellenCommand}" />
+  luecken:
+    - ["AutomationProperties.AutomationId"]
+  exakt: true
+  erklaerung: "Die AutomationId ist sprachunabhängig und ändert sich nicht, wenn der sichtbare Text angepasst oder übersetzt wird."
+  artikel: "#automationid"
+  tags: [wpf, automationid]
+
+- id: ta-wp-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Auf welcher Ebene testest du was in einer MVVM-Anwendung?"
+  paare:
+    - ["Rabattberechnung im Model", "Unit-Test ohne Oberfläche"]
+    - ["Befehl im ViewModel setzt eine Fehlermeldung", "Unit-Test des ViewModels"]
+    - ["Bestellen-Knopf öffnet den Bestätigungsdialog", "UI-Test mit FlaUI"]
+  erklaerung: "MVVM erlaubt es, den Großteil der Logik ohne Oberfläche zu testen – UI-Tests bleiben für das Zusammenspiel."
+  artikel: "#teststrategie"
+  tags: [wpf, mvvm]
+
+- id: ta-wp-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Problem beim Desktop-Test die passende Lösung zu."
+  paare:
+    - ["Tests beeinflussen sich über gespeicherte Einstellungen", "Einstellungsverzeichnis vor dem Start löschen oder umleiten"]
+    - ["Element in einer Liste wird nicht gefunden", "AutomationId im DataTemplate vergeben"]
+    - ["In der CI werden keine Fenster gefunden, Klicks wirken nicht", "Build-Agent im interaktiven Modus statt als Dienst betreiben"]
+    - ["Tests scheitern nur nachts", "Bildschirmsperre auf dem Testrechner deaktivieren"]
+  erklaerung: "Desktop-Tests brauchen einen echten Desktop und kontrollierten Zustand."
+  artikel: "#ci"
+  tags: [wpf, ci]

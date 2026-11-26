@@ -163,3 +163,45 @@
   erklaerung: "Innerhalb eines Containers zeigt localhost auf den Container selbst. Unter Docker Desktop erreicht man den Host über host.docker.internal."
   artikel: "#typische-fehler"
   tags: [docker, netzwerk]
+
+# --- Interaktive Aufgaben ---
+
+- id: dk-gl-013
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem Begriff die passende Beschreibung zu."
+  paare:
+    - ["Image", "Unveränderliche Vorlage mit Programm und Abhängigkeiten"]
+    - ["Container", "Laufende Instanz eines Images"]
+    - ["Registry", "Ablage für Images, z. B. Docker Hub"]
+    - ["Tag", "Version eines Images, z. B. 1.27 oder latest"]
+  erklaerung: "Aus einem Image kann man beliebig viele Container starten."
+  artikel: "#image-container-registry"
+  tags: [docker, grundlagen]
+
+- id: dk-gl-014
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Befehl: nginx im Hintergrund starten, Port 8080 des Rechners auf Port 80 im Container."
+  sprache: bash
+  text: "docker run ___ -p ___:80 --name web nginx"
+  luecken:
+    - ["-d", "--detach"]
+    - ["8080"]
+  erklaerung: "-d startet den Container im Hintergrund; -p Host:Container veröffentlicht den Port."
+  artikel: "#webserver"
+  tags: [docker, ports]
+
+- id: dk-gl-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Befehl seine Aufgabe zu."
+  paare:
+    - ["docker ps -a", "Alle Container anzeigen, auch beendete"]
+    - ["docker logs -f web", "Ausgaben eines Containers live verfolgen"]
+    - ["docker exec -it web sh", "Shell im laufenden Container öffnen"]
+    - ["docker stop web", "Container anhalten"]
+    - ["docker rm web", "Angehaltenen Container löschen"]
+  erklaerung: "Mit --rm beim Start wird ein Container nach dem Beenden automatisch gelöscht."
+  artikel: "#befehle"
+  tags: [docker, befehle]

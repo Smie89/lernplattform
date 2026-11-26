@@ -167,3 +167,49 @@
   erklaerung: "Die Frist beginnt mit dem Bekanntwerden. NIS2-Einrichtungen müssen zusätzlich innerhalb von 24 Stunden eine frühe Warnung abgeben."
   artikel: "#meldepflichten"
   tags: [security, dsgvo, nis2]
+
+# --- Interaktive Aufgaben ---
+
+- id: sec-ir-013
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Phasen der Incident Response in die richtige Reihenfolge."
+  elemente:
+    - "Vorbereitung"
+    - "Erkennung und Analyse"
+    - "Eindämmung"
+    - "Beseitigung"
+    - "Wiederherstellung"
+    - "Nachbereitung"
+  erklaerung: "Die Nachbereitung (Lessons Learned) fließt wieder in die Vorbereitung ein."
+  artikel: "#incident-response"
+  tags: [security, incident-response]
+
+- id: sec-ir-014
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Logzeile ist der kritische Alarm?"
+  sprache: text
+  code: |
+    13:40:12 Failed password for ben from 192.0.2.50
+    13:40:16 Failed password for ben from 192.0.2.50
+    13:40:20 Failed password for ben from 192.0.2.50
+    13:40:24 Failed password for ben from 192.0.2.50
+    13:40:31 Accepted password for ben from 192.0.2.50
+  richtig: [4]
+  erklaerung: "Fehlversuche sind Alltag – eine erfolgreiche Anmeldung derselben IP danach bedeutet, dass der Angriff vermutlich gelungen ist."
+  artikel: "#erkennungsregel"
+  tags: [security, erkennung]
+
+- id: sec-ir-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jede Angriffsvariante der Beschreibung zu."
+  paare:
+    - ["Brute Force", "Viele Passwörter gegen ein Konto in kurzer Zeit"]
+    - ["Password Spraying", "Ein Passwort gegen viele Konten"]
+    - ["Low and Slow", "Wenige Versuche über lange Zeit"]
+    - ["Verteilter Angriff", "Viele IPs mit je wenigen Versuchen"]
+  erklaerung: "Jede Variante unterläuft andere Regeln – deshalb braucht man mehrere Erkennungsregeln und Tests für ihre Grenzen."
+  artikel: "#fehlalarme"
+  tags: [security, erkennung]

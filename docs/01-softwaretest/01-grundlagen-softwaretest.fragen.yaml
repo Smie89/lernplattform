@@ -162,3 +162,45 @@
   erklaerung: "QS sorgt mit guten Prozessen dafür, dass Fehler gar nicht erst entstehen. Testen ist eine produktbezogene Qualitätssteuerung."
   artikel: "#qs-test"
   tags: [softwaretest, qs]
+
+# --- Interaktive Aufgaben ---
+
+- id: st-gl-013
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Kette vom menschlichen Irrtum bis zum sichtbaren Problem in die richtige Reihenfolge."
+  elemente:
+    - "Fehlhandlung: Die Entwicklerin verwechselt > und >="
+    - "Fehlerzustand: Im Code steht 'summe > 100'"
+    - "Fehlerwirkung: Bei genau 100,00 € gibt es keinen Rabatt"
+  erklaerung: "Die Fehlhandlung (error) erzeugt einen Fehlerzustand (defect) im Code, der beim Ausführen zur Fehlerwirkung (failure) führt."
+  artikel: "#fehlerbegriffe"
+  tags: [softwaretest, fehlerbegriffe]
+
+- id: st-gl-014
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Hauptaktivitäten des Testprozesses in die übliche Reihenfolge."
+  elemente:
+    - "Testplanung"
+    - "Testanalyse"
+    - "Testentwurf"
+    - "Testrealisierung"
+    - "Testdurchführung"
+    - "Testabschluss"
+  erklaerung: "Testüberwachung und -steuerung läuft begleitend über alle Phasen. In der Praxis überlappen sich die Aktivitäten und werden wiederholt."
+  artikel: "#testprozess"
+  tags: [softwaretest, testprozess]
+
+- id: st-gl-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Begriff das passende Beispiel zu."
+  paare:
+    - ["Testbasis", "Anforderung „ab 100 € 10 % Rabatt“"]
+    - ["Testbedingung", "Rabatt genau an der Grenze 100 €"]
+    - ["Testfall", "Zwischensumme 100,00 €, kein Stammkunde → Endpreis 90,00 €"]
+    - ["Fehlerwirkung", "Der Shop berechnet bei 100,00 € keinen Rabatt"]
+  erklaerung: "Aus der Testbasis werden Testbedingungen abgeleitet, daraus konkrete Testfälle mit erwartetem Ergebnis."
+  artikel: "#begriffe"
+  tags: [softwaretest, begriffe]

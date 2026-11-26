@@ -148,3 +148,56 @@
   erklaerung: "Bei async void kann das Framework nicht auf das Ende der Methode warten, NUnit meldet den Test deshalb als nicht ausführbar. Asynchrone Testmethoden müssen Task zurückgeben."
   artikel: "#typische-fehler"
   tags: [nunit, async]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-nu-012
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die NUnit-Attribute für einen parametrisierten Test."
+  sprache: csharp
+  text: |
+    [___(99.99, 0.00)]
+    [___(100.00, 10.00)]
+    public void Rabatt_an_der_Grenze(decimal summe, decimal erwartet)
+    {
+        Assert.That(new Rabattrechner().Rabatt(summe), Is.EqualTo(erwartet));
+    }
+  luecken:
+    - ["TestCase"]
+    - ["TestCase"]
+  exakt: true
+  erklaerung: "[TestCase(...)] führt dieselbe Testmethode mit verschiedenen Werten aus; jeder Fall erscheint einzeln im Testbericht."
+  artikel: "#parametrisiert"
+  tags: [nunit, csharp]
+
+- id: ta-nu-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem NUnit-Attribut seinen Zeitpunkt zu."
+  paare:
+    - ["[SetUp]", "Vor jedem einzelnen Test"]
+    - ["[TearDown]", "Nach jedem einzelnen Test"]
+    - ["[OneTimeSetUp]", "Einmal vor allen Tests der Klasse"]
+    - ["[OneTimeTearDown]", "Einmal nach allen Tests der Klasse"]
+  erklaerung: "Teurer, unveränderlicher Aufbau gehört in OneTimeSetUp; alles, was Tests verändern, in SetUp."
+  artikel: "#setup-teardown"
+  tags: [nunit, csharp]
+
+- id: ta-nu-014
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Dieser Test soll prüfen, dass eine negative Menge abgelehnt wird. Welche Zeile ist falsch?"
+  sprache: csharp
+  code: |
+    [Test]
+    public void Hinzufuegen_mitNegativerMenge_wirftException()
+    {
+        var korb = new Warenkorb();
+        korb.Hinzufuegen(produkt, -1);
+        Assert.Throws<ArgumentException>(() => korb.Hinzufuegen(produkt, -1));
+    }
+  richtig: [4]
+  erklaerung: "Der Aufruf außerhalb von Assert.Throws wirft die Exception sofort und lässt den Test scheitern. Der Aufruf gehört nur in das Lambda."
+  artikel: "#exceptions"
+  tags: [nunit, csharp]

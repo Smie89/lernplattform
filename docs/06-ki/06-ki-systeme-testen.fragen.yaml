@@ -167,3 +167,47 @@
   erklaerung: "Veränderte Eingabedaten im Betrieb. Gegenmittel: Qualität laufend messen und den Evaluierungsdatensatz erweitern."
   artikel: "#monitoring"
   tags: [ki, monitoring]
+
+# --- Interaktive Aufgaben ---
+
+- id: ki-te-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Prüfung die Testart zu."
+  paare:
+    - ["Genauigkeit auf festen Testdaten mindestens 85 %", "Qualitätsschwelle (Evaluierung)"]
+    - ["Großschreibung ändert die Vorhersage nicht", "Metamorpher Test"]
+    - ["Verneinung wird bekanntlich falsch erkannt", "Dokumentierte Schwäche (expectedFailure)"]
+    - ["Nur der Wohnort wird geändert – Ergebnis muss gleich bleiben", "Bias-Test"]
+    - ["Eingabe mit 'IGNORIERE ALLE ANWEISUNGEN'", "Test auf Prompt-Injection"]
+  erklaerung: "KI-Systeme brauchen eine Mischung aus Metriken, Relationen und gezielten Angriffs- und Fairnesstests."
+  artikel: "#anders"
+  tags: [ki, testen]
+
+- id: ki-te-014
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den unittest-Dekorator, der eine bekannte Schwäche dokumentiert, ohne die CI rot zu machen."
+  sprache: python
+  text: |
+    @unittest.___
+    def test_verneinung_wird_erkannt(self):
+        self.assertEqual(self.modell.vorhersagen("nicht schlecht"), "positiv")
+  luecken:
+    - ["expectedFailure"]
+  exakt: true
+  erklaerung: "Wird das Modell verbessert, meldet unittest einen 'unexpected success' – dann entfernt man den Dekorator."
+  artikel: "#schwaechen"
+  tags: [ki, schwaechen]
+
+- id: ki-te-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Problem im Betrieb die passende Gegenmaßnahme zu."
+  paare:
+    - ["Kunden verwenden neue Begriffe, die Qualität sinkt", "Qualität laufend messen, Evaluierungsdaten erweitern"]
+    - ["LLM-Antwort ist mal richtig, mal falsch", "Mehrfach ausführen und Bestehensquote messen"]
+    - ["Freie Textantworten lassen sich nicht exakt vergleichen", "Eigenschaften prüfen statt exakten Text"]
+  erklaerung: "Data Drift, Nichtdeterminismus und fehlende exakte Orakel sind die typischen Herausforderungen."
+  artikel: "#llm-testen"
+  tags: [ki, betrieb]

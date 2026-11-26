@@ -63,6 +63,7 @@
   width: 100%;
   padding: 0.8rem 1rem;
   text-align: left;
+  font-family: inherit;
   font-size: 1rem;
   line-height: 1.4;
   color: var(--ifm-font-color-base);
@@ -160,6 +161,198 @@
   font-size: 1.6rem;
   font-weight: 700;
   margin: 0.75rem 0;
+}
+
+.herkunft {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 0.25rem;
+}
+
+.wachsen {
+  flex: 1;
+}
+
+/* ---------- fehler-finden ---------- */
+.code {
+  border-radius: 10px;
+  padding: 0.5rem 0;
+  overflow-x: auto;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.codeZeile {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: 2.1rem;
+  padding: 0.2rem 0.75rem 0.2rem 0;
+  border: none;
+  border-left: 4px solid transparent;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.codeZeile:hover:not(:disabled) {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.codeZeile:disabled {
+  cursor: default;
+}
+
+.zeilenNr {
+  flex-shrink: 0;
+  width: 2.5rem;
+  padding-right: 0.75rem;
+  text-align: right;
+  opacity: 0.5;
+  user-select: none;
+}
+
+.zeilenText {
+  /* Lange Zeilen umbrechen statt seitlich scrollen – auf dem Handy bleibt so jede Zeile ganz sichtbar */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.zeileGewaehlt {
+  border-left-color: var(--ifm-color-primary);
+  background: rgba(46, 125, 91, 0.18);
+}
+
+.zeileRichtig {
+  border-left-color: var(--ifm-color-success);
+  background: rgba(0, 164, 0, 0.2);
+}
+
+.zeileFalsch {
+  border-left-color: var(--ifm-color-danger);
+  background: rgba(250, 56, 62, 0.22);
+}
+
+/* ---------- reihenfolge ---------- */
+.reihe {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 3rem;
+}
+
+.platzhalter {
+  padding: 0.8rem 1rem;
+  border: 2px dashed var(--ifm-color-emphasis-300);
+  border-radius: 10px;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9rem;
+}
+
+.poolEintrag {
+  border-style: dashed;
+}
+
+.zuruecknehmen {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+/* ---------- zuordnen ---------- */
+.paar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.7rem 1rem;
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 10px;
+  background: var(--ifm-background-color);
+}
+
+.paar.gewaehlt {
+  border-color: var(--ifm-color-primary);
+}
+
+.paar.richtig {
+  border-color: var(--ifm-color-success);
+  background: var(--ifm-color-success-contrast-background);
+}
+
+.paar.falsch {
+  border-color: var(--ifm-color-danger);
+  background: var(--ifm-color-danger-contrast-background);
+}
+
+.paarLinks {
+  flex: 1 1 12rem;
+  font-weight: 600;
+}
+
+.auswahlfeld {
+  flex: 1 1 12rem;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0.4rem 0.6rem;
+  font-size: 1rem;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 8px;
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+}
+
+.korrektur {
+  flex-basis: 100%;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ifm-color-success-darkest);
+}
+
+/* ---------- lueckentext ---------- */
+.lueckentext {
+  line-height: 2.2;
+  font-size: 1rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.lueckentextCode {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: var(--ifm-code-background);
+}
+
+.luecke {
+  max-width: 100%;
+  min-height: 2.2rem;
+  margin: 0 0.15rem;
+  padding: 0.1rem 0.4rem;
+  font: inherit;
+  border: 2px solid var(--ifm-color-primary);
+  border-radius: 6px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+}
+
+.lueckeRichtig {
+  border-color: var(--ifm-color-success);
+}
+
+.lueckeFalsch {
+  border-color: var(--ifm-color-danger);
+}
+
+.lueckentext .korrektur {
+  font-family: var(--ifm-font-family-base);
 }
 
 /* Auf dem Smartphone: Knöpfe über volle Breite */

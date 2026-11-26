@@ -148,3 +148,42 @@
   erklaerung: "--mount ist strenger und verhindert so Fehler durch vertippte Pfade."
   artikel: "#mount-syntax"
   tags: [docker, bind-mount]
+
+# --- Interaktive Aufgaben ---
+
+- id: dk-vn-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Mount-Art den passenden Einsatz zu."
+  paare:
+    - ["Named Volume", "Datenbankdaten dauerhaft speichern"]
+    - ["Bind Mount", "Testberichte direkt in einen Ordner des Rechners schreiben"]
+    - ["tmpfs", "Flüchtige Daten nur im Arbeitsspeicher"]
+  erklaerung: "Named Volumes verwaltet Docker selbst, Bind Mounts zeigen auf einen bestimmten Ordner des Hosts."
+  artikel: "#mount-arten"
+  tags: [docker, volumes]
+
+- id: dk-vn-013
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze: Testdaten nur lesend in den Container einhängen."
+  sprache: bash
+  text: "docker run -v ./testdaten:/daten:___ mein-test"
+  luecken:
+    - ["ro"]
+  erklaerung: "Mit :ro kann der Container die Testdaten nicht versehentlich verändern."
+  artikel: "#read-only"
+  tags: [docker, volumes]
+
+- id: dk-vn-014
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Beide Container hängen im selben eigenen Netzwerk. Welche Zeile der Konfiguration des API-Containers ist falsch?"
+  sprache: text
+  code: |
+    # Datenbank-Container: docker run --name db --network testnetz -p 5433:5432 postgres
+    ConnectionStrings__Shop=Host=db;Port=5433;Database=shop
+  richtig: [1]
+  erklaerung: "Container untereinander sprechen den internen Port an (5432). Die Veröffentlichung 5433 gilt nur für Zugriffe vom Host."
+  artikel: "#ports-intern"
+  tags: [docker, netzwerke]

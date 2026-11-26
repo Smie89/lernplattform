@@ -162,3 +162,46 @@
   erklaerung: "Im Fehlerfall muss das System in einen sicheren Zustand gehen – das lässt sich auch gut testen."
   artikel: "#prinzipien"
   tags: [security, prinzipien]
+
+# --- Interaktive Aufgaben ---
+
+- id: sec-gl-013
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Welches Schutzziel wird bei diesem Angriff verletzt?"
+  paare:
+    - ["Fremde Bestellungen werden ausgelesen", "Vertraulichkeit"]
+    - ["Der Preis im Warenkorb wird manipuliert", "Integrität"]
+    - ["Ein DDoS-Angriff legt den Shop lahm", "Verfügbarkeit"]
+    - ["Eine Mail gibt sich als Chef aus", "Authentizität"]
+  erklaerung: "Vertraulichkeit: nur Berechtigte lesen. Integrität: keine unbemerkte Änderung. Verfügbarkeit: nutzbar, wenn gebraucht. Authentizität: Absender ist echt."
+  artikel: "#schutzziele"
+  tags: [security, cia]
+
+- id: sec-gl-014
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Phasen eines typischen Angriffs in die richtige Reihenfolge."
+  elemente:
+    - "Aufklärung"
+    - "Erstzugang"
+    - "Ausführung und Persistenz"
+    - "Rechteausweitung"
+    - "Seitwärtsbewegung"
+    - "Daten abziehen oder verschlüsseln"
+  erklaerung: "Jede Stufe ist eine Chance für die Verteidigung – wer nur den Erstzugang absichert, verliert bei der ersten erfolgreichen Phishing-Mail."
+  artikel: "#angriffsablauf"
+  tags: [security, mitre-attack]
+
+- id: sec-gl-015
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Abkürzungen."
+  text: "Eine konkrete Schwachstelle in einem Produkt hat eine ___-Nummer, die Art des Fehlers (z. B. SQL-Injection) eine ___-Nummer, und der Schweregrad von 0 bis 10 ist der ___-Wert."
+  luecken:
+    - ["CVE"]
+    - ["CWE"]
+    - ["CVSS"]
+  erklaerung: "Beispiel: CVE-2021-44228 (Log4Shell) hat CVSS 10,0; SQL-Injection ist CWE-89."
+  artikel: "#cve-cvss"
+  tags: [security, cve, cvss]

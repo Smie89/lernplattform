@@ -162,3 +162,49 @@
   erklaerung: "Exploratives Testen ist strukturiert, aber nicht vorgeschrieben: Entwurf und Durchführung passieren gleichzeitig, gesteuert durch das Gelernte."
   artikel: "#explorativ"
   tags: [softwaretest, explorativ]
+
+# --- Interaktive Aufgaben ---
+
+- id: st-wb-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Begriff die passende Beschreibung zu."
+  paare:
+    - ["Anweisungsüberdeckung", "Jede Anweisung wurde mindestens einmal ausgeführt"]
+    - ["Zweigüberdeckung", "Jede Entscheidung war mindestens einmal wahr und einmal falsch"]
+    - ["Exploratives Testen", "Gleichzeitig lernen, Tests entwerfen und ausführen"]
+    - ["Intuitive Testfallermittlung", "Gezielt nach typischen Fehlern aus Erfahrung suchen"]
+  erklaerung: "100 % Zweigüberdeckung schließt 100 % Anweisungsüberdeckung ein, aber nicht umgekehrt."
+  artikel: "#white-box"
+  tags: [softwaretest, white-box]
+
+- id: st-wb-014
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Ein einziger Test mit summe = 150 erreicht 100 % Anweisungsüberdeckung. Welche Zeile enthält die Entscheidung, deren falscher Zweig dabei ungetestet bleibt?"
+  sprache: csharp
+  code: |
+    public decimal Endpreis(decimal summe)
+    {
+        decimal rabatt = 0m;
+        if (summe >= 100m)
+            rabatt = summe * 0.10m;
+        return summe - rabatt;
+    }
+  richtig: [3]
+  erklaerung: "Alle Anweisungen laufen bei 150, aber die Bedingung ist nie falsch. Für 100 % Zweigüberdeckung braucht es zusätzlich einen Test unter 100 €."
+  artikel: "#zweigueberdeckung"
+  tags: [softwaretest, white-box]
+
+- id: st-wb-015
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe den Ablauf einer explorativen Testsession in eine sinnvolle Reihenfolge."
+  elemente:
+    - "Charta festlegen: Ziel, Bereich, Zeitrahmen"
+    - "Testen, lernen und neue Ideen verfolgen"
+    - "Beobachtungen und Funde notieren"
+    - "Nachbesprechung und Fehlerberichte anlegen"
+  erklaerung: "Exploratives Testen ist nicht planlos: Die Charta gibt die Richtung vor, Notizen machen die Session nachvollziehbar."
+  artikel: "#explorativ"
+  tags: [softwaretest, explorativ]

@@ -162,3 +162,44 @@
   erklaerung: "Liegt die Last deutlich über der Kernzahl, warten Prozesse auf CPU-Zeit. Browser- und API-Tests werden langsamer und können flaky werden."
   artikel: "#ressourcen"
   tags: [linux, ressourcen, flaky]
+
+# --- Interaktive Aufgaben ---
+
+- id: li-pr-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Signal seine Wirkung zu."
+  paare:
+    - ["SIGTERM (15)", "Höflich beenden – das Programm darf aufräumen"]
+    - ["SIGKILL (9)", "Sofort beenden, kein Aufräumen möglich"]
+    - ["SIGINT (2)", "Abbruch wie mit Strg+C"]
+    - ["SIGHUP (1)", "Oft: Konfiguration neu laden"]
+  erklaerung: "Erst kill (SIGTERM), nur wenn das nicht hilft kill -9."
+  artikel: "#signale"
+  tags: [linux, prozesse]
+
+- id: li-pr-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Frage den passenden Befehl zu."
+  paare:
+    - ["Welcher Prozess belegt Port 5000?", "ss -tlnp | grep 5000"]
+    - ["Läuft der Dienst nginx?", "systemctl status nginx"]
+    - ["Was hat der Dienst zuletzt protokolliert?", "journalctl -u nginx -n 50"]
+    - ["Wie viel Speicher ist frei?", "free -h"]
+    - ["Wie voll ist die Festplatte?", "df -h"]
+  erklaerung: "Mit diesen Befehlen klärt man die häufigsten Fragen, wenn ein Test „irgendwie“ nicht läuft."
+  artikel: "#ports"
+  tags: [linux, prozesse]
+
+- id: li-pr-015
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Exit-Code."
+  text: "Ein erfolgreicher Befehl endet mit Exit-Code ___. Den Exit-Code des letzten Befehls zeigt echo $___."
+  luecken:
+    - ["0"]
+    - ["?"]
+  erklaerung: "Alles ungleich 0 bedeutet Fehler – so erkennt auch die CI, dass ein Testlauf fehlgeschlagen ist."
+  artikel: "#exit-codes"
+  tags: [linux, exit-codes]

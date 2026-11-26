@@ -143,3 +143,50 @@
   erklaerung: "Falsch. Build-Argumente und ENV-Werte lassen sich z. B. über docker history nachvollziehen. Geheimnisse gehören nicht ins Image."
   artikel: "#best-practices"
   tags: [dockerfile, sicherheit]
+
+# --- Interaktive Aufgaben ---
+
+- id: dk-df-012
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile sorgt dafür, dass nach jeder Codeänderung alle Pakete neu geladen werden?"
+  sprache: docker
+  code: |
+    FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+    WORKDIR /src
+    COPY . .
+    RUN dotnet restore
+    RUN dotnet publish -c Release -o /app
+  richtig: [2]
+  erklaerung: "Ändert sich irgendeine Datei, ist der Cache ab COPY . . ungültig – auch restore läuft neu. Besser: erst nur die .csproj kopieren, restore ausführen, dann den Rest kopieren."
+  artikel: "#cache"
+  tags: [docker, cache]
+
+- id: dk-df-013
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Anweisungen eines Dockerfiles für einen guten Build-Cache in die richtige Reihenfolge."
+  elemente:
+    - "FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build"
+    - "WORKDIR /src"
+    - "COPY *.csproj ./"
+    - "RUN dotnet restore"
+    - "COPY . ."
+    - "RUN dotnet publish -c Release -o /app"
+  erklaerung: "Was sich selten ändert, steht oben. So bleibt der restore-Layer im Cache, solange sich die Abhängigkeiten nicht ändern."
+  artikel: "#cache"
+  tags: [docker, cache]
+
+- id: dk-df-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Anweisung ihren Zeitpunkt bzw. ihre Wirkung zu."
+  paare:
+    - ["RUN", "Wird beim Bauen des Images ausgeführt"]
+    - ["CMD", "Standardbefehl beim Start, leicht überschreibbar"]
+    - ["ENTRYPOINT", "Fester Startbefehl, Argumente werden angehängt"]
+    - ["COPY", "Dateien aus dem Build-Kontext ins Image kopieren"]
+    - ["EXPOSE", "Dokumentiert, auf welchem Port der Dienst lauscht"]
+  erklaerung: "EXPOSE veröffentlicht keinen Port – dafür braucht es -p beim Start."
+  artikel: "#anweisungen"
+  tags: [docker, dockerfile]

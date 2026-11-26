@@ -148,3 +148,42 @@
   erklaerung: "Falsch. 777 gibt jedem Benutzer und jedem kompromittierten Dienst Vollzugriff. Richtig ist, Besitzer und Rechte gezielt zu setzen."
   artikel: "#typische-fehler"
   tags: [linux, sicherheit]
+
+# --- Interaktive Aufgaben ---
+
+- id: li-re-012
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Rechne die Rechte in die Oktalschreibweise um."
+  text: "rwxr-xr-x = ___ · rw-r--r-- = ___ · rw------- = ___"
+  luecken:
+    - ["755"]
+    - ["644"]
+    - ["600"]
+  erklaerung: "r = 4, w = 2, x = 1, je für Besitzer, Gruppe und andere addiert."
+  artikel: "#oktal"
+  tags: [linux, rechte]
+
+- id: li-re-013
+  typ: lueckentext
+  schwierigkeit: 1
+  frage: "Das Skript startet mit 'Permission denied'. Ergänze den Befehl, der es ausführbar macht."
+  sprache: bash
+  text: "chmod ___ tests-starten.sh"
+  luecken:
+    - ["+x", "u+x", "a+x", "755", "744", "700"]
+  erklaerung: "Ohne x-Recht darf eine Datei nicht als Programm gestartet werden."
+  artikel: "#permission-denied"
+  tags: [linux, rechte]
+
+- id: li-re-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Lies die Ausgabe von ls -l: -rwxr-x--- 1 anna tester 512 deploy.sh. Was dürfen die Beteiligten?"
+  paare:
+    - ["anna (Besitzerin)", "lesen, schreiben, ausführen"]
+    - ["Gruppe tester", "lesen und ausführen"]
+    - ["alle anderen", "nichts"]
+  erklaerung: "Die neun Zeichen nach dem Dateityp stehen in Dreiergruppen für Besitzer, Gruppe und andere."
+  artikel: "#rechte-lesen"
+  tags: [linux, rechte]

@@ -10,6 +10,8 @@ const bereiche = [
   {icon: '🐧', titel: 'Linux', text: 'Shell, Rechte, Prozesse, Bash-Skripte', pfad: '/lernen/linux'},
   {icon: '🐳', titel: 'Docker', text: 'Images, Container, Compose, Testcontainers', pfad: '/lernen/docker'},
   {icon: '🧠', titel: 'Künstliche Intelligenz', text: 'ML-Grundlagen, LLMs, KI im Testen', pfad: '/lernen/ki'},
+  {icon: '🔐', titel: 'Cybersecurity', text: 'OWASP Top 10, Sicherheitstests, Härtung, Angriffserkennung', pfad: '/lernen/cybersecurity'},
+  {icon: '🔁', titel: 'Wiederholen', text: 'Fällige Fragen aus allen Lektionen – mit Wiederholungsplan', pfad: '/wiederholen'},
 ];
 
 export default function Home() {
@@ -19,7 +21,7 @@ export default function Home() {
         <div className="container">
           <h1 className={styles.heroTitel}>Lernplattform</h1>
           <p className={styles.heroText}>
-            Artikel mit Praxisbeispielen und Multiple-Choice-Fragen – jede Frage führt zum passenden Abschnitt.
+            Artikel mit Praxisbeispielen und interaktiven Quizfragen – jede Frage führt zum passenden Abschnitt.
           </p>
         </div>
       </header>

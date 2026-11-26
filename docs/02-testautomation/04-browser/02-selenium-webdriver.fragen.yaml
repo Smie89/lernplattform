@@ -148,3 +148,47 @@
   erklaerung: "Selenium gibt es für viele Sprachen, darunter C# und Java. Playwright punktet mit Auto-Waiting und Werkzeugen wie dem Trace Viewer."
   artikel: "#vergleich"
   tags: [selenium, playwright]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-se-012
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze das explizite Warten in Selenium (C#)."
+  sprache: csharp
+  text: |
+    var warten = new ___(treiber, TimeSpan.FromSeconds(10));
+    var meldung = warten.Until(t => t.FindElement(By.Id("meldung")));
+  luecken:
+    - ["WebDriverWait"]
+  exakt: true
+  erklaerung: "WebDriverWait wiederholt die Bedingung, bis sie erfüllt ist oder das Timeout abläuft – im Gegensatz zu Thread.Sleep."
+  artikel: "#warten"
+  tags: [selenium, warten]
+
+- id: ta-se-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne die Locator-Strategien nach Stabilität ein."
+  paare:
+    - ["By.Id(\"bestellen\")", "sehr stabil, wenn IDs eindeutig und fachlich sind"]
+    - ["By.CssSelector(\"[data-testid=warenkorb]\")", "sehr stabil, extra für Tests"]
+    - ["By.LinkText(\"Zur Kasse\")", "mittel – bricht bei Textänderung oder Übersetzung"]
+    - ["By.XPath(\"/html/body/div[2]/div/span[3]\")", "fragil – bricht bei jeder Layoutänderung"]
+  erklaerung: "Absolute XPath-Pfade sind die häufigste Ursache für brüchige Selenium-Tests."
+  artikel: "#locators"
+  tags: [selenium, locators]
+
+- id: ta-se-014
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe den Weg eines Selenium-Befehls in die richtige Reihenfolge."
+  elemente:
+    - "Testcode ruft z. B. Click() auf"
+    - "Client-Bibliothek sendet eine WebDriver-Anfrage (HTTP)"
+    - "Browser-Treiber (z. B. chromedriver) empfängt sie"
+    - "Treiber steuert den Browser"
+    - "Antwort geht zurück an den Testcode"
+  erklaerung: "Selenium spricht über das standardisierte WebDriver-Protokoll mit einem Treiber pro Browser."
+  artikel: "#architektur"
+  tags: [selenium, architektur]

@@ -148,3 +148,56 @@
   erklaerung: "Ein JSON-Schema beschreibt die erwartete Struktur. Fehlt ein Pflichtfeld oder ändert sich ein Typ, schlägt matchesJsonSchemaInClasspath fehl."
   artikel: "#schema"
   tags: [rest-assured, schema]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-ra-012
+  typ: lueckentext
+  schwierigkeit: 1
+  frage: "Ergänze die drei Teile eines REST-Assured-Tests."
+  sprache: java
+  text: |
+    ___()
+        .contentType(ContentType.JSON)
+    .___()
+        .get("/api/produkte/1")
+    .___()
+        .statusCode(200)
+        .body("name", equalTo("Buch"));
+  luecken:
+    - ["given"]
+    - ["when"]
+    - ["then"]
+  exakt: true
+  erklaerung: "given: Anfrage vorbereiten, when: Anfrage senden, then: Antwort prüfen."
+  artikel: "#erster-test"
+  tags: [rest-assured, java]
+
+- id: ta-ra-013
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem HTTP-Statuscode die Bedeutung zu."
+  paare:
+    - ["200", "OK"]
+    - ["201", "Created – Ressource angelegt"]
+    - ["400", "Bad Request – ungültige Anfrage"]
+    - ["401", "Unauthorized – nicht angemeldet"]
+    - ["404", "Not Found"]
+    - ["500", "Internal Server Error"]
+  erklaerung: "2xx Erfolg, 4xx Fehler des Clients, 5xx Fehler des Servers."
+  artikel: "#http"
+  tags: [rest-assured, http]
+
+- id: ta-ra-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder HTTP-Methode ihren typischen Zweck zu."
+  paare:
+    - ["GET", "Daten lesen"]
+    - ["POST", "Neue Ressource anlegen"]
+    - ["PUT", "Ressource vollständig ersetzen"]
+    - ["PATCH", "Ressource teilweise ändern"]
+    - ["DELETE", "Ressource löschen"]
+  erklaerung: "GET darf nichts verändern – auch das ist ein sinnvoller API-Testfall."
+  artikel: "#http"
+  tags: [rest-assured, http]

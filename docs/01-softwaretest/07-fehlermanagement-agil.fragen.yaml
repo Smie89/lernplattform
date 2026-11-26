@@ -162,3 +162,50 @@
   erklaerung: "Falsch. Im Whole-Team-Ansatz tragen Entwicklung, Test und Fachbereich gemeinsam Verantwortung für Qualität."
   artikel: "#shift-left"
   tags: [softwaretest, agil]
+
+# --- Interaktive Aufgaben ---
+
+- id: st-fm-013
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Stationen im Lebenszyklus von SHOP-1 in die richtige Reihenfolge."
+  elemente:
+    - "Neu"
+    - "Analysiert"
+    - "In Bearbeitung"
+    - "Behoben"
+    - "Im Nachtest"
+    - "Geschlossen"
+  erklaerung: "Schlägt der Nachtest fehl, wird der Fehler wiedereröffnet. Abgelehnt, Duplikat oder Zurückgestellt sind weitere mögliche Zustände."
+  artikel: "#lebenszyklus"
+  tags: [softwaretest, fehlermanagement]
+
+- id: st-fm-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Fehler die passende Kombination aus Schweregrad und Priorität zu."
+  paare:
+    - ["Bezahlung stürzt für alle Kunden ab", "hoher Schweregrad, hohe Priorität"]
+    - ["Tippfehler im Firmennamen auf der Startseite", "niedriger Schweregrad, hohe Priorität"]
+    - ["Absturz in einem kaum genutzten Admin-Export", "hoher Schweregrad, niedrige Priorität"]
+    - ["Ein Icon ist im Hilfebereich 2 Pixel verschoben", "niedriger Schweregrad, niedrige Priorität"]
+  erklaerung: "Der Schweregrad beschreibt die technische Auswirkung, die Priorität die Dringlichkeit aus geschäftlicher Sicht."
+  artikel: "#schweregrad-prioritaet"
+  tags: [softwaretest, fehlermanagement]
+
+- id: st-fm-015
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Schlüsselwörter eines BDD-Szenarios in Gherkin."
+  sprache: gherkin
+  text: |
+    ___ der Warenkorb enthält Artikel für 100,00 €
+    ___ der Kunde zur Kasse geht
+    ___ beträgt der Endpreis 90,00 €
+  luecken:
+    - ["Angenommen", "Gegeben sei", "Given"]
+    - ["Wenn", "When"]
+    - ["Dann", "Then"]
+  erklaerung: "Gegeben/Angenommen beschreibt die Ausgangslage, Wenn die Aktion, Dann das erwartete Ergebnis."
+  artikel: "#tdd-bdd"
+  tags: [softwaretest, bdd]

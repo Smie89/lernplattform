@@ -153,3 +153,63 @@
   erklaerung: "Ohne Modifizierer ist ein Element in Java im selben Paket sichtbar – das kommt internal am nächsten."
   artikel: "#kapselung"
   tags: [oop, java, csharp]
+
+# --- Interaktive Aufgaben ---
+
+- id: se-oo-012
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem OOP-Konzept die passende Beschreibung zu."
+  paare:
+    - ["Kapselung", "Daten sind privat und nur über Methoden änderbar"]
+    - ["Vererbung", "Eine Klasse übernimmt Verhalten einer Basisklasse"]
+    - ["Polymorphie", "Derselbe Aufruf führt je nach Objekt zu anderem Verhalten"]
+    - ["Interface", "Vertrag ohne Implementierung, den Klassen erfüllen"]
+    - ["Komposition", "Ein Objekt enthält andere Objekte und nutzt sie"]
+  erklaerung: "Die vier Säulen der OOP sind Kapselung, Abstraktion, Vererbung und Polymorphie; Komposition ist oft die flexiblere Alternative zur Vererbung."
+  artikel: "#klassen-objekte"
+  tags: [oop]
+
+- id: se-oo-013
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile verletzt die Kapselung?"
+  sprache: csharp
+  code: |
+    public class Konto
+    {
+        public decimal Saldo;
+
+        public void Einzahlen(decimal betrag)
+        {
+            if (betrag <= 0) throw new ArgumentException("Betrag muss positiv sein");
+            Saldo += betrag;
+        }
+    }
+  richtig: [2]
+  erklaerung: "Ein öffentliches Feld kann von außen beliebig gesetzt werden – die Prüfung in Einzahlen lässt sich umgehen. Besser: public decimal Saldo { get; private set; }."
+  artikel: "#kapselung"
+  tags: [oop, kapselung]
+
+- id: se-oo-014
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Schlüsselwörter: Versand ist eine abstrakte Basisklasse, Express überschreibt die Methode."
+  sprache: csharp
+  text: |
+    public ___ class Versand
+    {
+        public abstract decimal Kosten(decimal gewicht);
+    }
+
+    public class Express : Versand
+    {
+        public ___ decimal Kosten(decimal gewicht) => 9.90m + gewicht * 0.5m;
+    }
+  luecken:
+    - ["abstract"]
+    - ["override"]
+  exakt: true
+  erklaerung: "In C# muss das Überschreiben ausdrücklich mit override erfolgen; in Java markiert man es mit der Annotation @Override."
+  artikel: "#vererbung"
+  tags: [oop, vererbung, csharp]

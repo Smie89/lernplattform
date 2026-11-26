@@ -162,3 +162,51 @@
   erklaerung: "Bots durchsuchen öffentliche Repositories in Minuten nach Secrets. Die Git-Historie und Kopien behalten den Schlüssel – nur Widerrufen hilft."
   artikel: "#secrets"
   tags: [security, secrets]
+
+# --- Interaktive Aufgaben ---
+
+- id: sec-auth-013
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeilen machen dieses Passwort-Hashing unsicher?"
+  sprache: python
+  code: |
+    import hashlib
+
+    def passwort_hashen(passwort):
+        wert = hashlib.md5(passwort.encode())
+        return wert.hexdigest()
+
+    def passwort_pruefen(passwort, gespeichert):
+        return passwort_hashen(passwort) == gespeichert
+  richtig: [3, 7]
+  erklaerung: "Zeile 4: MD5 ist schnell und ohne Salt. Zeile 8: == bricht beim ersten Unterschied ab (Timing-Angriff) – besser hmac.compare_digest und ein langsames Verfahren wie scrypt oder Argon2id."
+  artikel: "#passwoerter"
+  tags: [security, passwort]
+
+- id: sec-auth-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Wie gut schützt das Verfahren vor Phishing?"
+  paare:
+    - ["SMS-Code", "schwach: SIM-Tausch, Code auf Fake-Seite eingebbar"]
+    - ["TOTP-App", "mittel: Code kann in Echtzeit abgegriffen werden"]
+    - ["Push-Bestätigung", "mittel: anfällig für MFA-Fatigue"]
+    - ["FIDO2 / Passkey", "hoch: an die echte Domain gebunden"]
+  erklaerung: "Nur FIDO2 und Passkeys sind phishing-resistent, weil die Anmeldung kryptografisch an die Domain gebunden ist."
+  artikel: "#mfa"
+  tags: [security, mfa]
+
+- id: sec-auth-015
+  typ: reihenfolge
+  schwierigkeit: 3
+  frage: "Bringe den Aufbau einer TLS-Verbindung in die richtige Reihenfolge."
+  elemente:
+    - "Browser baut die Verbindung zum Server auf"
+    - "Server schickt sein Zertifikat"
+    - "Browser prüft Unterschrift, Gültigkeit und Domainnamen"
+    - "Beide handeln einen Sitzungsschlüssel aus"
+    - "Daten werden symmetrisch verschlüsselt übertragen"
+  erklaerung: "Erst die Prüfung des Zertifikats stellt sicher, dass man mit dem richtigen Server spricht."
+  artikel: "#tls"
+  tags: [security, tls]

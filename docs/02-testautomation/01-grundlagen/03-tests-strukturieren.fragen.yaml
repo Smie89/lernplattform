@@ -204,3 +204,49 @@
   erklaerung: "Der Spring-TestContext cacht Kontexte mit gleicher Konfiguration. Das ist das Gegenstück zum [SetUpFixture] in der C#-Version."
   artikel: "#java-vergleich"
   tags: [struktur, java, spring]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-st-016
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Wo legst du den neuen Code im Testprojekt ab?"
+  paare:
+    - ["Tests für die neue Klasse Preise/Rabattrechner.cs", "Neue Datei Preise/RabattrechnerTests.cs"]
+    - ["Eine weitere Rabattstufe für den Rabattrechner", "Weiterer [TestCase] in RabattrechnerTests"]
+    - ["Ein Warenkorb-Aufbau, den mehrere Testklassen brauchen", "Hilfsklasse in TestDaten/"]
+    - ["Eine Hilfsmethode, die nur eine Testklasse nutzt", "private Methode am Ende dieser Klasse"]
+    - ["Eine neue Seite der Weboberfläche", "Page Object in Seiten/"]
+  erklaerung: "Faustregel: neue Produktivklasse → neue Testklasse, neuer Testfall → neue Methode, zweimal gebraucht → eigene Hilfsklasse."
+  artikel: "#neue-datei"
+  tags: [testautomation, struktur]
+
+- id: ta-st-017
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Namen der Testklasse nach der Konvention aus der Lektion."
+  sprache: csharp
+  text: |
+    // Produktivcode: src/Shop.Core/Preise/Rabattrechner.cs
+    // Test:          tests/Shop.Core.Tests/Preise/___.cs
+    public class ___
+  luecken:
+    - ["RabattrechnerTests"]
+    - ["RabattrechnerTests"]
+  exakt: true
+  erklaerung: "Der Testordner spiegelt den Produktivcode, die Testklasse heißt <Klasse>Tests – eine öffentliche Klasse pro Datei, Dateiname = Klassenname."
+  artikel: "#ordner"
+  tags: [testautomation, struktur]
+
+- id: ta-st-018
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Baustein seine Aufgabe zu."
+  paare:
+    - ["Test Data Builder", "Testdaten lesbar in einer Zeile aufbauen"]
+    - ["Basisklasse", "Nur Technik: Client erstellen, Browser konfigurieren"]
+    - ["Page Object", "Eine Seite der Oberfläche kapseln"]
+    - ["API-Client", "HTTP-Aufrufe fachlich benennen"]
+  erklaerung: "Fachliche Schritte gehören in Builder, Clients oder Page Objects – nicht in die Basisklasse, sonst wird sie zur God Class."
+  artikel: "#gemeinsamer-code"
+  tags: [testautomation, struktur]

@@ -148,3 +148,41 @@
   erklaerung: "Testcode-Refactoring darf die Aussagekraft nicht verlieren. Am sichersten: einen Fehler einbauen und prüfen, ob der Test noch rot wird."
   artikel: "#testcode"
   tags: [refactoring, tests]
+
+# --- Interaktive Aufgaben ---
+
+- id: se-rf-012
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Schritte eines sicheren Refactorings in die richtige Reihenfolge."
+  elemente:
+    - "Prüfen, ob Tests das Verhalten absichern – sonst zuerst Tests schreiben"
+    - "Tests ausführen: alles grün"
+    - "Einen kleinen Refactoring-Schritt machen"
+    - "Tests erneut ausführen"
+    - "Committen und mit dem nächsten Schritt weitermachen"
+  erklaerung: "Kleine Schritte mit grünen Tests dazwischen – so findet man einen Fehler sofort und kann ihn leicht zurücknehmen."
+  artikel: "#sicherheitsnetz"
+  tags: [refactoring]
+
+- id: se-rf-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Code Smell das passende Refactoring zu."
+  paare:
+    - ["Lange Methode", "Methode extrahieren"]
+    - ["Unklarer Variablenname 'x'", "Umbenennen"]
+    - ["Magic Number 0.19", "Konstante einführen"]
+    - ["switch über eine Typangabe", "Polymorphie statt Bedingung"]
+  erklaerung: "Gute Entwicklungsumgebungen bieten diese Refactorings automatisch an – das ist sicherer als von Hand."
+  artikel: "#schritte"
+  tags: [refactoring]
+
+- id: se-rf-014
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Beim Refactoring ändert sich das von außen beobachtbare Verhalten des Codes."
+  richtig: [1]
+  erklaerung: "Falsch. Refactoring verbessert die Struktur ohne Verhaltensänderung – genau darum sind Tests das Sicherheitsnetz. Vorsicht vor versteckten Verhaltensänderungen, etwa bei Rundung oder Reihenfolge."
+  artikel: "#was"
+  tags: [refactoring]

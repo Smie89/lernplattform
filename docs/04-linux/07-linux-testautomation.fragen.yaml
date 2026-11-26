@@ -167,3 +167,44 @@
   erklaerung: "Cron liest die Shell-Konfiguration nicht. Absolute Pfade verwenden oder PATH im Skript bzw. in der Crontab setzen."
   artikel: "#cron"
   tags: [linux, cron, path]
+
+# --- Interaktive Aufgaben ---
+
+- id: li-ta-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Lokal grün, in der Linux-CI rot: Ordne jedem Symptom die Ursache zu."
+  paare:
+    - ["Datei 'Testdaten.json' nicht gefunden, im Code steht 'testdaten.json'", "Groß- und Kleinschreibung bei Dateinamen"]
+    - ["Skript bricht mit '/bin/bash^M: bad interpreter' ab", "Windows-Zeilenenden (CRLF)"]
+    - ["./start.sh: Permission denied", "Ausführungsrecht fehlt im Repository"]
+    - ["Datumsprüfung erwartet '26.11.2026', bekommt '11/26/2026'", "Andere Sprache bzw. Locale"]
+    - ["Browser-Test findet keinen Bildschirm", "Kein Display – headless ausführen"]
+  erklaerung: "Windows ist bei Dateinamen tolerant und kennt keine Ausführungsrechte – Linux nicht."
+  artikel: "#lokal-gruen-ci-rot"
+  tags: [linux, ci]
+
+- id: li-ta-014
+  typ: lueckentext
+  schwierigkeit: 3
+  frage: "Ergänze den Git-Befehl, der einem Skript im Repository das Ausführungsrecht gibt – auch wenn man unter Windows arbeitet."
+  sprache: bash
+  text: "git update-index --___ tests-mit-app.sh"
+  luecken:
+    - ["chmod=+x"]
+  exakt: true
+  erklaerung: "Git speichert das Ausführungsrecht im Repository; unter Windows setzt man es mit update-index --chmod=+x."
+  artikel: "#rechte"
+  tags: [linux, git, rechte]
+
+- id: li-ta-015
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die .gitattributes, damit Shell-Skripte immer mit Linux-Zeilenenden ausgecheckt werden."
+  sprache: text
+  text: "*.sh text eol=___"
+  luecken:
+    - ["lf"]
+  erklaerung: "So gerät kein CRLF in Skripte, auch wenn sie unter Windows bearbeitet werden."
+  artikel: "#zeilenenden"
+  tags: [linux, zeilenenden]

@@ -162,3 +162,46 @@
   erklaerung: "Falsch. Ein roter Build hat Vorrang – solange er rot ist, verdeckt er jeden neuen Fehler, und das Vertrauen in die CI sinkt."
   artikel: "#ci"
   tags: [ci]
+
+# --- Interaktive Aufgaben ---
+
+- id: se-ci-013
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Version 2.4.1 nach Semantic Versioning: Ergänze die nächste Version."
+  text: "Fehlerbehebung → 2.4.___ · neue, abwärtskompatible Funktion → 2.___.0 · inkompatible Änderung der API → ___.0.0"
+  luecken:
+    - ["2"]
+    - ["5"]
+    - ["3"]
+  erklaerung: "MAJOR.MINOR.PATCH: Patch für Fehlerbehebungen, Minor für neue kompatible Funktionen, Major für Brüche."
+  artikel: "#semver"
+  tags: [semver]
+
+- id: se-ci-014
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe den Weg einer Änderung mit Pull Request in die richtige Reihenfolge."
+  elemente:
+    - "Feature-Branch anlegen"
+    - "Änderung committen und pushen"
+    - "Pull Request öffnen"
+    - "CI baut und testet automatisch"
+    - "Code-Review und Freigabe"
+    - "Merge in den Hauptbranch"
+  erklaerung: "Branch-Schutz sorgt dafür, dass nur mit grüner CI und Freigabe gemergt werden kann."
+  artikel: "#pull-request"
+  tags: [ci, pull-request]
+
+- id: se-ci-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne die Begriffe zu."
+  paare:
+    - ["Continuous Integration", "Jede Änderung wird automatisch gebaut und getestet"]
+    - ["Continuous Delivery", "Jeder Stand ist jederzeit auslieferbar, die Freigabe erfolgt per Knopfdruck"]
+    - ["Continuous Deployment", "Jeder grüne Stand geht automatisch in Produktion"]
+    - ["Branch-Schutz", "Merge nur mit grüner CI und Review"]
+  erklaerung: "Continuous Deployment setzt eine sehr verlässliche Testautomation voraus."
+  artikel: "#cd"
+  tags: [ci, cd]

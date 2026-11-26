@@ -148,3 +148,48 @@
   erklaerung: "Falsch. Desktop-Tests teilen sich Maus, Tastatur und Fokus und stören sich parallel gegenseitig. Deshalb [NonParallelizable] setzen."
   artikel: "#typische-fehler"
   tags: [flaui, parallel]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-fu-012
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe den Ablauf eines FlaUI-Tests in die richtige Reihenfolge."
+  elemente:
+    - "Anwendung starten (Application.Launch)"
+    - "Automation-Objekt erstellen (UIA3Automation)"
+    - "Hauptfenster holen"
+    - "Element über AutomationId finden"
+    - "Element bedienen und Ergebnis prüfen"
+    - "Anwendung schließen"
+  erklaerung: "Am Ende die Anwendung immer schließen, auch wenn der Test fehlschlägt – z. B. im TearDown."
+  artikel: "#erster-test"
+  tags: [flaui, desktop]
+
+- id: ta-fu-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Begriff die Bedeutung zu."
+  paare:
+    - ["UI Automation (UIA)", "Schnittstelle von Windows für den Zugriff auf Bedienelemente"]
+    - ["AutomationId", "Stabile Kennung eines Elements, im XAML vergeben"]
+    - ["Inspect / FlaUInspect", "Werkzeug, um Elemente und ihre Eigenschaften zu untersuchen"]
+    - ["Retry.WhileNull", "Wiederholt die Suche, bis ein Element auftaucht"]
+  erklaerung: "FlaUI nutzt UI Automation; AutomationIds machen Tests unabhängig von Texten und Layout."
+  artikel: "#ui-automation"
+  tags: [flaui, desktop]
+
+- id: ta-fu-014
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile macht diesen Desktop-Test unzuverlässig?"
+  sprache: csharp
+  code: |
+    var fenster = app.GetMainWindow(automation);
+    fenster.FindFirstDescendant(cf => cf.ByAutomationId("Bestellen")).AsButton().Click();
+    Thread.Sleep(3000);
+    var dialog = fenster.ModalWindows[0];
+  richtig: [2]
+  erklaerung: "Eine feste Pause ist zu kurz oder zu lang. Besser: mit Retry auf das Dialogfenster warten."
+  artikel: "#warten"
+  tags: [flaui, warten]

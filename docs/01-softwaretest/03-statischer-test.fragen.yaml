@@ -162,3 +162,50 @@
   erklaerung: "Falsch. Das zerstört die offene Atmosphäre, die Reviews brauchen – Autoren würden Mängel verstecken statt sie finden zu lassen."
   artikel: "#ablauf"
   tags: [softwaretest, review]
+
+# --- Interaktive Aufgaben ---
+
+- id: st-sa-013
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Schritte eines Reviews in die richtige Reihenfolge."
+  elemente:
+    - "Planung"
+    - "Review-Start"
+    - "Individuelles Review"
+    - "Kommunikation und Analyse"
+    - "Behebung und Bericht"
+  erklaerung: "Die meisten Mängel werden im individuellen Review gefunden, wenn jeder Gutachter allein prüft."
+  artikel: "#ablauf"
+  tags: [softwaretest, review]
+
+- id: st-sa-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Reviewart ihr Merkmal zu."
+  paare:
+    - ["Informelles Review", "Kein fester Ablauf, z. B. „Schau mal kurz drüber“"]
+    - ["Walkthrough", "Der Autor führt durch das Dokument"]
+    - ["Technisches Review", "Fachkollegen suchen Konsens über eine technische Lösung"]
+    - ["Inspektion", "Formalster Ablauf mit Checklisten und Metriken"]
+  erklaerung: "Je formaler die Reviewart, desto mehr Aufwand – und desto besser messbar."
+  artikel: "#reviewarten"
+  tags: [softwaretest, review]
+
+- id: st-sa-015
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Statische Analyse findet Probleme ohne Ausführung. Welche Zeile würde ein Analysewerkzeug als unerreichbaren Code melden?"
+  sprache: csharp
+  code: |
+    public decimal Rabatt(decimal summe)
+    {
+        if (summe >= 100m)
+            return summe * 0.10m;
+        return 0m;
+        Console.WriteLine("Kein Rabatt");
+    }
+  richtig: [5]
+  erklaerung: "Nach 'return 0m;' kann keine Anweisung mehr ausgeführt werden. Compiler und Analysewerkzeuge warnen vor solchem toten Code."
+  artikel: "#statische-analyse"
+  tags: [softwaretest, statische-analyse]

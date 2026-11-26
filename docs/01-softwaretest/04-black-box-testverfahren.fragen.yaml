@@ -167,3 +167,46 @@
   erklaerung: "Ein System, das einen leeren Warenkorb bestellen lässt, besteht alle Tests gültiger Übergänge – und hat trotzdem einen Fehler."
   artikel: "#zustaende"
   tags: [softwaretest, zustaende]
+
+# --- Interaktive Aufgaben ---
+
+- id: st-bb-013
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ab 100,00 € gibt es Rabatt (Cent-genaue Beträge). Ergänze die 2-Wert-Grenzwerte."
+  text: "Höchster Betrag ohne Rabatt: ___ €, niedrigster Betrag mit Rabatt: ___ €"
+  luecken:
+    - ["99,99", "99.99"]
+    - ["100,00", "100.00", "100", "100,0"]
+  erklaerung: "Bei der 2-Wert-Grenzwertanalyse testet man den Grenzwert und seinen nächsten Nachbarn in der anderen Klasse."
+  artikel: "#grenzwerte"
+  tags: [softwaretest, grenzwerte]
+
+- id: st-bb-014
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Laut Anforderung gibt es ab einschließlich 100 € Rabatt. Welche Zeile enthält den typischen Grenzwertfehler?"
+  sprache: csharp
+  code: |
+    public decimal Endpreis(decimal summe)
+    {
+        if (summe > 100m)
+            return summe * 0.90m;
+        return summe;
+    }
+  richtig: [2]
+  erklaerung: "'>' statt '>=' – genau bei 100,00 € gibt es fälschlich keinen Rabatt. Ein Test mit dem Grenzwert 100,00 € findet das sofort."
+  artikel: "#grenzwerte"
+  tags: [softwaretest, grenzwerte]
+
+- id: st-bb-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Welches Testentwurfsverfahren passt am besten zur Situation?"
+  paare:
+    - ["Eingabefeld Menge 1–99", "Äquivalenzklassen und Grenzwertanalyse"]
+    - ["Rabatt hängt von Stammkunde, Gutschein und Summe ab", "Entscheidungstabelle"]
+    - ["Bestellung: offen → bezahlt → versendet → storniert", "Zustandsübergangstest"]
+  erklaerung: "Wertebereiche → Klassen und Grenzen, Kombinationen von Bedingungen → Entscheidungstabelle, Abläufe mit Zuständen → Zustandsübergangstest."
+  artikel: "#auswahl"
+  tags: [softwaretest, testentwurf]

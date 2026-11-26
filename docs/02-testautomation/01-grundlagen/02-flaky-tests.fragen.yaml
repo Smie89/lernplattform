@@ -134,3 +134,47 @@
   erklaerung: "Falsch. In Quarantäne läuft der Test weiter separat und blockiert nur die Pflicht-Pipeline nicht mehr – mit Ticket, bis er repariert ist."
   artikel: "#retries"
   tags: [flaky, quarantaene]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-fl-011
+  typ: fehler-finden
+  schwierigkeit: 1
+  frage: "Welche Zeile macht diesen UI-Test flaky?"
+  sprache: csharp
+  code: |
+    await seite.GetByRole(AriaRole.Button, new() { Name = "Bestellen" }).ClickAsync();
+    Thread.Sleep(2000);
+    var meldung = await seite.Locator("#meldung").TextContentAsync();
+    Assert.That(meldung, Is.EqualTo("Danke für Ihre Bestellung"));
+  richtig: [1]
+  erklaerung: "Eine feste Wartezeit ist auf einem langsamen CI-Rechner zu kurz und lokal unnötig lang. Besser: auf einen Zustand warten, z. B. mit einer Web-First-Assertion."
+  artikel: "#timing"
+  tags: [testautomation, flaky]
+
+- id: ta-fl-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Symptom die wahrscheinliche Ursache zu."
+  paare:
+    - ["Test schlägt nur auf dem CI-Server manchmal fehl, lokal nie", "Timing: feste Wartezeit oder fehlendes Warten"]
+    - ["Test ist allein grün, in der Gesamtsuite rot", "Reihenfolge-Abhängigkeit oder gemeinsamer Zustand"]
+    - ["Test schlägt jeden Abend nach 23 Uhr fehl", "Umgebung: Zeit, Zeitzone oder Datum"]
+    - ["Zwei parallel laufende Tests ändern denselben Datensatz", "Gemeinsamer Zustand"]
+  erklaerung: "Die Symptome geben Hinweise, wo man suchen muss."
+  artikel: "#was-ist-flaky"
+  tags: [testautomation, flaky]
+
+- id: ta-fl-013
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe das Vorgehen bei einem neu entdeckten Flaky Test in eine sinnvolle Reihenfolge."
+  elemente:
+    - "Fehlschlag mit Logs, Screenshot und Umgebung festhalten"
+    - "Test wiederholt ausführen und Fehlerbild reproduzieren"
+    - "Ursache eingrenzen (Timing, Zustand, Reihenfolge, Umgebung)"
+    - "Ursache beheben"
+    - "Test mehrfach laufen lassen, um die Stabilität zu bestätigen"
+  erklaerung: "Ein Retry ohne Ursachenanalyse versteckt das Problem nur."
+  artikel: "#vorgehen"
+  tags: [testautomation, flaky]

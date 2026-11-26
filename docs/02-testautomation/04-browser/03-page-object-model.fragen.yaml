@@ -134,3 +134,58 @@
   erklaerung: "Das Page Object Model wirkt nur, wenn Locators wirklich an einer Stelle bleiben. Jede Ausnahme ist eine zusätzliche Stelle, die bei Änderungen bricht."
   artikel: "#typische-fehler"
   tags: [page-object]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-po-011
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile verstößt gegen eine Regel für gute Page Objects?"
+  sprache: csharp
+  code: |
+    public class WarenkorbSeite(IPage seite)
+    {
+        public ILocator Summe => seite.GetByTestId("summe");
+
+        public async Task<KassenSeite> ZurKasse()
+        {
+            Assert.That(await Summe.IsVisibleAsync(), Is.True);
+            await seite.GetByRole(AriaRole.Button, new() { Name = "Zur Kasse" }).ClickAsync();
+            return new KassenSeite(seite);
+        }
+    }
+  richtig: [6]
+  erklaerung: "Page Objects bedienen die Seite und liefern Informationen – geprüft wird im Test. Sonst sind Prüfungen versteckt und schwer zu ändern."
+  artikel: "#keine-asserts"
+  tags: [page-object, regeln]
+
+- id: ta-po-012
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Bei der Fluent-Navigation gibt eine Aktion die nächste Seite zurück. Ergänze den Rückgabetyp."
+  sprache: csharp
+  text: |
+    public async Task<___> ZurKasse()
+    {
+        await zurKasseKnopf.ClickAsync();
+        return new KassenSeite(seite);
+    }
+  luecken:
+    - ["KassenSeite"]
+  exakt: true
+  erklaerung: "So liest sich der Test wie der Weg des Nutzers: await shop.Oeffnen().InDenWarenkorb().ZurKasse()."
+  artikel: "#fluent"
+  tags: [page-object, fluent]
+
+- id: ta-po-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Wohin gehört der Code?"
+  paare:
+    - ["Locator für den Bestellknopf", "Page Object"]
+    - ["Prüfung, dass die Summe 90,00 € ist", "Test"]
+    - ["Warenkorb-Leiste, die auf mehreren Seiten vorkommt", "Komponente"]
+    - ["Browser starten und Basis-URL setzen", "Basisklasse bzw. Fixture"]
+  erklaerung: "Seitenwissen ins Page Object, wiederkehrende Bereiche in Komponenten, Prüfungen in den Test, Technik in die Basisklasse."
+  artikel: "#regeln"
+  tags: [page-object, struktur]

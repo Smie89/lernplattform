@@ -148,3 +148,42 @@
   erklaerung: "Heilungen sind Änderungen am Test und können echte Fehler verdecken – sie gehören in den Bericht und ins Review."
   artikel: "#self-healing"
   tags: [ki, self-healing]
+
+# --- Interaktive Aufgaben ---
+
+- id: ki-st-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem KI-Einsatz im Test seinen Nutzen zu."
+  paare:
+    - ["Testideen generieren", "Mehr Ideen in kurzer Zeit, die ein Mensch auswählt und prüft"]
+    - ["Synthetische Testdaten", "Realistische Daten ohne echte Personen"]
+    - ["Selbstheilende Locators", "Tests brechen bei kleinen UI-Änderungen seltener"]
+    - ["Visuelle KI-Tests", "Relevante Layoutänderungen erkennen, Rauschen ignorieren"]
+    - ["Log-Analyse", "Fehlschläge gruppieren und Flaky Tests erkennen"]
+  erklaerung: "KI unterstützt – sie ersetzt weder Testentwurf noch fachliche Prüfung."
+  artikel: "#ueberblick"
+  tags: [ki, testen]
+
+- id: ki-st-013
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe einen sinnvollen Arbeitsablauf mit KI beim Testen in die richtige Reihenfolge."
+  elemente:
+    - "Anforderung und Kontext bereitstellen (ohne vertrauliche Daten)"
+    - "KI Testideen vorschlagen lassen"
+    - "Vorschläge fachlich prüfen und auswählen"
+    - "Tests umsetzen und einmal rot sehen"
+    - "Tests im Review wie anderen Code behandeln"
+  erklaerung: "Der Mensch bleibt für Auswahl, Korrektheit und Verantwortung zuständig."
+  artikel: "#ablauf"
+  tags: [ki, testen]
+
+- id: ki-st-014
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Ein selbstheilender Locator, der stillschweigend ein anderes Element wählt, kann einen echten Fehler verdecken."
+  richtig: [0]
+  erklaerung: "Wahr. Deshalb sollten Heilungen protokolliert und geprüft werden, statt unbemerkt zu passieren."
+  artikel: "#self-healing"
+  tags: [ki, self-healing]

@@ -153,3 +153,55 @@
   erklaerung: "Maven (pom.xml) oder Gradle für Java, die dotnet CLI mit .csproj-Dateien und NuGet-Paketen für .NET."
   artikel: "#ueberblick"
   tags: [java, csharp, build]
+
+# --- Interaktive Aufgaben ---
+
+- id: se-cj-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem C#-Konzept das Java-Gegenstück zu."
+  paare:
+    - ["decimal", "BigDecimal"]
+    - ["LINQ", "Streams"]
+    - ["NuGet", "Maven Central"]
+    - [".csproj", "pom.xml"]
+    - ["NUnit", "JUnit 5"]
+    - ["Property { get; set; }", "Getter- und Setter-Methoden"]
+  erklaerung: "Die Sprachen sind sehr ähnlich; für Geldbeträge nimmt man in beiden einen exakten Dezimaltyp statt double."
+  artikel: "#ueberblick"
+  tags: [csharp, java]
+
+- id: se-cj-013
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile führt bei Geldbeträgen zu Rundungsfehlern?"
+  sprache: java
+  code: |
+    double preis = 0.10;
+    double summe = 0;
+    for (int i = 0; i < 3; i++) {
+        summe += preis;
+    }
+    System.out.println(summe); // 0.30000000000000004
+  richtig: [0]
+  erklaerung: "double ist ein binärer Gleitkommatyp und kann 0,10 nicht exakt darstellen. Für Geld: BigDecimal (Java) bzw. decimal (C#)."
+  artikel: "#typen"
+  tags: [java, typen]
+
+- id: se-cj-014
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die LINQ-Abfrage: alle Produkte über 50 € nach Preis sortiert."
+  sprache: csharp
+  text: |
+    var teuer = produkte
+        .___(p => p.Preis > 50m)
+        .___(p => p.Preis)
+        .ToList();
+  luecken:
+    - ["Where"]
+    - ["OrderBy"]
+  exakt: true
+  erklaerung: "In Java-Streams heißt das filter(...) und sorted(Comparator.comparing(...))."
+  artikel: "#linq-streams"
+  tags: [csharp, linq]

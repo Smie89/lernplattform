@@ -162,3 +162,46 @@
   erklaerung: "Wahr. Gelöschte Dateien sind weg – die Probe ohne -delete zeigt die Trefferliste gefahrlos an."
   artikel: "#find"
   tags: [linux, find, sicherheit]
+
+# --- Interaktive Aufgaben ---
+
+- id: li-tp-013
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Pipeline: Wie oft kommt jedes Level in testlauf.log vor, häufigstes zuerst?"
+  sprache: bash
+  text: "awk '{print $3}' testlauf.log | ___ | uniq -c | sort -___"
+  luecken:
+    - ["sort"]
+    - ["rn", "nr"]
+  erklaerung: "uniq zählt nur benachbarte gleiche Zeilen – deshalb vorher sortieren. sort -rn sortiert numerisch absteigend."
+  artikel: "#auswertung-level"
+  tags: [linux, pipes]
+
+- id: li-tp-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Umleitung ihre Wirkung zu."
+  paare:
+    - ["> datei", "Ausgabe in die Datei schreiben, Inhalt ersetzen"]
+    - [">> datei", "Ausgabe an die Datei anhängen"]
+    - ["2> fehler.log", "Nur Fehlerausgabe in eine Datei"]
+    - ["2>&1", "Fehlerausgabe auf dieselbe Stelle wie die normale Ausgabe"]
+    - ["| befehl", "Ausgabe als Eingabe an den nächsten Befehl"]
+  erklaerung: "Kanal 1 ist stdout, Kanal 2 ist stderr."
+  artikel: "#umleitungen"
+  tags: [linux, umleitungen]
+
+- id: li-tp-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder grep-Option ihre Wirkung zu."
+  paare:
+    - ["-i", "Groß- und Kleinschreibung ignorieren"]
+    - ["-v", "Nur Zeilen OHNE Treffer"]
+    - ["-c", "Treffer zählen"]
+    - ["-n", "Zeilennummern anzeigen"]
+    - ["-r", "Rekursiv in Verzeichnissen suchen"]
+  erklaerung: "Kombinierbar, z. B. grep -in error app.log."
+  artikel: "#grep"
+  tags: [linux, grep]

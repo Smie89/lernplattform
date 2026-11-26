@@ -148,3 +148,55 @@
   erklaerung: "Wer jeden internen Aufruf prüft, koppelt die Tests an die Implementierung. Prüfe Aufrufe nur dort, wo sie das gewünschte Ergebnis sind."
   artikel: "#typische-fehler"
   tags: [mocking, fallstricke]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-ns-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Art von Testdouble die Beschreibung zu."
+  paare:
+    - ["Dummy", "Wird nur übergeben, aber nie benutzt"]
+    - ["Stub", "Liefert vorgegebene Antworten"]
+    - ["Mock", "Prüft, ob und wie er aufgerufen wurde"]
+    - ["Fake", "Vereinfachte, funktionierende Implementierung, z. B. In-Memory-Speicher"]
+  erklaerung: "Stubs steuern indirekte Eingaben, Mocks prüfen indirekte Ausgaben."
+  artikel: "#arten"
+  tags: [nsubstitute, testdoubles]
+
+- id: ta-ns-013
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den NSubstitute-Code: Der Stub soll 5 zurückgeben, danach wird geprüft, dass Speichern genau einmal aufgerufen wurde."
+  sprache: csharp
+  text: |
+    var lager = Substitute.For<ILager>();
+    lager.Bestand("Buch").___(5);
+
+    service.Bestellen("Buch", 1);
+
+    speicher.___().Speichern(Arg.Any<Bestellung>());
+  luecken:
+    - ["Returns"]
+    - ["Received"]
+  exakt: true
+  erklaerung: "Returns legt Rückgabewerte fest (Stub), Received prüft Aufrufe (Mock). Received() ohne Zahl bedeutet genau einmal."
+  artikel: "#received"
+  tags: [nsubstitute, csharp]
+
+- id: ta-ns-014
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Diese Klasse ist schwer zu testen. Welche Zeile verhindert, dass man im Test ein Testdouble einsetzen kann?"
+  sprache: csharp
+  code: |
+    public class BestellService
+    {
+        private readonly ZahlungsClient zahlung = new ZahlungsClient("https://pay.example");
+
+        public bool Bestellen(Bestellung b) => zahlung.Abbuchen(b.Summe);
+    }
+  richtig: [2]
+  erklaerung: "Die Abhängigkeit wird fest mit new erzeugt. Besser: ein Interface IZahlung über den Konstruktor übergeben (Dependency Injection)."
+  artikel: "#testbarer-code"
+  tags: [nsubstitute, testbarkeit]

@@ -181,3 +181,49 @@
   erklaerung: "Schnelle Rückmeldung in Minuten ist entscheidend, damit Entwickler die Ergebnisse nutzen."
   artikel: "#pipeline"
   tags: [security, ci]
+
+# --- Interaktive Aufgaben ---
+
+- id: sec-st-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Werkzeug seine Prüfart zu."
+  paare:
+    - ["Bandit", "SAST: Quellcode analysieren"]
+    - ["Dependabot", "SCA: Abhängigkeiten auf bekannte Lücken prüfen"]
+    - ["gitleaks", "Secret Scanning"]
+    - ["ZAP", "DAST: laufende Anwendung angreifen"]
+    - ["Trivy", "Container-Images scannen"]
+  erklaerung: "Die Werkzeuge ergänzen sich – keines findet alles, und keines findet Fachlogik-Fehler wie IDOR."
+  artikel: "#shift-left"
+  tags: [security, devsecops]
+
+- id: sec-st-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem STRIDE-Buchstaben ein Beispiel aus dem Mini-Shop zu."
+  paare:
+    - ["S – Spoofing", "Anmeldung mit gestohlenem Passwort"]
+    - ["T – Tampering", "Preis im Bestell-Request ändern"]
+    - ["R – Repudiation", "„Diese Bestellung habe ich nie aufgegeben“"]
+    - ["I – Information Disclosure", "Fremde Bestellungen lesen"]
+    - ["D – Denial of Service", "10 000 Bestellungen pro Sekunde"]
+    - ["E – Elevation of Privilege", "\"istAdmin\": true im Profil-Request"]
+  erklaerung: "STRIDE hilft, an jeder Vertrauensgrenze systematisch nach Bedrohungen zu fragen."
+  artikel: "#threat-modeling"
+  tags: [security, stride]
+
+- id: sec-st-016
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Schritte eines Penetrationstests in die richtige Reihenfolge."
+  elemente:
+    - "Schriftlicher Auftrag und Scope"
+    - "Informationsbeschaffung"
+    - "Schwachstellenanalyse"
+    - "Ausnutzung zum Nachweis"
+    - "Bericht"
+    - "Nachtest"
+  erklaerung: "Ohne schriftlichen Auftrag beginnt kein Test. Der Nachtest prüft, ob die gemeldeten Lücken wirklich behoben sind."
+  artikel: "#pentest"
+  tags: [security, pentest]

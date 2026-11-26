@@ -162,3 +162,56 @@
   erklaerung: "--wait blockiert, bis die Umgebung bereit ist – danach können die Tests sicher starten."
   artikel: "#healthchecks"
   tags: [compose, ci]
+
+# --- Interaktive Aufgaben ---
+
+- id: dk-dc-013
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die compose.yaml: Die API soll erst starten, wenn die Datenbank gesund ist."
+  sprache: yaml
+  text: |
+    services:
+      api:
+        build: .
+        depends_on:
+          db:
+            condition: ___
+  luecken:
+    - ["service_healthy"]
+  exakt: true
+  erklaerung: "Ohne condition wartet Compose nur auf den Start des Containers, nicht darauf, dass die Datenbank Verbindungen annimmt. Die Datenbank braucht dazu einen healthcheck."
+  artikel: "#healthchecks"
+  tags: [docker, compose]
+
+- id: dk-dc-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Compose-Befehl seine Wirkung zu."
+  paare:
+    - ["docker compose up -d", "Alle Dienste im Hintergrund starten"]
+    - ["docker compose ps", "Status der Dienste anzeigen"]
+    - ["docker compose logs -f api", "Logs eines Dienstes verfolgen"]
+    - ["docker compose down", "Dienste stoppen und Container entfernen"]
+    - ["docker compose down -v", "Zusätzlich die Volumes löschen"]
+  erklaerung: "down -v sorgt für eine saubere Testumgebung beim nächsten Start."
+  artikel: "#befehle"
+  tags: [docker, compose]
+
+- id: dk-dc-015
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile gehört so nicht in eine eingecheckte compose.yaml?"
+  sprache: yaml
+  code: |
+    services:
+      db:
+        image: postgres:17
+        environment:
+          POSTGRES_PASSWORD: Sommer2026!
+        healthcheck:
+          test: ["CMD", "pg_isready"]
+  richtig: [4]
+  erklaerung: "Passwörter gehören nicht ins Repository. Besser: POSTGRES_PASSWORD: ${DB_PASSWORT} mit einer nicht eingecheckten .env-Datei oder einem CI-Secret."
+  artikel: "#env"
+  tags: [docker, compose, secrets]

@@ -153,3 +153,55 @@
   erklaerung: "Kleine, stetige Verbesserungen – mit Tests als Sicherheitsnetz – halten Code dauerhaft wartbar."
   artikel: "#pfadfinder"
   tags: [clean-code]
+
+# --- Interaktive Aufgaben ---
+
+- id: se-cc-012
+  typ: fehler-finden
+  schwierigkeit: 1
+  frage: "Welche Zeile enthält eine Magic Number?"
+  sprache: csharp
+  code: |
+    public decimal Endpreis(decimal summe, bool stammkunde)
+    {
+        var rabatt = stammkunde ? StammkundenRabatt : 0m;
+        if (summe >= 100m) rabatt += 0.05m;
+        return summe * (1 - rabatt);
+    }
+  richtig: [3]
+  erklaerung: "100m und 0.05m haben keine Namen – was bedeuten sie? Besser: Konstanten wie RabattSchwelle und MengenRabatt."
+  artikel: "#magic-numbers"
+  tags: [clean-code]
+
+- id: se-cc-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Prinzip seine Bedeutung zu."
+  paare:
+    - ["DRY", "Wissen nicht doppelt im Code ablegen"]
+    - ["KISS", "Die einfachste Lösung wählen, die funktioniert"]
+    - ["YAGNI", "Nichts auf Vorrat bauen, was noch niemand braucht"]
+    - ["Pfadfinderregel", "Code ein wenig sauberer hinterlassen, als man ihn vorgefunden hat"]
+  erklaerung: "Die Prinzipien ergänzen sich – übertriebenes DRY kann z. B. KISS verletzen."
+  artikel: "#prinzipien"
+  tags: [clean-code]
+
+- id: se-cc-014
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile verschluckt einen Fehler und macht ihn unsichtbar?"
+  sprache: csharp
+  code: |
+    public Bestellung? Laden(int id)
+    {
+        try
+        {
+            return repository.Finde(id);
+        }
+        catch (Exception) { }
+        return null;
+    }
+  richtig: [6]
+  erklaerung: "Ein leerer catch-Block versteckt Datenbankfehler genauso wie 'nicht gefunden'. Mindestens protokollieren, besser nur erwartete Ausnahmen fangen."
+  artikel: "#fehlerbehandlung"
+  tags: [clean-code, fehlerbehandlung]

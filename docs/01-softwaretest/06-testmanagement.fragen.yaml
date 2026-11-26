@@ -162,3 +162,42 @@
   erklaerung: "Ohne eindeutige Versionen sind Testergebnisse nicht reproduzierbar und nicht nachvollziehbar."
   artikel: "#konfiguration"
   tags: [softwaretest, konfigurationsmanagement]
+
+# --- Interaktive Aufgaben ---
+
+- id: st-tm-013
+  typ: lueckentext
+  schwierigkeit: 1
+  frage: "Ergänze die Formel für das Produktrisiko."
+  text: "Risiko = Eintrittswahrscheinlichkeit × ___"
+  luecken:
+    - ["Schadensausmaß", "Schadenshöhe", "Schaden", "Auswirkung"]
+  erklaerung: "Je höher das Risiko, desto früher und gründlicher wird getestet."
+  artikel: "#risikomatrix"
+  tags: [softwaretest, risiko]
+
+- id: st-tm-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Dokument bzw. Begriff seinen Inhalt zu."
+  paare:
+    - ["Testkonzept", "Umfang, Vorgehen, Ressourcen und Zeitplan des Testens"]
+    - ["Eingangskriterium", "Testumgebung steht und Testdaten sind vorhanden"]
+    - ["Endekriterium", "Keine offenen kritischen Fehler, alle Hochrisiko-Tests bestanden"]
+    - ["Testbericht", "Zusammenfassung von Fortschritt, Ergebnissen und Risiken"]
+  erklaerung: "Eingangskriterien sagen, wann man anfangen kann, Endekriterien, wann man aufhören darf."
+  artikel: "#kriterien"
+  tags: [softwaretest, testmanagement]
+
+- id: st-tm-015
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe diese Shop-Funktionen nach ihrem Risiko in eine Testreihenfolge (höchstes Risiko zuerst)."
+  elemente:
+    - "Bezahlung und Bestellung abschließen"
+    - "Preise und Rabatte berechnen"
+    - "Produktsuche"
+    - "Farbe des Footers"
+  erklaerung: "Funktionen mit hoher Wahrscheinlichkeit und großem Schaden zuerst – beim risikobasierten Testen bekommt der Footer zuletzt Aufmerksamkeit."
+  artikel: "#risikobasiert"
+  tags: [softwaretest, risiko]

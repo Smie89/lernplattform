@@ -148,3 +148,44 @@
   erklaerung: "Falsch. Verantwortung tragen die Menschen und Organisationen, die das System entwickeln, einsetzen und Entscheidungen freigeben."
   artikel: "#ethik"
   tags: [ki, verantwortung]
+
+# --- Interaktive Aufgaben ---
+
+- id: ki-re-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedes KI-System der Risikoklasse nach dem AI Act zu."
+  paare:
+    - ["Social Scoring durch Behörden", "Unannehmbares Risiko – verboten"]
+    - ["KI, die Bewerbungen vorsortiert", "Hohes Risiko – strenge Pflichten"]
+    - ["Kundenservice-Chatbot", "Begrenztes Risiko – Transparenzpflicht"]
+    - ["Spamfilter", "Minimales Risiko – keine besonderen Pflichten"]
+  erklaerung: "Dasselbe Verfahren kann je nach Einsatz in eine ganz andere Klasse fallen."
+  artikel: "#risikoklassen"
+  tags: [ki, ai-act]
+
+- id: ki-re-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem ethischen Grundsatz die passende Frage zu."
+  paare:
+    - ["Fairness", "Werden Gruppen benachteiligt?"]
+    - ["Transparenz", "Wissen Betroffene, dass KI beteiligt ist?"]
+    - ["Verantwortung", "Wer haftet, wer entscheidet?"]
+    - ["Privatsphäre", "Werden Daten sparsam und geschützt verarbeitet?"]
+    - ["Nachhaltigkeit", "Steht der Nutzen im Verhältnis zum Ressourcenverbrauch?"]
+  erklaerung: "Menschen bleiben für Entscheidungen verantwortlich – nicht das System."
+  artikel: "#ethik"
+  tags: [ki, ethik]
+
+- id: ki-re-014
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die gestaffelten Pflichten des AI Act in die zeitliche Reihenfolge."
+  elemente:
+    - "Verbote unzulässiger Praktiken und KI-Kompetenz"
+    - "Pflichten für Anbieter von KI-Modellen mit allgemeinem Verwendungszweck"
+    - "Großteil der übrigen Pflichten, insbesondere für Hochrisiko-Systeme"
+  erklaerung: "Februar 2025, August 2025, ab August 2026 bzw. später – für konkrete Projekte den aktuellen Stand prüfen."
+  artikel: "#ai-act"
+  tags: [ki, ai-act]

@@ -139,3 +139,42 @@
   erklaerung: "Erst Bedingungen, dann Klassen, dann Grenzwerte, dann Tabelle – jeder Schritt lässt sich einzeln prüfen."
   artikel: "#schrittweise"
   tags: [ki, prompting]
+
+# --- Interaktive Aufgaben ---
+
+- id: ki-pr-011
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Teil dieses Prompts den Baustein zu."
+  paare:
+    - ["„Du bist erfahrene Testerin für Webshops.“", "Rolle / Situation"]
+    - ["„Ab 100 € gibt es 10 % Rabatt, Stammkunden zusätzlich 5 %.“", "Kontext"]
+    - ["„Erstelle Testfälle mit Grenzwertanalyse.“", "Aufgabe"]
+    - ["„Als Tabelle: ID, Eingabe, erwartetes Ergebnis.“", "Ausgabeformat"]
+    - ["„Erfinde keine Anforderungen.“", "Einschränkungen"]
+  erklaerung: "Je klarer die Bausteine, desto weniger muss das Modell raten."
+  artikel: "#bausteine"
+  tags: [ki, prompting]
+
+- id: ki-pr-012
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe einen sinnvollen Arbeitsablauf mit einem Prompt in die richtige Reihenfolge."
+  elemente:
+    - "Ziel und Kontext klären"
+    - "Prompt mit Rolle, Aufgabe und Format schreiben"
+    - "Ergebnis prüfen"
+    - "Prompt gezielt nachschärfen"
+    - "Ergebnis fachlich prüfen, bevor es verwendet wird"
+  erklaerung: "Prompting ist iterativ – und das Ergebnis bleibt ein Vorschlag, den ein Mensch prüft."
+  artikel: "#iterieren"
+  tags: [ki, prompting]
+
+- id: ki-pr-013
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Few-Shot-Prompting bedeutet, dem Modell im Prompt einige Beispiele für die gewünschte Ausgabe mitzugeben."
+  richtig: [0]
+  erklaerung: "Wahr. Beispiele legen Format und Stil oft besser fest als lange Beschreibungen."
+  artikel: "#few-shot"
+  tags: [ki, prompting]

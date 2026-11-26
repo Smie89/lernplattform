@@ -148,3 +148,46 @@
   erklaerung: "Beide Stufen müssen getrennt getestet werden: Findet die Suche die richtigen Dokumente, und gibt das Modell sie korrekt wieder?"
   artikel: "#rag"
   tags: [ki, rag]
+
+# --- Interaktive Aufgaben ---
+
+- id: ki-llm-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Begriff die Bedeutung zu."
+  paare:
+    - ["Token", "Wortteil, in dem ein LLM Text verarbeitet"]
+    - ["Kontextfenster", "Wie viel Text das Modell auf einmal berücksichtigen kann"]
+    - ["Temperatur", "Wie zufällig das nächste Token gewählt wird"]
+    - ["Halluzination", "Plausibel klingende, aber falsche Aussage"]
+    - ["RAG", "Passende Dokumente suchen und in den Prompt geben"]
+    - ["Embedding", "Text als Zahlenvektor für Ähnlichkeitssuche"]
+  erklaerung: "Diese Begriffe erklären die meisten Stärken und Schwächen von LLMs."
+  artikel: "#was"
+  tags: [ki, llm]
+
+- id: ki-llm-013
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe den Ablauf von RAG in die richtige Reihenfolge."
+  elemente:
+    - "Dokumente in Abschnitte teilen und als Embeddings speichern"
+    - "Frage des Nutzers als Embedding berechnen"
+    - "Ähnlichste Abschnitte suchen"
+    - "Abschnitte zusammen mit der Frage an das LLM geben"
+    - "LLM antwortet auf Grundlage der Abschnitte"
+  erklaerung: "RAG verringert Halluzinationen und bringt aktuelles oder internes Wissen in die Antwort."
+  artikel: "#rag"
+  tags: [ki, rag]
+
+- id: ki-llm-014
+  typ: reihenfolge
+  schwierigkeit: 3
+  frage: "Bringe die Trainingsphasen eines Chat-LLMs in die richtige Reihenfolge."
+  elemente:
+    - "Vortraining: nächstes Token auf riesigen Textmengen vorhersagen"
+    - "Feinabstimmung mit Beispielen für gute Antworten"
+    - "Ausrichtung mit menschlichem Feedback"
+  erklaerung: "Das Vortraining liefert Sprachwissen, die späteren Phasen machen daraus einen hilfreichen Assistenten."
+  artikel: "#training"
+  tags: [ki, training]

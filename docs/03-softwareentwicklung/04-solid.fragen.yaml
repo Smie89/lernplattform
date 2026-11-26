@@ -148,3 +148,59 @@
   erklaerung: "Erweiterbarkeit auf Vorrat verletzt YAGNI. Sinnvoll ist sie dort, wo Änderungen tatsächlich häufig sind."
   artikel: "#ocp"
   tags: [solid, ocp, yagni]
+
+# --- Interaktive Aufgaben ---
+
+- id: se-so-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem SOLID-Prinzip seine Kernaussage zu."
+  paare:
+    - ["Single Responsibility", "Eine Klasse hat nur einen Grund, sich zu ändern"]
+    - ["Open/Closed", "Offen für Erweiterung, geschlossen für Änderung"]
+    - ["Liskov Substitution", "Unterklassen müssen sich wie ihre Basisklasse verwenden lassen"]
+    - ["Interface Segregation", "Kleine, passende Interfaces statt eines großen"]
+    - ["Dependency Inversion", "Von Abstraktionen abhängen, nicht von konkreten Klassen"]
+  erklaerung: "Besonders Dependency Inversion macht Code testbar, weil man Abhängigkeiten durch Testdoubles ersetzen kann."
+  artikel: "#ueberblick"
+  tags: [solid]
+
+- id: se-so-013
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Diese Methode verletzt Open/Closed: Für jede neue Versandart muss sie geändert werden. In welcher Zeile zeigt sich das?"
+  sprache: csharp
+  code: |
+    public decimal Versandkosten(string art, decimal gewicht)
+    {
+        switch (art)
+        {
+            case "standard": return 4.90m;
+            case "express": return 9.90m + gewicht * 0.5m;
+            default: throw new ArgumentException(art);
+        }
+    }
+  richtig: [2]
+  erklaerung: "Der switch über einen Typ-Code wächst mit jeder neuen Art. Besser: ein Interface IVersandart mit einer Klasse pro Art (Strategie-Muster)."
+  artikel: "#ocp"
+  tags: [solid, ocp]
+
+- id: se-so-014
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Welche Zeile verletzt das Liskovsche Substitutionsprinzip?"
+  sprache: csharp
+  code: |
+    public class Konto
+    {
+        public virtual void Abheben(decimal betrag) => Saldo -= betrag;
+    }
+
+    public class Sparbuch : Konto
+    {
+        public override void Abheben(decimal betrag) => throw new NotSupportedException();
+    }
+  richtig: [7]
+  erklaerung: "Code, der mit Konto arbeitet, erwartet, dass Abheben funktioniert. Wirft die Unterklasse stattdessen, kann man sie nicht überall einsetzen, wo ein Konto erwartet wird."
+  artikel: "#lsp"
+  tags: [solid, lsp]

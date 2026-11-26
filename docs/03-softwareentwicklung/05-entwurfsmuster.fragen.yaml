@@ -153,3 +153,53 @@
   erklaerung: "Muster lösen konkrete Probleme. Ohne das Problem erhöhen sie nur die Komplexität."
   artikel: "#typische-fehler"
   tags: [entwurfsmuster, yagni]
+
+# --- Interaktive Aufgaben ---
+
+- id: se-em-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Entwurfsmuster seinen Zweck zu."
+  paare:
+    - ["Strategie", "Austauschbare Algorithmen hinter einem Interface"]
+    - ["Fabrikmethode", "Erzeugung von Objekten an eine Methode delegieren"]
+    - ["Builder", "Komplexe Objekte schrittweise und lesbar aufbauen"]
+    - ["Dekorierer", "Verhalten hinzufügen, ohne die Klasse zu ändern"]
+    - ["Beobachter", "Interessenten über Änderungen benachrichtigen"]
+    - ["Repository", "Datenzugriff hinter einer fachlichen Schnittstelle kapseln"]
+  erklaerung: "Muster sind bewährte Lösungen mit gemeinsamem Namen – sie erleichtern vor allem die Verständigung im Team."
+  artikel: "#was"
+  tags: [entwurfsmuster]
+
+- id: se-em-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Welches Muster steckt hinter diesem Baustein der Testautomation?"
+  paare:
+    - ["WarenkorbBuilder.EinWarenkorb().Mit(buch)", "Builder"]
+    - ["ShopApiClient mit fachlichen Methoden verbirgt HTTP", "Fassade"]
+    - ["Retry-Wrapper um einen API-Client", "Dekorierer"]
+    - ["Austauschbare Warte- und Wiederholungsstrategien", "Strategie"]
+    - ["Browserauswahl per Konfiguration", "Fabrik"]
+  erklaerung: "Die Testautomation nutzt dieselben Muster wie der Produktivcode."
+  artikel: "#muster-testautomation"
+  tags: [entwurfsmuster, testautomation]
+
+- id: se-em-014
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Welche Zeile macht diesen Code schwer testbar?"
+  sprache: csharp
+  code: |
+    public class BestellService
+    {
+        public void Bestellen(Bestellung b)
+        {
+            var log = Logger.Instance;
+            log.Info($"Bestellung {b.Id}");
+        }
+    }
+  richtig: [4]
+  erklaerung: "Der Zugriff auf ein globales Singleton ist eine versteckte Abhängigkeit – im Test lässt sie sich kaum ersetzen. Besser per Konstruktor übergeben."
+  artikel: "#singleton"
+  tags: [entwurfsmuster, singleton]

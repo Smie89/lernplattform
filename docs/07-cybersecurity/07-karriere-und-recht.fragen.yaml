@@ -148,3 +148,46 @@
   erklaerung: "Nachweisbare Praxis zeigt, wie man denkt und arbeitet. Zertifikate ergänzen das."
   artikel: "#portfolio"
   tags: [security, karriere, portfolio]
+
+# --- Interaktive Aufgaben ---
+
+- id: sec-kr-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Rolle ihre Hauptaufgabe zu."
+  paare:
+    - ["SOC-Analyst", "Alarme sichten und eskalieren"]
+    - ["Penetration Tester", "Systeme im Auftrag angreifen und Berichte schreiben"]
+    - ["Application Security Engineer", "Entwicklungsteams beraten, Bedrohungsmodellierung"]
+    - ["Detection Engineer", "Erkennungsregeln entwickeln und testen"]
+    - ["Informationssicherheitsbeauftragter", "Richtlinien, Risikoanalysen, Audits"]
+  erklaerung: "Vom Testen aus liegen Security-Testing, AppSec und DevSecOps am nächsten."
+  artikel: "#berufsbilder"
+  tags: [security, karriere]
+
+- id: sec-kr-013
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Du entdeckst zufällig eine Lücke bei einem fremden Dienst. In welcher Reihenfolge gehst du vor?"
+  elemente:
+    - "Nicht weiter testen"
+    - "Meldeweg suchen (Bug Bounty, security.txt)"
+    - "Beobachtung sachlich melden"
+    - "Dem Betreiber Zeit zur Behebung geben"
+    - "Erst danach öffentlich darüber sprechen"
+  erklaerung: "So funktioniert Responsible bzw. Coordinated Disclosure. Bei fehlender Reaktion können BSI oder CERTs vermitteln."
+  artikel: "#disclosure"
+  tags: [security, disclosure]
+
+- id: sec-kr-014
+  typ: zuordnen
+  schwierigkeit: 3
+  frage: "Ordne die Paragrafen des StGB zu."
+  paare:
+    - ["§ 202a", "Ausspähen von Daten"]
+    - ["§ 202b", "Abfangen von Daten"]
+    - ["§ 202c", "Vorbereiten des Ausspähens und Abfangens"]
+    - ["§ 303b", "Computersabotage"]
+  erklaerung: "Ohne schriftliche Erlaubnis kann schon das Überwinden einer Zugangssicherung strafbar sein."
+  artikel: "#recht"
+  tags: [security, recht]

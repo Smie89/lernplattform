@@ -49,14 +49,18 @@ const config = {
   ],
 
   plugins: [
-    // Erlaubt "import fragen from './x.fragen.yaml'" in MDX-Dateien
-    function yamlLoaderPlugin() {
+    // Erlaubt "import fragen from './x.fragen.yaml'" in MDX-Dateien.
+    // Fragen-Dateien laufen durch einen eigenen Loader, der Lektion, Bereich und Seite ergänzt.
+    function yamlLoaderPlugin(context) {
       return {
         name: 'yaml-loader-plugin',
         configureWebpack() {
           return {
             module: {
-              rules: [{test: /\.ya?ml$/, use: 'yaml-loader'}],
+              rules: [
+                {test: /\.fragen\.yaml$/, use: `${context.siteDir}/plugins/fragen-loader.cjs`},
+                {test: /\.ya?ml$/, exclude: /\.fragen\.yaml$/, use: 'yaml-loader'},
+              ],
             },
           };
         },
@@ -91,6 +95,7 @@ const config = {
         },
         items: [
           {type: 'docSidebar', sidebarId: 'lernSidebar', position: 'left', label: 'Lernbereiche'},
+          {to: '/wiederholen', label: '🔁 Wiederholen', position: 'left'},
           {
             href: 'https://github.com/Smie89/lernplattform',
             label: 'GitHub',
@@ -105,7 +110,7 @@ const config = {
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
-        additionalLanguages: ['csharp', 'java', 'bash', 'docker', 'yaml', 'json', 'powershell', 'gherkin'],
+        additionalLanguages: ['csharp', 'java', 'bash', 'docker', 'yaml', 'json', 'powershell', 'gherkin', 'sql'],
       },
     }),
 };

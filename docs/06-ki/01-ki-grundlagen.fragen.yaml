@@ -153,3 +153,42 @@
   erklaerung: "Mehrdeutige oder fehlerhafte Labels sind eine häufige Grenze für ML-Systeme – Daten zu prüfen gehört zum Testen."
   artikel: "#konfusionsmatrix"
   tags: [ki, daten]
+
+# --- Interaktive Aufgaben ---
+
+- id: ki-gl-012
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Feld der Konfusionsmatrix das Beispiel zu (positiv = Bewertung ist negativ und wird nachgeprüft)."
+  paare:
+    - ["True Positive", "Beschwerde wird als Beschwerde erkannt"]
+    - ["False Positive", "Lob wird fälschlich als Beschwerde eingestuft"]
+    - ["False Negative", "Beschwerde wird übersehen"]
+    - ["True Negative", "Lob wird als Lob erkannt"]
+  erklaerung: "Welche Fehlerart schlimmer ist, hängt vom Einsatz ab – im Beispiel ist eine übersehene Beschwerde teurer."
+  artikel: "#konfusionsmatrix"
+  tags: [ki, metriken]
+
+- id: ki-gl-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Lernart das Beispiel zu."
+  paare:
+    - ["Überwachtes Lernen", "Bewertungen mit Label positiv/negativ klassifizieren"]
+    - ["Unüberwachtes Lernen", "Kunden ohne Vorgaben in Gruppen einteilen"]
+    - ["Bestärkendes Lernen", "Ein Agent lernt ein Spiel durch Belohnung"]
+  erklaerung: "Der Klassifikator im Beispielprojekt ist überwachtes Lernen."
+  artikel: "#lernarten"
+  tags: [ki, lernarten]
+
+- id: ki-gl-014
+  typ: lueckentext
+  schwierigkeit: 3
+  frage: "Ergänze die Formeln."
+  text: "Präzision = TP / (TP + ___) · Sensitivität (Recall) = TP / (TP + ___)"
+  luecken:
+    - ["FP"]
+    - ["FN"]
+  erklaerung: "Präzision: Wie viele der Treffer stimmen? Sensitivität: Wie viele der echten Fälle werden gefunden?"
+  artikel: "#metriken"
+  tags: [ki, metriken]

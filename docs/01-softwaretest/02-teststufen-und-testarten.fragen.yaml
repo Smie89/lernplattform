@@ -162,3 +162,44 @@
   erklaerung: "White-Box-Tests leiten Testfälle aus der internen Struktur ab und messen z. B., welche Anweisungen und Zweige durchlaufen wurden."
   artikel: "#black-white-box"
   tags: [softwaretest, white-box]
+
+# --- Interaktive Aufgaben ---
+
+- id: st-ts-013
+  typ: reihenfolge
+  schwierigkeit: 1
+  frage: "Bringe die vier Teststufen in die Reihenfolge, in der sie typischerweise durchlaufen werden."
+  elemente:
+    - "Komponententest"
+    - "Integrationstest"
+    - "Systemtest"
+    - "Abnahmetest"
+  erklaerung: "Von der kleinsten Einheit über das Zusammenspiel bis zum ganzen System und schließlich zur Abnahme durch Nutzer oder Kunden."
+  artikel: "#teststufen"
+  tags: [softwaretest, teststufen]
+
+- id: st-ts-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Teststufe die passende Frage zu."
+  paare:
+    - ["Komponententest", "Rechnet die Rabattklasse richtig?"]
+    - ["Integrationstest", "Speichert der Controller die Bestellung korrekt in der Datenbank?"]
+    - ["Systemtest", "Kann man im gesamten Shop von der Suche bis zur Bestellung einkaufen?"]
+    - ["Abnahmetest", "Erfüllt der Shop die Erwartungen des Fachbereichs?"]
+  erklaerung: "Jede Stufe hat ihr eigenes Testobjekt und eigene Ziele."
+  artikel: "#teststufen"
+  tags: [softwaretest, teststufen]
+
+- id: st-ts-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Funktional oder nicht-funktional? Ordne das Qualitätsmerkmal dem Beispiel zu."
+  paare:
+    - ["Funktionale Eignung", "Der Rabatt wird korrekt berechnet"]
+    - ["Performanz", "Die Suche antwortet bei 500 Nutzern in unter 1 Sekunde"]
+    - ["Benutzbarkeit", "Neue Kunden finden den Bestellknopf ohne Hilfe"]
+    - ["Sicherheit", "Niemand sieht fremde Bestellungen"]
+  erklaerung: "Funktionale Tests prüfen WAS das System tut, nicht-funktionale WIE GUT es das tut."
+  artikel: "#testarten"
+  tags: [softwaretest, testarten]

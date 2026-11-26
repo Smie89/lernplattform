@@ -148,3 +148,50 @@
   erklaerung: "Ransomware verschlüsselt alles, was sie erreicht. Und ein nie getestetes Backup ist nur eine Hoffnung."
   artikel: "#backups"
   tags: [security, backup, ransomware]
+
+# --- Interaktive Aufgaben ---
+
+- id: sec-hd-012
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem Port den Dienst zu."
+  paare:
+    - ["22", "SSH"]
+    - ["443", "HTTPS"]
+    - ["3389", "RDP"]
+    - ["5432", "PostgreSQL"]
+    - ["6379", "Redis"]
+  erklaerung: "Datenbanken, Redis und RDP gehören nie direkt ins Internet."
+  artikel: "#netzwerk"
+  tags: [security, ports]
+
+- id: sec-hd-013
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die SSH-Härtung in /etc/ssh/sshd_config.d/haertung.conf."
+  sprache: text
+  text: |
+    PasswordAuthentication ___
+    PermitRootLogin ___
+    AllowUsers anna ben
+  luecken:
+    - ["no"]
+    - ["no"]
+  erklaerung: "Nur noch Schlüssel statt Passwort, und kein direkter root-Login – Anmeldung als normaler Benutzer, dann sudo."
+  artikel: "#ssh"
+  tags: [security, ssh]
+
+- id: sec-hd-014
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile ist hier der kritische Befund?"
+  sprache: text
+  code: |
+    Netid State  Local Address:Port  Process
+    tcp   LISTEN 0.0.0.0:22          sshd
+    tcp   LISTEN 127.0.0.1:5432      postgres
+    tcp   LISTEN 0.0.0.0:6379        redis-server
+  richtig: [3]
+  erklaerung: "Redis lauscht auf allen Schnittstellen (0.0.0.0). PostgreSQL ist nur lokal erreichbar (127.0.0.1), SSH ist gewollt öffentlich."
+  artikel: "#ports"
+  tags: [security, ports]

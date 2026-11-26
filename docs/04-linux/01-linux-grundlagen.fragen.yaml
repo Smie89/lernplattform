@@ -157,3 +157,48 @@
   erklaerung: "Der Platzhalter * wird von der Shell vor der Ausführung durch alle passenden Dateinamen ersetzt."
   artikel: "#wildcards"
   tags: [linux, wildcards]
+
+# --- Interaktive Aufgaben ---
+
+- id: li-gl-013
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem Befehl seine Aufgabe zu."
+  paare:
+    - ["pwd", "Aktuelles Verzeichnis anzeigen"]
+    - ["ls -la", "Alle Dateien mit Details auflisten"]
+    - ["cd ..", "Eine Ebene nach oben wechseln"]
+    - ["mkdir -p a/b", "Verzeichnisse samt Zwischenebenen anlegen"]
+    - ["rm -r ordner", "Verzeichnis mit Inhalt löschen"]
+  erklaerung: "Vorsicht mit rm -r: Unter Linux gibt es keinen Papierkorb."
+  artikel: "#navigieren"
+  tags: [linux, grundlagen]
+
+- id: li-gl-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Verzeichnis seinen typischen Inhalt zu."
+  paare:
+    - ["/etc", "Konfigurationsdateien"]
+    - ["/home", "Persönliche Verzeichnisse der Benutzer"]
+    - ["/var/log", "Logdateien"]
+    - ["/tmp", "Temporäre Dateien"]
+    - ["/usr/bin", "Programme"]
+  erklaerung: "Die Verzeichnisstruktur ist auf allen Linux-Systemen sehr ähnlich – man findet sich schnell zurecht."
+  artikel: "#verzeichnisstruktur"
+  tags: [linux, grundlagen]
+
+- id: li-gl-015
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welcher Befehl scheitert, weil der Dateiname ein Leerzeichen enthält?"
+  sprache: bash
+  code: |
+    mkdir testberichte
+    cp "bericht 1.txt" testberichte/
+    cat testberichte/bericht 1.txt
+    ls testberichte
+  richtig: [2]
+  erklaerung: "Ohne Anführungszeichen sind 'testberichte/bericht' und '1.txt' zwei Argumente. Richtig: cat \"testberichte/bericht 1.txt\"."
+  artikel: "#leerzeichen"
+  tags: [linux, leerzeichen]

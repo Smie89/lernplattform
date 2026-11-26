@@ -2,6 +2,8 @@ import React, {useEffect, useMemo, useState, useCallback} from 'react';
 import Link from '@docusaurus/Link';
 import clsx from 'clsx';
 import styles from './styles.module.css';
+import {speichereErgebnis} from './fortschritt';
+import {mischen, typVon} from './typen';
 
 /*
  * Quiz-Komponente
@@ -11,65 +13,28 @@ import styles from './styles.module.css';
  *   import fragen from './meine-lektion.fragen.yaml';
  *   <Quiz fragen={fragen} titel="Quiz: Meine Lektion" />
  *
- * Format einer Frage (YAML):
- *   - id: eindeutige-id
- *     typ: single | multiple | wahr-falsch
- *     frage: "Fragetext"
- *     optionen: ["A", "B", "C"]      (bei wahr-falsch weglassen)
- *     richtig: [1]                   (Index ab 0; bei wahr-falsch: [0]=wahr, [1]=falsch)
- *     erklaerung: "Warum ..."
- *     artikel: "#anker" oder "/lernen/pfad#anker"
- *     schwierigkeit: 1-3
- *     tags: [ ... ]
+ * Gemeinsame Felder jeder Frage (YAML):
+ *   id, typ, frage, erklaerung, artikel ("#anker"), schwierigkeit (1-3), tags
+ *
+ * Fragetypen:
+ *   single | multiple    optionen: [...], richtig: [Index ab 0, ...]
+ *   wahr-falsch          richtig: [0] = wahr, [1] = falsch
+ *   fehler-finden        sprache: csharp, code: |-Block, richtig: [Zeilenindex ab 0, ...]
+ *   reihenfolge          elemente: [...] in der richtigen Reihenfolge (werden gemischt angezeigt)
+ *   zuordnen             paare: [[links, rechts], ...] (rechte Seiten müssen eindeutig sein)
+ *   lueckentext          text: "chmod ___ skript.sh", luecken: [["+x", "u+x"]], optional sprache, exakt: true
+ *
+ * Geprüft werden alle Fragen mit "npm run pruefen".
  */
 
-const SPEICHER_KEY = 'lernplattform.fortschritt.v1';
-
-function ladeFortschritt() {
-  try {
-    return JSON.parse(window.localStorage.getItem(SPEICHER_KEY)) || {};
-  } catch {
-    return {};
-  }
+function bereiteVor(frage, mischenErlaubt = true) {
+  return typVon(frage).vorbereiten(frage, mischenErlaubt);
 }
 
-function speichereErgebnis(id, korrekt) {
-  try {
-    const daten = ladeFortschritt();
-    const eintrag = daten[id] || {richtig: 0, falsch: 0};
-    if (korrekt) eintrag.richtig += 1;
-    else eintrag.falsch += 1;
-    eintrag.zuletzt = new Date().toISOString();
-    eintrag.zuletztRichtig = korrekt;
-    daten[id] = eintrag;
-    window.localStorage.setItem(SPEICHER_KEY, JSON.stringify(daten));
-  } catch {
-    // Speicher nicht verfügbar (z. B. privater Modus) – Quiz funktioniert trotzdem.
-  }
-}
-
-function mischen(liste) {
-  const kopie = [...liste];
-  for (let i = kopie.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [kopie[i], kopie[j]] = [kopie[j], kopie[i]];
-  }
-  return kopie;
-}
-
-/** Bereitet eine Frage auf: Optionen mischen, richtige Indizes mitführen. */
-function bereiteVor(frage, optionenMischen = true) {
-  const optionen =
-    frage.typ === 'wahr-falsch' ? ['Wahr', 'Falsch'] : frage.optionen || [];
-  const indiziert = optionen.map((text, index) => ({
-    text,
-    richtig: (frage.richtig || []).includes(index),
-  }));
-  return {
-    ...frage,
-    mehrfach: frage.typ === 'multiple',
-    optionen: frage.typ === 'wahr-falsch' || !optionenMischen ? indiziert : mischen(indiziert),
-  };
+function artikelZiel(frage, zeigeHerkunft) {
+  if (!frage.artikel) return null;
+  // Auf der Wiederholungsseite brauchen "#anker"-Links den Pfad der Lektion davor.
+  return zeigeHerkunft && frage.artikel.startsWith('#') && frage.seite ? frage.seite + frage.artikel : frage.artikel;
 }
 
 function Fortschrittsbalken({aktuell, gesamt}) {
@@ -81,31 +46,27 @@ function Fortschrittsbalken({aktuell, gesamt}) {
   );
 }
 
-export default function Quiz({fragen = [], titel = 'Quiz', mischeFragen = true}) {
+export default function Quiz({fragen = [], titel = 'Quiz', mischeFragen = true, zeigeHerkunft = false, onFertig}) {
   // Erst ungemischt rendern (identisch zum vorgerenderten HTML),
   // dann im Browser mischen – sonst gibt es einen Hydration-Fehler.
-  const [runde, setRunde] = useState(() => ({
-    liste: fragen.map((f) => bereiteVor(f, false)),
-    nr: 0,
-  }));
+  const [runde, setRunde] = useState(() => ({liste: fragen.map((f) => bereiteVor(f, false)), nr: 0}));
   useEffect(() => {
-    setRunde({liste: (mischeFragen ? mischen(fragen) : fragen).map(bereiteVor), nr: 0});
+    setRunde({liste: (mischeFragen ? mischen(fragen) : fragen).map((f) => bereiteVor(f)), nr: 0});
   }, [fragen, mischeFragen]);
-  const [auswahl, setAuswahl] = useState([]);
+  const [antwort, setAntwort] = useState(null);
   const [geprueft, setGeprueft] = useState(false);
   const [ergebnisse, setErgebnisse] = useState([]); // {id, korrekt}
 
   const frage = runde.liste[runde.nr];
   const fertig = runde.nr >= runde.liste.length;
+  const typ = frage ? typVon(frage) : null;
+  const aktuelleAntwort = antwort ?? typ?.leer;
 
-  const korrekt = useMemo(() => {
-    if (!frage) return false;
-    return frage.optionen.every((opt, i) => opt.richtig === auswahl.includes(i));
-  }, [frage, auswahl]);
+  const korrekt = useMemo(() => (frage ? typ.korrekt(frage, aktuelleAntwort) : false), [frage, typ, aktuelleAntwort]);
 
   const starte = useCallback((liste) => {
-    setRunde({liste: mischen(liste).map(bereiteVor), nr: 0});
-    setAuswahl([]);
+    setRunde({liste: mischen(liste).map((f) => bereiteVor(f)), nr: 0});
+    setAntwort(null);
     setGeprueft(false);
     setErgebnisse([]);
   }, []);
@@ -113,15 +74,6 @@ export default function Quiz({fragen = [], titel = 'Quiz', mischeFragen = true})
   if (fragen.length === 0) {
     return <div className={styles.quiz}>Für diese Lektion gibt es noch keine Fragen.</div>;
   }
-
-  const waehle = (index) => {
-    if (geprueft) return;
-    if (frage.mehrfach) {
-      setAuswahl((a) => (a.includes(index) ? a.filter((x) => x !== index) : [...a, index]));
-    } else {
-      setAuswahl([index]);
-    }
-  };
 
   const pruefe = () => {
     setGeprueft(true);
@@ -131,7 +83,7 @@ export default function Quiz({fragen = [], titel = 'Quiz', mischeFragen = true})
 
   const weiter = () => {
     setRunde((r) => ({...r, nr: r.nr + 1}));
-    setAuswahl([]);
+    setAntwort(null);
     setGeprueft(false);
   };
 
@@ -139,7 +91,7 @@ export default function Quiz({fragen = [], titel = 'Quiz', mischeFragen = true})
     const anzahlRichtig = ergebnisse.filter((e) => e.korrekt).length;
     const falscheIds = ergebnisse.filter((e) => !e.korrekt).map((e) => e.id);
     const falsche = fragen.filter((f) => falscheIds.includes(f.id));
-    const prozent = Math.round((anzahlRichtig / ergebnisse.length) * 100);
+    const prozent = ergebnisse.length ? Math.round((anzahlRichtig / ergebnisse.length) * 100) : 0;
     return (
       <section className={styles.quiz} aria-live="polite">
         <h3 className={styles.titel}>{titel}: Ergebnis</h3>
@@ -159,13 +111,22 @@ export default function Quiz({fragen = [], titel = 'Quiz', mischeFragen = true})
               Falsche wiederholen ({falsche.length})
             </button>
           )}
-          <button className={styles.knopf} onClick={() => starte(fragen)}>
-            Neu starten
-          </button>
+          {onFertig ? (
+            <button className={styles.knopf} onClick={onFertig}>
+              Zur Übersicht
+            </button>
+          ) : (
+            <button className={styles.knopf} onClick={() => starte(fragen)}>
+              Neu starten
+            </button>
+          )}
         </div>
       </section>
     );
   }
+
+  const {Ansicht, Loesung} = typ;
+  const ziel = artikelZiel(frage, zeigeHerkunft);
 
   return (
     <section className={styles.quiz}>
@@ -177,43 +138,23 @@ export default function Quiz({fragen = [], titel = 'Quiz', mischeFragen = true})
       </div>
       <Fortschrittsbalken aktuell={runde.nr} gesamt={runde.liste.length} />
 
+      {zeigeHerkunft && frage.lektion && (
+        <p className={styles.herkunft}>
+          {frage.bereich} · {frage.lektion}
+        </p>
+      )}
       <p className={styles.frage}>{frage.frage}</p>
-      <p className={styles.hinweis}>
-        {frage.mehrfach ? 'Mehrere Antworten können richtig sein.' : 'Eine Antwort ist richtig.'}
-      </p>
+      <p className={styles.hinweis}>{typ.hinweis(frage)}</p>
 
-      <div className={styles.optionen} role={frage.mehrfach ? 'group' : 'radiogroup'}>
-        {frage.optionen.map((opt, i) => {
-          const gewaehlt = auswahl.includes(i);
-          return (
-            <button
-              key={i}
-              type="button"
-              role={frage.mehrfach ? 'checkbox' : 'radio'}
-              aria-checked={gewaehlt}
-              disabled={geprueft}
-              onClick={() => waehle(i)}
-              className={clsx(
-                styles.option,
-                gewaehlt && styles.gewaehlt,
-                geprueft && opt.richtig && styles.richtig,
-                geprueft && gewaehlt && !opt.richtig && styles.falsch,
-              )}>
-              <span className={styles.marker}>{frage.mehrfach ? (gewaehlt ? '☑' : '☐') : gewaehlt ? '●' : '○'}</span>
-              <span>{opt.text}</span>
-            </button>
-          );
-        })}
-      </div>
+      <Ansicht frage={frage} antwort={aktuelleAntwort} setAntwort={setAntwort} geprueft={geprueft} />
 
       {geprueft && (
-        <div
-          className={clsx(styles.rueckmeldung, korrekt ? styles.rueckRichtig : styles.rueckFalsch)}
-          aria-live="polite">
+        <div className={clsx(styles.rueckmeldung, korrekt ? styles.rueckRichtig : styles.rueckFalsch)} aria-live="polite">
           <strong>{korrekt ? '✔ Richtig!' : '✘ Leider falsch.'}</strong>
+          {!korrekt && Loesung && <Loesung frage={frage} />}
           {frage.erklaerung && <p>{frage.erklaerung}</p>}
-          {frage.artikel && (
-            <Link to={frage.artikel} className={styles.artikelLink}>
+          {ziel && (
+            <Link to={ziel} className={styles.artikelLink}>
               📖 Im Artikel nachlesen
             </Link>
           )}
@@ -224,7 +165,7 @@ export default function Quiz({fragen = [], titel = 'Quiz', mischeFragen = true})
         {!geprueft ? (
           <button
             className={clsx(styles.knopf, styles.primaer)}
-            disabled={auswahl.length === 0}
+            disabled={!typ.beantwortet(frage, aktuelleAntwort)}
             onClick={pruefe}>
             Antwort prüfen
           </button>

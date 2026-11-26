@@ -134,3 +134,51 @@
   erklaerung: "Reine Logik mit vielen Kombinationen gehört in Unit-Tests: Sie laufen in Millisekunden. Im Browser würde jede Kombination Sekunden kosten."
   artikel: "#praxis-strategie"
   tags: [teststrategie, testpyramide]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-gl-011
+  typ: reihenfolge
+  schwierigkeit: 1
+  frage: "Ordne die Ebenen der Testpyramide von unten (die meisten Tests) nach oben (die wenigsten Tests)."
+  elemente:
+    - "Unit-Tests"
+    - "Integrations- und API-Tests"
+    - "UI- bzw. End-to-End-Tests"
+  erklaerung: "Unten viele schnelle, stabile Tests, oben wenige langsame, die das Zusammenspiel über die Oberfläche prüfen."
+  artikel: "#testpyramide"
+  tags: [testautomation, testpyramide]
+
+- id: ta-gl-012
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Nach dem AAA-Muster: In welcher Zeile beginnt der Act-Teil?"
+  sprache: csharp
+  code: |
+    [Test]
+    public void Endpreis_ab100Euro_zieht10ProzentAb()
+    {
+        var rechner = new Rabattrechner();
+
+        var endpreis = rechner.Endpreis(100.00m);
+
+        Assert.That(endpreis, Is.EqualTo(90.00m));
+    }
+  richtig: [5]
+  erklaerung: "Arrange baut den Ausgangszustand auf, Act führt genau die zu testende Aktion aus, Assert prüft das Ergebnis."
+  artikel: "#aaa-muster"
+  tags: [testautomation, aaa]
+
+- id: ta-gl-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Buchstaben der FIRST-Prinzipien seine Bedeutung zu."
+  paare:
+    - ["F – Fast", "Tests laufen in Millisekunden"]
+    - ["I – Independent", "Kein Test hängt von einem anderen ab"]
+    - ["R – Repeatable", "Gleiches Ergebnis in jeder Umgebung"]
+    - ["S – Self-validating", "Test entscheidet selbst über grün oder rot"]
+    - ["T – Timely", "Test entsteht zeitnah zum Code"]
+  erklaerung: "FIRST beschreibt Eigenschaften guter Unit-Tests."
+  artikel: "#first"
+  tags: [testautomation, first]

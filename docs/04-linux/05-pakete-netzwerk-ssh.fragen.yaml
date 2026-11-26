@@ -148,3 +148,49 @@
   erklaerung: "Ohne Pfadangabe sucht die Shell nur im PATH. ./ gibt den Pfad explizit an."
   artikel: "#path"
   tags: [linux, path]
+
+# --- Interaktive Aufgaben ---
+
+- id: li-nw-012
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Die Testumgebung ist nicht erreichbar. In welcher Reihenfolge grenzt du das Problem ein?"
+  elemente:
+    - "Netzwerk: ip addr – hat der Rechner eine Adresse?"
+    - "Namensauflösung: getent hosts testserver"
+    - "Erreichbarkeit: ping testserver"
+    - "Port: nc -zv testserver 443"
+    - "Anwendung: curl -v https://testserver/health"
+  erklaerung: "Von unten nach oben: Erst wenn eine Ebene funktioniert, lohnt sich die nächste."
+  artikel: "#netzwerk"
+  tags: [linux, netzwerk]
+
+- id: li-nw-013
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Befehle, um ein SSH-Schlüsselpaar zu erzeugen und auf den Server zu kopieren."
+  sprache: bash
+  text: |
+    ssh-___ -t ed25519
+    ssh-___ anna@testserver
+  luecken:
+    - ["keygen"]
+    - ["copy-id"]
+  exakt: true
+  erklaerung: "Der private Schlüssel bleibt auf deinem Rechner, nur der öffentliche kommt auf den Server."
+  artikel: "#ssh-schluessel"
+  tags: [linux, ssh]
+
+- id: li-nw-014
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder curl-Option ihre Wirkung zu."
+  paare:
+    - ["-i", "Antwort-Header mit ausgeben"]
+    - ["-v", "Ausführlich: Verbindung und Header anzeigen"]
+    - ["-X POST", "HTTP-Methode festlegen"]
+    - ["-H 'Content-Type: application/json'", "Header mitsenden"]
+    - ["-f", "Bei HTTP-Fehler mit Exit-Code ungleich 0 enden"]
+  erklaerung: "-f ist in Skripten wichtig: Ohne die Option endet curl auch bei 500 mit Exit-Code 0."
+  artikel: "#curl"
+  tags: [linux, curl]

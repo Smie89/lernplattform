@@ -148,3 +148,50 @@
   erklaerung: "Eingaben gehören in parametrisierte Abfragen. Review und statische Sicherheitsanalyse finden solche Muster."
   artikel: "#risiken"
   tags: [ki, sicherheit]
+
+# --- Interaktive Aufgaben ---
+
+- id: ki-as-012
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe eine gute Arbeitsweise mit einem Code-Assistenten in die richtige Reihenfolge."
+  elemente:
+    - "Aufgabe klein und klar formulieren"
+    - "Vorschlag lesen und verstehen"
+    - "Build, Tests und Linter ausführen"
+    - "Code reviewen wie einen Pull Request"
+    - "Committen"
+  erklaerung: "Wer committet, verantwortet den Code – unabhängig davon, wer ihn geschrieben hat."
+  artikel: "#arbeitsweise"
+  tags: [ki, arbeitsweise]
+
+- id: ki-as-013
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Risiko von Code-Assistenten das Beispiel zu."
+  paare:
+    - ["Veraltetes Wissen", "Bibliotheksversion wird in der neuen Framework-Version nicht mehr verwaltet"]
+    - ["Erfundenes Paket", "Vorgeschlagenes Paket existiert nicht oder ist Schadcode"]
+    - ["Sicherheitslücke", "SQL wird per String-Verkettung gebaut"]
+    - ["Plausibel, aber falsch", "Sauberer Code mit voller Abdeckung hat trotzdem eine Race Condition"]
+  erklaerung: "Builds, Tests, Analysewerkzeuge und gezieltes Testen finden diese Fehler – genau wie bei menschlichem Code."
+  artikel: "#risiken"
+  tags: [ki, risiken]
+
+- id: ki-as-014
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Ein Assistent hat diesen Test geschrieben. Welche Zeile macht ihn wertlos?"
+  sprache: csharp
+  code: |
+    [Test]
+    public void Endpreis_ab100Euro()
+    {
+        var rechner = new Rabattrechner();
+        var endpreis = rechner.Endpreis(100m);
+        Assert.That(endpreis, Is.Not.Null);
+    }
+  richtig: [5]
+  erklaerung: "Ein decimal ist nie null – der Test ist immer grün und prüft nichts. Richtig wäre Is.EqualTo(90m). Deshalb: jeden Test einmal rot sehen."
+  artikel: "#testautomation"
+  tags: [ki, testautomation]

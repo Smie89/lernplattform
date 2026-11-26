@@ -109,3 +109,51 @@
   erklaerung: "PageTest erbt von ContextTest und stellt pro Test eine frische Page bereit."
   artikel: "#erster-test"
   tags: [playwright, csharp, nunit]
+
+# --- Interaktive Aufgaben ---
+
+- id: ta-pw-009
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welcher Locator ist am anfälligsten für Änderungen am Layout?"
+  sprache: csharp
+  code: |
+    var suche = seite.GetByRole(AriaRole.Searchbox);
+    var knopf = seite.GetByRole(AriaRole.Button, new() { Name = "Bestellen" });
+    var preis = seite.Locator("div > div:nth-child(3) > span.p-2");
+    var meldung = seite.GetByTestId("bestaetigung");
+  richtig: [2]
+  erklaerung: "Ein CSS-Pfad über Verschachtelung und Position bricht bei jeder Layoutänderung. Rollen, sichtbare Namen und Test-IDs sind stabiler."
+  artikel: "#locators"
+  tags: [playwright, locators]
+
+- id: ta-pw-010
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die Web-First-Assertion, die automatisch wartet, bis der Text erscheint."
+  sprache: csharp
+  text: |
+    await ___(seite.GetByTestId("meldung"))
+        .___("Danke für Ihre Bestellung");
+  luecken:
+    - ["Expect"]
+    - ["ToHaveTextAsync", "ToContainTextAsync"]
+  exakt: true
+  erklaerung: "Expect(...).ToHaveTextAsync wiederholt die Prüfung bis zum Timeout – kein Thread.Sleep nötig."
+  artikel: "#assertions"
+  tags: [playwright, assertions]
+
+- id: ta-pw-011
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Was prüft Playwright beim Auto-Waiting, bevor es klickt? Bringe die Schritte in eine sinnvolle Reihenfolge."
+  elemente:
+    - "Locator findet genau ein Element"
+    - "Element ist sichtbar"
+    - "Element ist stabil (keine Animation)"
+    - "Element empfängt Ereignisse (nicht verdeckt)"
+    - "Element ist aktiviert"
+    - "Klick wird ausgeführt"
+  erklaerung: "Playwright wartet automatisch, bis alle Bedingungen erfüllt sind – darum braucht man keine festen Wartezeiten."
+  artikel: "#auto-waiting"
+  tags: [playwright, auto-waiting]

@@ -176,3 +176,69 @@
   erklaerung: "HSTS verhindert, dass Verbindungen auf unverschlüsseltes HTTP herabgestuft werden."
   artikel: "#header"
   tags: [security, header]
+
+# --- Interaktive Aufgaben ---
+
+- id: sec-web-014
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "In welcher Zeile steckt die SQL-Injection?"
+  sprache: python
+  code: |
+    def anmelden(db, name, passwort):
+        h = passwort_hashen(passwort)
+        sql = f"SELECT name FROM benutzer WHERE name = '{name}' AND passwort_hash = '{h}'"
+        zeile = db.execute(sql).fetchone()
+        return zeile[0] if zeile else None
+  richtig: [2]
+  erklaerung: "Die Eingabe wird per f-String in den SQL-Text eingebaut. Richtig: db.execute(\"... WHERE name = ?\", (name,))."
+  artikel: "#sql-injection"
+  tags: [security, sql-injection]
+
+- id: sec-web-015
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Diese Abfrage ist parametrisiert – trotzdem hat die Funktion eine Lücke. Welche Zeile ist das Problem?"
+  sprache: python
+  code: |
+    def bestellung_holen(db, angemeldet, bestell_id):
+        return db.execute(
+            "SELECT id, besitzer, artikel FROM bestellungen WHERE id = ?",
+            (bestell_id,),
+        ).fetchone()
+  richtig: [2]
+  erklaerung: "Die Abfrage prüft nicht, ob die Bestellung dem angemeldeten Benutzer gehört (IDOR). Es fehlt AND besitzer = ? mit dem Wert angemeldet."
+  artikel: "#idor"
+  tags: [security, idor]
+
+- id: sec-web-016
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Schwachstelle die passende Gegenmaßnahme zu."
+  paare:
+    - ["SQL-Injection", "Parametrisierte Abfragen"]
+    - ["Cross-Site-Scripting", "Ausgaben kontextgerecht kodieren"]
+    - ["Path Traversal", "Aufgelösten Pfad gegen den erlaubten Ordner prüfen"]
+    - ["IDOR", "Besitz bei jedem Zugriff serverseitig prüfen"]
+    - ["CSRF", "SameSite-Cookies und Anti-CSRF-Token"]
+  erklaerung: "Jede Lücke hat ihre eigene Hauptmaßnahme – zusätzliche Schichten wie Eingabevalidierung oder CSP ergänzen sie."
+  artikel: "#owasp-top-10"
+  tags: [security, owasp]
+
+- id: sec-web-017
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den sicheren Code (Python-Standardbibliothek)."
+  sprache: python
+  text: |
+    import ___
+
+    def kommentar_html(autor, text):
+        return f"<p><b>{html.___(autor)}</b>: {html.escape(text)}</p>"
+  luecken:
+    - ["html"]
+    - ["escape"]
+  exakt: true
+  erklaerung: "html.escape wandelt < > & \" ' in HTML-Entities um – der Browser zeigt sie als Text an, statt Skripte auszuführen."
+  artikel: "#xss"
+  tags: [security, xss]

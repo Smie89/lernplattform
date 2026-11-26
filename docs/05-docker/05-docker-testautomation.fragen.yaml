@@ -176,3 +176,49 @@
   erklaerung: "Ohne always() würden die Schritte nach einem fehlgeschlagenen Test übersprungen – genau dann braucht man die Logs aber am meisten."
   artikel: "#ci"
   tags: [ci, compose]
+
+# --- Interaktive Aufgaben ---
+
+- id: dk-ta-014
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe den Ablauf eines Tests mit Testcontainers in die richtige Reihenfolge."
+  elemente:
+    - "Container für die Datenbank definieren"
+    - "Container vor den Tests starten"
+    - "Verbindungsdaten aus dem Container lesen"
+    - "Tests gegen die echte Datenbank ausführen"
+    - "Container nach den Tests entfernen"
+  erklaerung: "Jeder Testlauf bekommt eine frische, echte Datenbank – ohne geteilte Testumgebung."
+  artikel: "#testcontainers"
+  tags: [docker, testcontainers]
+
+- id: dk-ta-015
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Welche Lösung passt zu welcher Aufgabe?"
+  paare:
+    - ["Integrationstest braucht eine echte PostgreSQL", "Testcontainers"]
+    - ["Selenium-Tests in mehreren Browsern parallel", "Selenium Grid mit Compose"]
+    - ["Playwright-Tests mit allen Abhängigkeiten in der CI", "Offizielles Playwright-Image"]
+    - ["Ganze Testumgebung aus API, Datenbank und Mock-Diensten", "Docker Compose"]
+  erklaerung: "Docker liefert reproduzierbare Umgebungen – lokal genauso wie in der CI."
+  artikel: "#ueberblick"
+  tags: [docker, testautomation]
+
+- id: dk-ta-016
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Testcontainers-Code für .NET."
+  sprache: csharp
+  text: |
+    var db = new PostgreSqlBuilder().Build();
+    await db.___();
+    var verbindung = db.___();
+  luecken:
+    - ["StartAsync"]
+    - ["GetConnectionString"]
+  exakt: true
+  erklaerung: "Testcontainers wählt freie Ports selbst – deshalb liest man die Verbindungsdaten immer aus dem Container."
+  artikel: "#testcontainers-dotnet"
+  tags: [docker, testcontainers]
