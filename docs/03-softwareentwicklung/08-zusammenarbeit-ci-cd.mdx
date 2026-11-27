@@ -68,6 +68,16 @@ Tests: Neuer API-Test mit 10 parallelen Bestellungen (vorher 10, jetzt 1 Bestell
 200 geänderte Zeilen werden gründlich geprüft, 2.000 nur überflogen. Lieber mehrere kleine PRs – z. B. erst das Refactoring, dann die neue Funktion.
 :::
 
+```mermaid
+flowchart LR
+  B[Feature-Branch] --> C[Commits pushen] --> PR[Pull Request]
+  PR --> CI{{"CI: Build und Tests"}}
+  PR --> R{{"Code-Review"}}
+  CI -- grün --> M([Merge in main])
+  R -- freigegeben --> M
+  CI -- rot --> C
+```
+
 ## Code-Review \{#code-review}
 
 Ein Code-Review ist ein [statischer Test](../01-softwaretest/03-statischer-test.mdx) – meist ein informelles oder technisches Review. Eine Checkliste für Reviewer:

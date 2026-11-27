@@ -36,13 +36,15 @@ Wer „auf Port 5000 lauscht“, hat einen Socket an diesen Port gebunden.
 
 TCP baut zuerst eine **Verbindung** auf – den **Drei-Wege-Handshake**:
 
-```text
-Client                                  Server (lauscht auf Port 443)
-  │ ─── SYN (seq=100) ──────────────────►  │   „Ich möchte verbinden“
-  │ ◄── SYN-ACK (seq=300, ack=101) ──────  │   „Einverstanden“
-  │ ─── ACK (ack=301) ──────────────────►  │   „Verbindung steht“
-  │ ═══ Daten (HTTP, TLS …) ═════════════  │
-  │ ─── FIN ────────────────────────────►  │   Abbau
+```mermaid
+sequenceDiagram
+  participant C as Client
+  participant S as Server (Port 443)
+  C->>S: SYN (seq=100) – „Ich möchte verbinden“
+  S->>C: SYN-ACK (seq=300, ack=101) – „Einverstanden“
+  C->>S: ACK (ack=301) – „Verbindung steht“
+  Note over C,S: Daten (HTTP, TLS …)
+  C->>S: FIN – Abbau
 ```
 
 Danach sorgt TCP dafür, dass Daten **vollständig, in der richtigen Reihenfolge und ohne Duplikate** ankommen:

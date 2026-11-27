@@ -20,6 +20,7 @@ const config = {
 
   onBrokenLinks: 'throw',
   markdown: {
+    mermaid: true,   // Diagramme aus ```mermaid-Codeblöcken, passend zu hellem und dunklem Design
     hooks: {
       onBrokenMarkdownLinks: 'warn',
     },
@@ -29,6 +30,24 @@ const config = {
     defaultLocale: 'de',
     locales: ['de'],
   },
+
+  themes: [
+    '@docusaurus/theme-mermaid',
+    [
+      // Volltextsuche, die ohne Server und offline funktioniert (Index wird beim Build erzeugt)
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        language: ['de'],
+        docsRouteBasePath: 'lernen',
+        indexBlog: false,
+        indexPages: true,
+        highlightSearchTermsOnTargetPage: true,
+        searchResultLimits: 12,
+        searchBarShortcutHint: false,
+      },
+    ],
+  ],
 
   presets: [
     [
@@ -49,6 +68,8 @@ const config = {
   ],
 
   plugins: [
+    // Stichwortverzeichnis A–Z unter /stichwortverzeichnis, beim Build aus allen Lektionen erzeugt
+    './plugins/stichwortverzeichnis.cjs',
     // Erlaubt "import fragen from './x.fragen.yaml'" in MDX-Dateien.
     // Fragen-Dateien laufen durch einen eigenen Loader, der Lektion, Bereich und Seite ergänzt.
     function yamlLoaderPlugin(context) {
@@ -96,6 +117,7 @@ const config = {
         items: [
           {type: 'docSidebar', sidebarId: 'lernSidebar', position: 'left', label: 'Lernbereiche'},
           {to: '/wiederholen', label: '🔁 Wiederholen', position: 'left'},
+          {to: '/stichwortverzeichnis', label: '📇 Index', position: 'left'},
           {
             href: 'https://github.com/Smie89/lernplattform',
             label: 'GitHub',

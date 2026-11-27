@@ -14,6 +14,7 @@ const bereiche = [
   {icon: '🗄️', titel: 'Datenbanken und SQL', text: 'SELECT bis JOIN, Transaktionen, Datenbanken im Test', pfad: '/lernen/datenbanken'},
   {icon: '🌐', titel: 'Netzwerke', text: 'IP und Subnetze, TCP/UDP, DNS, HTTP und TLS, Wireshark', pfad: '/lernen/netzwerke'},
   {icon: '☁️', titel: 'Cloud', text: 'Geteilte Verantwortung, IAM, Infrastructure as Code', pfad: '/lernen/cloud'},
+  {icon: '📇', titel: 'Stichwortverzeichnis', text: 'Alle Themen von A bis Z – schnell nachschlagen', pfad: '/stichwortverzeichnis'},
   {icon: '🔁', titel: 'Wiederholen', text: 'Fällige Fragen aus allen Lektionen – mit Wiederholungsplan', pfad: '/wiederholen'},
 ];
 

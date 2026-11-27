@@ -72,6 +72,17 @@ Ruft eine Seite 20 Ressourcen ab, ist die Wahrscheinlichkeit hoch, dass **mindes
 liegt. Was in einer einzelnen Anfrage „nur p99“ ist, erlebt bei 20 Anfragen ein großer Teil der Nutzer.
 :::
 
+```mermaid
+xychart-beta
+  title "Zehn Antwortzeiten in ms – ein Ausreißer"
+  x-axis "Anfrage" [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  y-axis "Antwortzeit (ms)" 0 --> 2500
+  bar [80, 85, 90, 90, 95, 100, 105, 110, 120, 2400]
+  line [327.5, 327.5, 327.5, 327.5, 327.5, 327.5, 327.5, 327.5, 327.5, 327.5]
+```
+
+Die Linie zeigt den Durchschnitt von 327,5 ms – höher als neun der zehn Anfragen und weit unter dem Ausreißer.
+
 ## Realistische Lastprofile \{#lastprofil}
 
 Ein Lasttest ist nur so gut wie sein **Lastprofil**. Fragen, die man vorher klären sollte:

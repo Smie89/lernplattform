@@ -211,6 +211,24 @@ Und genau deshalb kann der Unit-Test **Testdoubles** übergeben – NSubstitute 
 **Dependency Inversion** ist das **Prinzip** (von Abstraktionen abhängen). **Dependency Injection** ist eine **Technik**, es umzusetzen (Abhängigkeiten von außen übergeben, z. B. per Konstruktor oder DI-Container).
 :::
 
+```mermaid
+classDiagram
+  class BestellService
+  class IZahlungsdienst {
+    <<interface>>
+    +Abbuchen(kunde, betrag) bool
+  }
+  class IBestellRepository {
+    <<interface>>
+  }
+  BestellService --> IZahlungsdienst : hängt ab von
+  BestellService --> IBestellRepository : hängt ab von
+  IZahlungsdienst <|.. DemoZahlungsdienst
+  IZahlungsdienst <|.. HttpZahlungsdienst
+  IZahlungsdienst <|.. TestDouble : im Unit-Test
+  IBestellRepository <|.. InMemoryBestellRepository
+```
+
 ## SOLID und Testbarkeit \{#testbarkeit}
 
 | Prinzip | Wirkung auf Tests |

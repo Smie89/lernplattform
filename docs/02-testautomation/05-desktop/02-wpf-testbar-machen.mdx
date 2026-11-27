@@ -22,12 +22,12 @@ Nach dieser Lektion kannst du …
 
 Moderne WPF-Anwendungen folgen meist dem **MVVM-Muster** (Model – View – ViewModel):
 
-```text
- View (XAML)          ← nur Darstellung und Bindings
-     │ Binding
- ViewModel (C#)       ← Logik: Befehle, Validierung, Zustände
-     │
- Model / Services     ← Daten, Datenbank, Web-APIs
+```mermaid
+flowchart TD
+  V["<b>View</b> (XAML)<br/>nur Darstellung und Bindings"] -- Binding --> VM["<b>ViewModel</b> (C#)<br/>Befehle, Validierung, Zustände"]
+  VM --> MO["<b>Model / Services</b><br/>Daten, Datenbank, Web-APIs"]
+  UT(["UI-Test mit FlaUI"]) -.-> V
+  VT(["Unit-Test ohne Oberfläche"]) -.-> VM
 ```
 
 Das ist ein Geschenk für die Testautomation: Die meiste Logik steckt im **ViewModel**, und das ist eine ganz normale C#-Klasse – testbar mit [NUnit](../02-csharp/01-nunit-grundlagen.mdx) und [NSubstitute](../02-csharp/02-testdoubles-nsubstitute.mdx), **ohne** dass ein Fenster geöffnet wird.

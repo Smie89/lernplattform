@@ -42,6 +42,19 @@ Fehler systematisch von unten nach oben eingrenzen – genau wie in der Linux-Le
 Port offen (4)? Antwortet die Anwendung richtig (7)?
 :::
 
+```mermaid
+flowchart LR
+  subgraph E["Ethernet-Rahmen (Netzzugang)"]
+    subgraph I["IP-Paket (Internet)"]
+      subgraph T["TCP-Segment (Transport)"]
+        H["HTTP-Anfrage (Anwendung)"]
+      end
+    end
+  end
+```
+
+So sieht die Kapselung aus: Jede Schicht verpackt die Daten der Schicht darüber.
+
 ## IPv4-Adressen und Subnetze \{#ipv4}
 
 Eine IPv4-Adresse besteht aus **32 Bit**, geschrieben als vier Zahlen von 0 bis 255: `192.168.10.37`. Sie hat zwei Teile:

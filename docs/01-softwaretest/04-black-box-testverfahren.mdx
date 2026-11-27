@@ -142,18 +142,17 @@ Vier Regeln decken alle acht Kombinationen ab – und jede hat bereits einen Tes
 
 Der Warenkorb des Mini-Shops:
 
-```text
-                 POST /warenkoerbe
-   (Start) ─────────────────────────►  LEER
-                                      │   ▲
-            Produkt hinzufügen        │   │ letztes Produkt entfernen
-                                      ▼   │
-                                    GEFÜLLT ──┐ Produkt hinzufügen /
-                                      │  ▲    │ entfernen (nicht letztes)
-                                      │  └────┘
-            bestellen (Zahlung ok)    │
-                                      ▼
-                                   BESTELLT  (Warenkorb gelöscht → GET liefert 404)
+```mermaid
+stateDiagram-v2
+  state "LEER" as Leer
+  state "GEFÜLLT" as Gefuellt
+  state "BESTELLT" as Bestellt
+  [*] --> Leer : POST /warenkoerbe
+  Leer --> Gefuellt : Produkt hinzufügen
+  Gefuellt --> Gefuellt : hinzufügen / entfernen (nicht letztes)
+  Gefuellt --> Leer : letztes Produkt entfernen
+  Gefuellt --> Bestellt : bestellen (Zahlung ok)
+  Bestellt --> [*] : Warenkorb gelöscht, GET liefert 404
 ```
 
 Übergangstabelle – mit gültigen **und ungültigen** Ereignissen:

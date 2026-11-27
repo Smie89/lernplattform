@@ -107,6 +107,11 @@ await Page.Locator("#ok").ClickAsync();
 await Page.GetByRole(AriaRole.Button, new() { Name = "OK" }).ClickAsync();
 ```
 
+```mermaid
+flowchart TD
+  L[Locator findet<br/>genau ein Element] --> V[sichtbar] --> S[stabil,<br/>keine Animation] --> E[empfängt Ereignisse,<br/>nicht verdeckt] --> A[aktiviert] --> K([Klick])
+```
+
 ## Web-First Assertions \{#assertions}
 
 `Expect(...)`-Assertions **wiederholen die Prüfung automatisch**, bis sie erfüllt ist oder das Timeout (Standard: 5 s) abläuft:

@@ -80,6 +80,14 @@ region "Warenkorb"                    ← <section aria-labelledby="titel-warenk
 
 Fehlt einem Eingabefeld das Label, hört ein blinder Nutzer nur „Eingabefeld“ – und weiß nicht, was er eintragen soll.
 
+```mermaid
+flowchart LR
+  H["HTML der Seite<br/>&lt;button&gt;, &lt;label&gt;, Überschriften"] --> T["<b>Accessibility Tree</b><br/>Rolle · Name · Zustand"]
+  T --> S["Screenreader<br/>(NVDA, VoiceOver)"]
+  T --> P["Playwright<br/>GetByRole, GetByLabel"]
+  T --> X["axe-core<br/>prüft Regeln"]
+```
+
 ## Semantisches HTML: die halbe Miete \{#semantik}
 
 Die meisten Barrieren entstehen, wenn statt passender HTML-Elemente generische `div`s mit JavaScript verwendet werden.

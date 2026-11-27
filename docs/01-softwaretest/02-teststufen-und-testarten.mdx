@@ -74,13 +74,13 @@ Beantwortet die Frage: **Kann das System in Betrieb gehen?** Hier steht die **Va
 
 Das V-Modell ordnet jeder Entwicklungsstufe eine Teststufe zu:
 
-```text
-Anforderungen  ────────────────────────────►  Abnahmetest
-  Systementwurf  ────────────────────────►  Systemtest
-    Architektur  ──────────────────────►  Integrationstest
-      Detailentwurf  ────────────────►  Komponententest
-             \                          /
-              ───────  Code  ──────────
+```mermaid
+flowchart LR
+  A[Anforderungen] -.-> AT[Abnahmetest]
+  S[Systementwurf] -.-> ST[Systemtest]
+  AR[Architektur] -.-> IT[Integrationstest]
+  DE[Detailentwurf] -.-> KT[Komponententest]
+  A --> S --> AR --> DE --> C((Code)) --> KT --> IT --> ST --> AT
 ```
 
 Die wichtigste Botschaft: Tests werden **auf jeder Stufe parallel zur Entwicklung vorbereitet** – der Abnahmetest entsteht schon zusammen mit den Anforderungen. Das deckt Unklarheiten früh auf (Grundsatz „frühes Testen“).

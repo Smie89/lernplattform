@@ -62,6 +62,15 @@ Die drei wichtigsten Begriffe – mit einer Analogie aus der Programmierung:
 
 Aus **einem** Image kann man **beliebig viele** Container starten. Änderungen in einem Container (z. B. neu angelegte Dateien) landen in dessen **beschreibbarer Schicht** und verändern das Image **nicht**. Wird der Container gelöscht, sind diese Änderungen weg.
 
+```mermaid
+flowchart LR
+  F[Dockerfile] -- docker build --> I[(Image)]
+  I -- docker push --> R[(Registry<br/>z. B. Docker Hub)]
+  R -- docker pull --> I2[(Image)]
+  I2 -- docker run --> C1[Container 1]
+  I2 -- docker run --> C2[Container 2]
+```
+
 ### Image-Namen lesen \{#image-namen}
 
 ```

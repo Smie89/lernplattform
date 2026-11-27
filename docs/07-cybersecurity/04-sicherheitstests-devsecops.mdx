@@ -55,6 +55,25 @@ Bedrohungsmodellierung ist im Kern **Testentwurf aus Angreifersicht**. Wer als T
 Frage mit, die dort gebraucht wird: „Und was passiert, wenn …?“
 :::
 
+```mermaid
+flowchart LR
+  subgraph I["Internet – nicht vertrauenswürdig"]
+    B["Browser"]
+  end
+  subgraph A["Anwendung"]
+    API["Shop-API"]
+  end
+  subgraph D["Datenhaltung"]
+    DB[("Datenbank")]
+  end
+  ZD["Zahlungsanbieter"]
+  B -- "HTTPS ⚠ Vertrauensgrenze" --> API
+  API -- "⚠ Vertrauensgrenze" --> DB
+  API -- "⚠ Vertrauensgrenze" --> ZD
+```
+
+An jedem Übergang über eine Vertrauensgrenze (⚠) fragt man alle sechs STRIDE-Kategorien ab.
+
 ## Sicherheits-Regressionstests \{#regressionstests}
 
 Die wertvollsten Sicherheitstests sind **ganz normale automatisierte Tests**, die einen Angriff ausführen und erwarten,

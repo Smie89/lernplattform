@@ -66,6 +66,18 @@ Die Tests prüfen, dass der Preisrechner mit `MengenRabatt` + `StammkundenRabatt
 In C# und Java kann eine Strategie auch einfach eine Funktion sein: `Func<Bestellkontext, decimal>` bzw. `Function<Bestellkontext, BigDecimal>`. Eine eigene Klasse lohnt sich, wenn die Strategie Zustand, einen Namen oder eigene Tests braucht.
 :::
 
+```mermaid
+classDiagram
+  class Preisrechner
+  class IRabattregel {
+    <<interface>>
+    +Rabatt(...) decimal
+  }
+  Preisrechner o-- "*" IRabattregel : nutzt
+  IRabattregel <|.. MengenRabatt
+  IRabattregel <|.. StammkundenRabatt
+```
+
 ## Fabrikmethode \{#fabrik}
 
 **Problem:** Welches Objekt erzeugt wird, hängt von einer Eingabe ab – der Aufrufer soll die konkreten Klassen nicht kennen.

@@ -99,6 +99,19 @@ private void AnbieterAntwortet(int status, string? body = null, TimeSpan? verzoe
 `Given(...)` beschreibt, **welche Anfrage** passt (Pfad, Methode, auf Wunsch auch Header oder Body), `RespondWith(...)`,
 **was zurückkommt**.
 
+```mermaid
+sequenceDiagram
+  participant T as Test
+  participant D as HttpZahlungsdienst
+  participant W as WireMock (simulierter Anbieter)
+  T->>W: Given POST /zahlungen → RespondWith 503
+  T->>D: Abbuchen("Anna", 50)
+  D->>W: POST /zahlungen {kunde, betrag}
+  W-->>D: 503 Service Unavailable
+  D-->>T: false (Fail Secure)
+  T->>W: LogEntries: Was wurde gesendet?
+```
+
 ### Ein echter Befund: localhost und IPv6 \{#ipv6}
 
 In der ersten Fassung lautete die Basisadresse `_anbieter.Url` – also `http://localhost:…`. Die Tests waren **rot und

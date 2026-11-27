@@ -26,17 +26,18 @@ Die Codebeispiele gibt es in C# und Java. Wählst du einmal einen Reiter, schalt
 
 ## Wie Selenium funktioniert \{#architektur}
 
-```text
- Dein Test (C#/Java)
-        │  Selenium-Bibliothek
-        ▼
- W3C-WebDriver-Protokoll (HTTP + JSON)
-        │
-        ▼
- Treiber (chromedriver, geckodriver, msedgedriver)
-        │
-        ▼
- Browser (Chrome, Firefox, Edge, Safari)
+```mermaid
+sequenceDiagram
+  participant T as Dein Test (C#/Java)
+  participant B as Selenium-Bibliothek
+  participant D as Treiber (chromedriver …)
+  participant W as Browser
+  T->>B: Click()
+  B->>D: W3C-WebDriver-Protokoll (HTTP + JSON)
+  D->>W: steuert den Browser
+  W-->>D: Ergebnis
+  D-->>B: Antwort
+  B-->>T: fertig
 ```
 
 - Selenium spricht über das standardisierte **W3C-WebDriver-Protokoll** mit einem **Treiber**, der den Browser fernsteuert.

@@ -102,6 +102,14 @@ const PROFILE = {
 Mit `stages` lassen sich alle Testarten aus den [Grundlagen](./01-performance-grundlagen.mdx#arten) bauen: ein Spike-Test
 ist eine sehr kurze, steile Stufe, ein Stresstest eine Treppe mit immer höheren Zielen, ein Dauertest ein langes Plateau.
 
+```mermaid
+xychart-beta
+  title "Profil last: gleichzeitige Nutzer über die Zeit"
+  x-axis "Sekunden" [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
+  y-axis "virtuelle Nutzer" 0 --> 25
+  line [0, 10, 20, 20, 20, 20, 20, 20, 20, 0]
+```
+
 ## Schwellen: aus Diagrammen wird ein Ergebnis \{#schwellen}
 
 **Thresholds** übersetzen die [Anforderungen](./01-performance-grundlagen.mdx#anforderungen) in Prüfungen. Wird eine Schwelle

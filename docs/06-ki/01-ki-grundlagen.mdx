@@ -20,19 +20,15 @@ Nach dieser Lektion kannst du …
 
 ## Begriffe \{#begriffe}
 
-```text
-┌─ Künstliche Intelligenz (KI) ─────────────────────────────────────────┐
-│  Systeme, die Aufgaben lösen, die „Intelligenz“ zu erfordern scheinen   │
-│  ┌─ Machine Learning (ML) ───────────────────────────────────────────┐  │
-│  │  lernt Regeln aus DATEN, statt dass Menschen sie programmieren    │  │
-│  │  ┌─ Deep Learning ─────────────────────────────────────────────┐  │  │
-│  │  │  ML mit großen neuronalen Netzen (viele Schichten)          │  │  │
-│  │  │  ┌─ Generative KI ──────────────────────────────────────┐   │  │  │
-│  │  │  │  erzeugt neue Inhalte: Text (LLMs), Bilder, Code     │   │  │  │
-│  │  │  └──────────────────────────────────────────────────────┘   │  │  │
-│  │  └─────────────────────────────────────────────────────────────┘  │  │
-│  └───────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+  subgraph KI["Künstliche Intelligenz – löst Aufgaben, die Intelligenz zu erfordern scheinen"]
+    subgraph ML["Machine Learning – lernt Regeln aus Daten"]
+      subgraph DL["Deep Learning – große neuronale Netze"]
+        GEN["Generative KI<br/>erzeugt Text (LLMs), Bilder, Code"]
+      end
+    end
+  end
 ```
 
 Der entscheidende Unterschied zur klassischen Programmierung:

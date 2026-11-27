@@ -78,6 +78,14 @@ Der **Projektname** ist standardmäßig der Ordnername. Container heißen dann z
 `db` hat im Beispiel **keine** `ports` – die API erreicht sie über das interne Netzwerk. Nur wenn du z. B. mit einem SQL-Client vom PC aus hinein willst, brauchst du `ports: ["5432:5432"]`.
 :::
 
+```mermaid
+flowchart LR
+  subgraph N["Compose-Netzwerk (automatisch)"]
+    API["api<br/>erreicht db unter dem Namen db"] --> DB[("db<br/>Port 5432 nur intern")]
+  end
+  H(["Dein Rechner"]) -- "localhost:8080" --> API
+```
+
 ## Die wichtigsten Befehle \{#befehle}
 
 ```bash

@@ -137,6 +137,20 @@ Wichtige Eigenschaften:
 - **Automatisches Aufräumen:** Ein Hilfscontainer namens **Ryuk** entfernt übrig gebliebene Container auch dann, wenn der Testprozess abstürzt.
 - **Wartestrategien:** Die Module warten automatisch, bis der Dienst bereit ist (wie ein Healthcheck).
 
+```mermaid
+sequenceDiagram
+  participant T as Test
+  participant TC as Testcontainers
+  participant D as Docker
+  T->>TC: PostgreSqlBuilder().Build()
+  TC->>D: Container starten (freier Port)
+  D-->>TC: bereit
+  TC-->>T: GetConnectionString()
+  T->>D: Tests gegen echte Datenbank
+  T->>TC: Dispose
+  TC->>D: Container entfernen
+```
+
 ### Testcontainers für .NET (NUnit) \{#testcontainers-dotnet}
 
 ```bash

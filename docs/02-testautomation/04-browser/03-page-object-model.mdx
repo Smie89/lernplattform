@@ -57,11 +57,10 @@ Ein **Page Object** ist eine Klasse, die **eine Seite** (oder einen Bereich) der
 - Es bietet **fachliche Methoden** an: `AnmeldenAsync(benutzer, passwort)` statt „fülle `#user`, fülle `#pw`, klicke …“.
 - Der Test spricht nur noch mit dem Page Object, nie direkt mit Locators.
 
-```text
- Test  ──►  LoginPage.AnmeldenAsync("tester", "geheim")
-                 │   kennt: Benutzerfeld, Passwortfeld, Button
-                 ▼
-            Browser (Playwright / Selenium)
+```mermaid
+flowchart LR
+  T["Test<br/><i>was geprüft wird</i>"] -- "AnmeldenAsync(tester, geheim)" --> P["LoginPage<br/><i>kennt Benutzerfeld,<br/>Passwortfeld, Button</i>"]
+  P -- Locators und Aktionen --> B["Browser<br/>(Playwright / Selenium)"]
 ```
 
 Ändert sich die Oberfläche, passt du **nur das Page Object** an. Die Tests bleiben unverändert.

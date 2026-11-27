@@ -109,6 +109,11 @@ Die wichtigsten Bausteine für Pipes:
 | `tr 'a-z' 'A-Z'` | Zeichen ersetzen, hier: in Großbuchstaben |
 | `sed 's/alt/neu/'` | Text ersetzen |
 
+```mermaid
+flowchart TD
+  D[(testlauf.log)] --> A["awk '{print $3}'<br/>nur Spalte 3"] --> S["sort<br/>sortieren"] --> U["uniq -c<br/>gleiche zählen"] --> R["sort -rn<br/>häufigste zuerst"] --> O([Ausgabe])
+```
+
 ### Beispiel: Wie viele Meldungen pro Level? \{#auswertung-level}
 
 ```bash

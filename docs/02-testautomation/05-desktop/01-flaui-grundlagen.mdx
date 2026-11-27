@@ -22,16 +22,13 @@ Nach dieser Lektion kannst du …
 
 Browser-Tests sprechen über WebDriver oder Playwright mit dem Browser. Für Windows-Desktop-Anwendungen gibt es eine eigene Schnittstelle: **Microsoft UI Automation (UIA)**. Sie wurde ursprünglich für **Barrierefreiheit** gebaut – Screenreader lesen darüber Fenster, Buttons und Texte aus. Testwerkzeuge nutzen denselben Weg.
 
-```text
- Dein Test (C#, NUnit)
-        │  FlaUI
-        ▼
- UI Automation (UIA2 oder UIA3)
-        │
-        ▼
- WPF- / WinForms- / Win32-Anwendung
-   Fenster ─ Panel ─ Button "Berechnen"
-                   ─ TextBox "Eingabe"
+```mermaid
+flowchart TD
+  T["Dein Test (C#, NUnit)"] -- FlaUI --> U["UI Automation (UIA2 oder UIA3)"]
+  U --> A["WPF- / WinForms- / Win32-Anwendung"]
+  A --> F[Fenster] --> P[Panel]
+  P --> B["Button „Berechnen“"]
+  P --> E["TextBox „Eingabe“"]
 ```
 
 Jede Anwendung stellt einen **Baum aus Automation-Elementen** bereit. Jedes Element hat Eigenschaften:

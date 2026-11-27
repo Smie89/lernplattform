@@ -1,0 +1,78 @@
+.seite {
+  max-width: 820px;
+}
+
+.filter {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.6rem 0.9rem;
+  font-size: 1rem;
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 10px;
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+}
+
+.filter:focus {
+  outline: none;
+  border-color: var(--ifm-color-primary);
+}
+
+.anzahl {
+  margin: 0.4rem 0 0.8rem;
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.alphabet {
+  position: sticky;
+  top: var(--ifm-navbar-height);
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+  background: var(--ifm-background-color);
+}
+
+.alphabet a {
+  min-width: 2rem;
+  min-height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 700;
+  background: var(--ifm-color-emphasis-100);
+}
+
+.buchstabe {
+  margin: 1.5rem 0 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid var(--ifm-color-primary);
+  scroll-margin-top: calc(var(--ifm-navbar-height) + 3.5rem);
+}
+
+.liste {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.liste li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.6rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.lektion {
+  font-weight: 700;
+}
+
+.herkunft {
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+}

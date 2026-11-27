@@ -27,3 +27,23 @@
 pre code {
   white-space: pre;
 }
+
+/* Diagramme: auf schmalen Bildschirmen in Originalgröße, seitlich wischbar statt winzig */
+.docusaurus-mermaid-container {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: var(--ifm-leading);
+}
+
+.docusaurus-mermaid-container > svg {
+  max-width: 100%;
+}
+
+@media (max-width: 700px) {
+  .docusaurus-mermaid-container svg[aria-roledescription='sequence'],
+  .docusaurus-mermaid-container svg[aria-roledescription='gitGraph'] {
+    max-width: none !important;
+    width: auto !important;
+    min-width: 560px;
+  }
+}

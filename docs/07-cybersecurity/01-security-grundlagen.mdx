@@ -108,6 +108,11 @@ Das Framework **MITRE ATT&CK** beschreibt reale Angriffstechniken, gegliedert na
 Für Verteidiger heißt das: **Jede Stufe ist eine Chance**, den Angriff zu verhindern oder zu bemerken. Wer nur den
 Erstzugang absichert, hat verloren, sobald eine einzige Phishing-Mail funktioniert.
 
+```mermaid
+flowchart TD
+  A[Aufklärung] --> E[Erstzugang] --> X[Ausführung,<br/>Persistenz] --> R[Rechte-<br/>ausweitung] --> S[Seitwärts-<br/>bewegung] --> Z([Ziel: Daten,<br/>Verschlüsselung])
+```
+
 ## Social Engineering \{#social-engineering}
 
 Der Mensch ist oft der einfachste Weg hinein. **Social Engineering** nutzt Hilfsbereitschaft, Respekt vor Autorität,

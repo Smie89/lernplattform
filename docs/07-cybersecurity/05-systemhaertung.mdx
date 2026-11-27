@@ -169,6 +169,13 @@ sind getrennte Zonen:
 In Docker Compose ist das im Kleinen dasselbe: Die Datenbank hängt nur im internen Netz und veröffentlicht keinen Port
 (siehe [Netzwerke](../05-docker/03-volumes-netzwerke.mdx)).
 
+```mermaid
+flowchart LR
+  I((Internet)) --> FW1{{Firewall}} --> DMZ["DMZ<br/>Reverse Proxy"]
+  DMZ --> FW2{{Firewall}} --> APP["Anwendungsnetz"] --> DB[("Datenbanknetz")]
+  BUE["Büronetz"] -. "nur über VPN /<br/>Bastion" .-> APP
+```
+
 ## Backups gegen Ransomware \{#backups}
 
 Ransomware verschlüsselt alles, was sie erreicht – **auch erreichbare Backups**. Die **3-2-1-Regel**:

@@ -1,0 +1,92 @@
+.abbildung {
+  margin: 1.5rem 0;
+}
+
+.raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.karte {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  background: var(--ifm-background-surface-color);
+  text-align: center;
+}
+
+.titel {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+}
+
+.venn {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+}
+
+.flaeche {
+  opacity: 0.55;
+}
+
+.gefuellt {
+  fill: var(--ifm-color-primary);
+}
+
+.rand {
+  fill: none;
+  stroke: var(--ifm-font-color-base);
+  stroke-width: 2;
+}
+
+.beschriftung {
+  fill: var(--ifm-font-color-base);
+  font-size: 11px;
+  font-family: var(--ifm-font-family-monospace);
+}
+
+.text {
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.beispiel {
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.unterschrift {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+  text-align: center;
+}
+
+.pyramide {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.ebene {
+  fill: var(--ifm-color-primary);
+}
+
+.ebenenName {
+  fill: var(--ifm-background-color);   /* hell auf dunklem Grün, dunkel auf hellem Grün im Dunkelmodus */
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ebenenHinweis {
+  fill: var(--ifm-background-color);
+  font-size: 10.5px;
+}

@@ -37,6 +37,13 @@ Der Job `shop-dotnet` in diesem Repository folgt genau diesem Muster: Bauen → 
 [axe](../02-testautomation/07-barrierefreiheit/02-barrierefreiheit-testen.mdx#axe)) → k6-Rauch- und Lasttest →
 [Header-Check](../07-cybersecurity/08-web-pentesting.mdx#befund). Scheitert eine Stufe, laufen die teureren gar nicht erst.
 
+```mermaid
+flowchart TD
+  A[Bauen + statische<br/>Prüfungen] --> U[Unit-Tests] --> I[API- und<br/>Integrationstests] --> UI[UI-Tests] --> N[Last, Header,<br/>IaC-Scan] --> D([Ausrollen in<br/>Testumgebung]) --> R[Rauchtests,<br/>DAST]
+```
+
+Jede Stufe läuft nur, wenn die vorherige grün ist – die schnellen, billigen Prüfungen stehen vorn.
+
 ## Schnelle Rückmeldung \{#schnell}
 
 Eine Pipeline, die 45 Minuten braucht, wird umgangen. Ziel sind **wenige Minuten** bis zur ersten Rückmeldung:

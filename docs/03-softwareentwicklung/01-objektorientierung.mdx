@@ -180,6 +180,24 @@ public final class Standardversand extends Versandart {
 - `sealed` (C#) bzw. `final` (Java) verhindert, dass von einer Klasse weiter geerbt wird.
 - C# verlangt `virtual`/`abstract` in der Basisklasse und `override` in der Unterklasse. In Java sind Methoden standardmäßig überschreibbar; `@Override` lässt den Compiler prüfen, dass wirklich überschrieben wird.
 
+```mermaid
+classDiagram
+  class Versandart {
+    <<abstract>>
+    +Name string
+    +Kosten(bestellwert) decimal*
+    +Beschreibung(bestellwert) string
+  }
+  class Standardversand {
+    +Kosten(bestellwert) decimal
+  }
+  class Expressversand {
+    +Kosten(bestellwert) decimal
+  }
+  Versandart <|-- Standardversand
+  Versandart <|-- Expressversand
+```
+
 ## Interfaces \{#interfaces}
 
 Ein **Interface** beschreibt eine **Fähigkeit** – nur **was**, nicht **wie**. Eine Klasse kann **mehrere** Interfaces implementieren, aber nur von **einer** Klasse erben.

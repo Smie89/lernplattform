@@ -85,14 +85,25 @@ Beide hängen oft zusammen, aber nicht immer:
 
 ## Lebenszyklus eines Fehlers \{#lebenszyklus}
 
-```text
-  Neu ──► Analysiert/Zugewiesen ──► In Bearbeitung ──► Behoben ──► Im Nachtest ──► Geschlossen
-   │                │                                                  │
-   │                ├──► Abgelehnt (kein Fehler, z. B. Erwartung falsch)│
-   │                ├──► Duplikat                                       │
-   │                └──► Zurückgestellt (bewusst später)                │
-   │                                                                    ▼
-   └─────────────────────────────────────────────────────────── Wiedereröffnet (Nachtest fehlgeschlagen)
+```mermaid
+stateDiagram-v2
+  state "Analysiert / Zugewiesen" as Analysiert
+  state "In Bearbeitung" as Bearbeitung
+  state "Im Nachtest" as Nachtest
+  state "Wiedereröffnet" as Wieder
+  state "Zurückgestellt" as Zurueck
+  [*] --> Neu
+  Neu --> Analysiert
+  Analysiert --> Bearbeitung
+  Analysiert --> Abgelehnt : kein Fehler
+  Analysiert --> Duplikat
+  Analysiert --> Zurueck : bewusst später
+  Bearbeitung --> Behoben
+  Behoben --> Nachtest
+  Nachtest --> Geschlossen : Nachtest ok
+  Nachtest --> Wieder : Nachtest fehlgeschlagen
+  Wieder --> Bearbeitung
+  Geschlossen --> [*]
 ```
 
 SHOP-1 hat diesen Weg durchlaufen:
@@ -157,6 +168,13 @@ Hätte die ursprüngliche User Story dieses Kriterium enthalten, wäre SHOP-1 ni
 | **BDD** (Behavior-Driven Development) | Verhalten in **Given-When-Then** in Fachsprache beschreiben; Werkzeuge wie **Reqnroll** (.NET) oder **Cucumber** (Java) führen die Szenarien als Tests aus | Story / System |
 
 Die Behebung von SHOP-1 folgte dem TDD-Muster: **erst der rote Test**, dann die Korrektur, dann grün.
+
+```mermaid
+flowchart LR
+  R["<b>1. Rot</b><br/>Test schreiben,<br/>der fehlschlägt"] --> G["<b>2. Grün</b><br/>gerade genug Code,<br/>damit er besteht"]
+  G --> F["<b>3. Refactor</b><br/>aufräumen,<br/>Tests bleiben grün"]
+  F --> R
+```
 
 ### Die Testquadranten \{#testquadranten}
 

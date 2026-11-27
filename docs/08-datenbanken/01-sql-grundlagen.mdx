@@ -22,12 +22,36 @@ Nach dieser Lektion kannst du …
 Eine relationale Datenbank speichert Daten in **Tabellen**. Jede **Zeile** ist ein Datensatz, jede **Spalte** ein Merkmal
 mit festem Datentyp. Die Tabellen des Mini-Shops ([schema.sql](https://github.com/Smie89/lernplattform/blob/main/beispiele/datenbank/schema.sql)):
 
-```text
-kunden ──< bestellungen ──< positionen >── produkte
- id         id                bestellung_id   id
- name       kunde_id ─────►   produkt_id ──►  name
- email      datum             menge           kategorie
- stammkunde status            einzelpreis     preis, bestand
+```mermaid
+erDiagram
+  kunden ||--o{ bestellungen : "gibt auf"
+  bestellungen ||--|{ positionen : "enthält"
+  produkte ||--o{ positionen : "kommt vor in"
+  kunden {
+    INTEGER id PK
+    TEXT name
+    TEXT email UK
+    INTEGER stammkunde
+  }
+  bestellungen {
+    INTEGER id PK
+    INTEGER kunde_id FK
+    TEXT datum
+    TEXT status
+  }
+  positionen {
+    INTEGER bestellung_id PK, FK
+    TEXT produkt_id PK, FK
+    INTEGER menge
+    NUMERIC einzelpreis
+  }
+  produkte {
+    TEXT id PK
+    TEXT name
+    TEXT kategorie
+    NUMERIC preis
+    INTEGER bestand
+  }
 ```
 
 | Begriff | Bedeutung | Beispiel |

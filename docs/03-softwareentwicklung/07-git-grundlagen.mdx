@@ -27,10 +27,12 @@ Für Testautomatisierer gehört **alles** in Git: Testcode, Testdaten, Konfigura
 
 ## Die drei Bereiche \{#bereiche}
 
-```text
- Arbeitsverzeichnis  ──git add──►  Staging-Bereich  ──git commit──►  Repository (.git)
-  (deine Dateien)                  (für den nächsten     (gespeicherte
-                                    Commit vorgemerkt)     Versionen)
+```mermaid
+flowchart LR
+  A["<b>Arbeitsverzeichnis</b><br/>deine Dateien"] -- git add --> S["<b>Staging-Bereich</b><br/>für den nächsten<br/>Commit vorgemerkt"]
+  S -- git commit --> R["<b>Repository</b> (.git)<br/>gespeicherte Versionen"]
+  R -- git push --> O[("Remote<br/>(GitHub)")]
+  O -- git pull --> A
 ```
 
 - **Arbeitsverzeichnis**: die Dateien, wie sie gerade auf der Platte liegen.
@@ -144,6 +146,18 @@ $ git log --oneline --graph --all
 | * d6640d1 Grenze der Rabattregel präzisiert
 |/
 * 38bb2eb Rabattregel dokumentiert
+```
+
+```mermaid
+gitGraph
+  commit id: "Startseite"
+  commit id: "Warenkorb"
+  branch stammkunde
+  commit id: "Rabatt"
+  commit id: "Tests"
+  checkout main
+  commit id: "Bugfix"
+  merge stammkunde
 ```
 
 ## Merge und Merge-Konflikt \{#merge}

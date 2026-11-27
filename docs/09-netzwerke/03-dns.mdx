@@ -23,16 +23,13 @@ Nach dieser Lektion kannst du …
 Menschen merken sich `shop.example.org`, Rechner brauchen `203.0.113.42`. Das **Domain Name System** übersetzt Namen in
 Adressen – ein weltweit verteiltes, hierarchisches Verzeichnis:
 
-```text
-                         . (Root)
-                         │
-          ┌──────────────┼──────────────┐
-         org            de             com          ← Top-Level-Domains (TLD)
-          │
-       example                                      ← Domain
-          │
-   ┌──────┴──────┐
-  shop          www                                 ← Subdomains / Hostnamen
+```mermaid
+flowchart TD
+  R(("· Root")) --> O[org] & D[de] & C[com]
+  O --> E[example]
+  E --> S[shop] & W[www]
+  classDef tld fill:transparent
+  class O,D,C tld
 ```
 
 ## Ablauf einer Auflösung \{#ablauf}
@@ -46,6 +43,27 @@ Adressen – ein weltweit verteiltes, hierarchisches Verzeichnis:
 
 Die meisten Anfragen beantwortet ein Cache in Millisekunden. DNS-Abfragen laufen normalerweise über **UDP Port 53**
 (große Antworten über TCP), zunehmend auch verschlüsselt (DNS over HTTPS/TLS).
+
+```mermaid
+sequenceDiagram
+  participant P as Programm
+  participant B as Betriebssystem
+  participant R as Resolver
+  participant W as Root-Server
+  participant T as TLD-Server (.org)
+  participant A as Autoritativer Server
+  P->>B: shop.example.org?
+  B->>B: hosts-Datei, Cache
+  B->>R: shop.example.org?
+  R->>W: wer ist für .org zuständig?
+  W-->>R: TLD-Server
+  R->>T: wer ist für example.org zuständig?
+  T-->>R: autoritativer Server
+  R->>A: shop.example.org?
+  A-->>R: 203.0.113.42 (TTL 300)
+  R-->>B: 203.0.113.42
+  B-->>P: 203.0.113.42
+```
 
 ## Eintragstypen \{#eintraege}
 

@@ -112,10 +112,13 @@ Anwendungen: **semantische Suche**, ähnliche Fehlerberichte finden (Duplikate!)
 
 **RAG** verbindet Suche und Textgenerierung:
 
-```text
- Frage ─► Suche in eigenen Dokumenten (oft per Embeddings) ─► passende Abschnitte
-                                                                     │
- Antwort ◄── LLM erzeugt Antwort AUF BASIS dieser Abschnitte ◄───────┘
+```mermaid
+flowchart TD
+  F([Frage]) --> S["Suche in eigenen Dokumenten<br/>(oft per Embeddings)"]
+  S --> A["passende Abschnitte"]
+  A --> L["LLM erzeugt Antwort<br/><b>auf Basis dieser Abschnitte</b>"]
+  F --> L
+  L --> X([Antwort mit Quellen])
 ```
 
 Vorteile: aktuelle und firmeninterne Informationen, weniger Halluzinationen, Quellenangaben möglich. Ein Beispiel: Ein Assistent beantwortet Fragen zur Teststrategie anhand des eigenen Testkonzepts.

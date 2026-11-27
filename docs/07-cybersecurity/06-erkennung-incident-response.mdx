@@ -172,6 +172,12 @@ Wenn ein Alarm sich als echter Vorfall herausstellt, hilft ein vorbereiteter Abl
 | **5. Wiederherstellung** | Systeme sauber zurück in den Betrieb, verstärkt überwachen |
 | **6. Nachbereitung** | Lessons Learned ohne Schuldzuweisung: Was verbessern wir? Neue Erkennungsregel, neuer Test |
 
+```mermaid
+flowchart TD
+  V[1 Vorbereitung] --> E[2 Erkennung<br/>und Analyse] --> D[3 Eindämmung] --> B[4 Beseitigung] --> W[5 Wieder-<br/>herstellung] --> N[6 Nachbereitung]
+  N -- Lessons Learned --> V
+```
+
 ### Durchgespielt: der Alarm für ben \{#playbook}
 
 Der kritische Alarm aus dem Beispiel – `ben von 192.0.2.50 nach 7 Fehlversuchen` – als Playbook:

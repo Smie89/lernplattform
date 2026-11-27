@@ -41,15 +41,14 @@ Ein Tester „macht keine Qualität“ – er **misst** sie und **macht sie sich
 
 Im Alltag sagt man zu allem „Fehler“ oder „Bug“. Die Fachsprache unterscheidet drei Stufen:
 
-```text
- Fehlhandlung (error)       Ein Mensch irrt sich
-        │                   z. B. versteht die Entwicklerin die Rabattregel falsch
-        ▼
- Fehlerzustand (defect)     Der Irrtum steckt im Produkt
-        │                   z. B. im Code steht "> 100" statt ">= 100"
-        ▼
- Fehlerwirkung (failure)    Das System verhält sich falsch, wenn der Fehlerzustand ausgeführt wird
-                            z. B. bei genau 100,00 € gibt es keinen Rabatt
+```mermaid
+flowchart TD
+  F["<b>Fehlhandlung</b> (error)<br/>Ein Mensch irrt sich<br/><i>versteht die Rabattregel falsch</i>"]
+  Z["<b>Fehlerzustand</b> (defect)<br/>Der Irrtum steckt im Produkt<br/><i>im Code steht &gt; 100 statt &gt;= 100</i>"]
+  W["<b>Fehlerwirkung</b> (failure)<br/>Falsches Verhalten beim Ausführen<br/><i>bei genau 100,00 € kein Rabatt</i>"]
+  F --> Z --> W
+  R(["statischer Test / Review"]) -. findet .-> Z
+  D(["dynamischer Test"]) -. zeigt .-> W
 ```
 
 | Begriff | Englisch | Wo? | Wer findet es? |
@@ -117,6 +116,14 @@ Testen ist mehr als „Tests ausführen“. Der Testprozess umfasst diese Aktivi
 | **Testrealisierung** | Ist alles für die Durchführung bereit? | Testskripte, Testdaten, Testumgebung |
 | **Testdurchführung** | Tests ausführen, Ergebnisse vergleichen | Testprotokolle, **Fehlerberichte** |
 | **Testabschluss** | Was haben wir gelernt? | Abschlussbericht, archivierte Testmittel, Lessons Learned |
+
+```mermaid
+flowchart TD
+  P[Testplanung] --> A[Testanalyse] --> E[Testentwurf] --> R[Testrealisierung] --> D[Testdurchführung] --> X[Testabschluss]
+  U["Testüberwachung und -steuerung<br/>(begleitend)"]
+  U -.-> P
+  U -.-> D
+```
 
 ### Wichtige Begriffe \{#begriffe}
 

@@ -74,6 +74,11 @@ Mit IaC wird aus „Wir haben eine Testumgebung, um die sich alle streiten“ ei
 Vorteile: Tests stören sich nicht, jeder Stand ist reproduzierbar, Kosten entstehen nur während der Tests. Für Tests reicht
 oft eine **kleinere Ausprägung** derselben Konfiguration (weniger Instanzen, günstigere Stufen) – über Variablen gesteuert.
 
+```mermaid
+flowchart TD
+  O([Pull Request<br/>geöffnet]) --> A["terraform apply<br/>rg-pr-142"] --> D[Anwendung<br/>ausrollen] --> T[API-, UI- und<br/>Lasttests] --> S([Pull Request<br/>geschlossen]) --> X["terraform destroy<br/>alles weg"]
+```
+
 ## Fehlkonfigurationen finden: IaC-Scans \{#scan}
 
 IaC-Scanner wie **Checkov**, **Trivy** oder **KICS** prüfen den Code gegen Hunderte Regeln – bevor irgendetwas in der Cloud

@@ -142,6 +142,20 @@ try {
 </TabItem>
 </Tabs>
 
+```mermaid
+sequenceDiagram
+  participant A as bestellen.py
+  participant D as Datenbank
+  A->>D: BEGIN
+  A->>D: INSERT bestellungen
+  A->>D: INSERT positionen (kabel, monitor)
+  A->>D: UPDATE bestand kabel − 1 ✓
+  A->>D: UPDATE bestand monitor − 5
+  D-->>A: Fehler: CHECK (bestand >= 0)
+  A->>D: ROLLBACK
+  Note over D: Nichts gespeichert – auch das Kabel nicht
+```
+
 ### ACID \{#acid}
 
 | Eigenschaft | Bedeutung | im Beispiel |

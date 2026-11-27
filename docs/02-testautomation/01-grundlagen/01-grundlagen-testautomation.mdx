@@ -5,6 +5,7 @@ tags: [grundlagen, teststrategie]
 ---
 
 import Quiz from '@site/src/components/Quiz';
+import Testpyramide from '@site/src/components/Grafik/Testpyramide';
 import fragen from './01-grundlagen-testautomation.fragen.yaml';
 
 # Grundlagen der Testautomation
@@ -41,16 +42,7 @@ Automatisierte Tests sind ein **Sicherheitsnetz für Bekanntes**. Exploratives T
 
 Die Testpyramide (nach Mike Cohn) beschreibt, **wie viele Tests welcher Art** ein Projekt haben sollte:
 
-```text
-          /\
-         /E2E\         wenige   – langsam, teuer, fragil
-        /------\
-       /  Inte- \      einige   – mehrere Bausteine zusammen
-      / gration  \
-     /------------\
-    /  Unit-Tests  \   viele    – schnell, billig, stabil
-   /----------------\
-```
+<Testpyramide />
 
 | Ebene | Prüft | Laufzeit | Beispiel |
 |---|---|---|---|

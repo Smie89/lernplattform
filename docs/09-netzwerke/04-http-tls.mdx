@@ -144,6 +144,18 @@ mit, funktioniert die Seite in manchen Browsern – in anderen Clients (curl, Ja
 Für Testumgebungen mit **interner CA**: das CA-Zertifikat dem Testsystem bekannt machen – nicht die Prüfung abschalten (siehe
 [TLS und HTTPS](../07-cybersecurity/03-authentifizierung-kryptografie.mdx#tls)).
 
+```mermaid
+sequenceDiagram
+  participant C as Client
+  participant S as Server
+  C->>S: ClientHello (Verfahren, Schlüsselanteil, SNI)
+  S->>C: ServerHello, Zertifikat, Nachweis des privaten Schlüssels
+  Note over C: prüft Kette, Name, Gültigkeit
+  Note over C,S: beide berechnen den Sitzungsschlüssel
+  C->>S: verschlüsselte HTTP-Anfrage
+  S->>C: verschlüsselte Antwort
+```
+
 ## Proxys und Load Balancer \{#proxy}
 
 Zwischen Client und Anwendung sitzen oft weitere Stationen:

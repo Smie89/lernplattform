@@ -34,11 +34,12 @@ abzuweichen.
 3. Der **Provider** spielt die Anfragen aus allen Verträgen gegen seine echte Implementierung ab und prüft, ob die Antworten passen.
 4. Vor einem Release fragt die Pipeline: „Ist diese Version mit allen Consumern verträglich?“ (`can-i-deploy`).
 
-```text
-Shop-Oberfläche (Consumer)          Pact Broker           Shop-API (Provider)
-  Test gegen Pact-Mock  ──► Vertrag ──►  speichert  ──► Vertrag gegen echte API abspielen
-  "GET /api/produkte                                     → passt die Antwort?
-   erwartet: Liste mit id, name, preis"
+```mermaid
+flowchart LR
+  C["<b>Consumer</b><br/>Shop-Oberfläche<br/>testet gegen Pact-Mock"] -- Vertrag --> B[("Pact Broker")]
+  B -- Vertrag --> P["<b>Provider</b><br/>Shop-API<br/>spielt Vertrag gegen echte API ab"]
+  P -- Ergebnis --> B
+  B -. "can-i-deploy?" .-> R{{Release}}
 ```
 
 Der Vorteil gegenüber einem reinen [OpenAPI-Vertrag](./01-openapi-vertragstests.mdx#vertragstests): Der Provider erfährt,
@@ -120,6 +121,18 @@ http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer
 - **Tokens zwischenspeichern** – das Holen kostet Zeit und kann vom Identitätsanbieter begrenzt werden.
 - In Integrationstests lässt sich die Anmeldung oft durch ein **Test-Authentifizierungsschema** ersetzen (ASP.NET Core:
   eigener `AuthenticationHandler` in der `WebApplicationFactory`) – schnell und unabhängig vom Identitätsanbieter.
+
+```mermaid
+sequenceDiagram
+  participant T as API-Test
+  participant I as Identitätsanbieter
+  participant A as API
+  T->>I: POST /token (client_id, client_secret)
+  I-->>T: access_token (JWT, z. B. 1 h gültig)
+  Note over T: Token zwischenspeichern
+  T->>A: GET /api/bestellungen/A-1<br/>Authorization: Bearer …
+  A-->>T: 200 OK
+```
 
 ### Rechte systematisch testen \{#rechte}
 

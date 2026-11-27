@@ -5,6 +5,7 @@ tags: [sql, join, aggregation]
 ---
 
 import Quiz from '@site/src/components/Quiz';
+import JoinDiagramm from '@site/src/components/Grafik/JoinDiagramm';
 import fragen from './02-joins-aggregation.fragen.yaml';
 
 # JOINs und Auswertungen
@@ -72,6 +73,8 @@ Mit einem INNER JOIN würde David fehlen – er hat nie bestellt.
 | `LEFT JOIN` | alle Zeilen links, rechts NULL, wo kein Partner existiert |
 | `RIGHT JOIN` | spiegelbildlich (selten; meist schreibt man die Tabellen um und nimmt LEFT JOIN) |
 | `FULL OUTER JOIN` | alle Zeilen beider Seiten |
+
+<JoinDiagramm />
 
 ### Fallstrick: COUNT(*) beim LEFT JOIN \{#count-falle}
 

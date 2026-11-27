@@ -46,6 +46,16 @@ return satz;
 **100 % Zweigüberdeckung schließt 100 % Anweisungsüberdeckung ein** – umgekehrt nicht. Ein `if` ohne `else` kann bei 100 % Anweisungsüberdeckung den Fall „Bedingung falsch“ völlig ungetestet lassen.
 :::
 
+```mermaid
+flowchart TD
+  S([summe]) --> E{"summe >= 100?"}
+  E -- ja --> R["rabatt = summe × 0,10"]
+  E -- nein --> Z
+  R --> Z(["return summe − rabatt"])
+```
+
+Ein Test mit 150 € durchläuft jede Anweisung, aber nur den **Ja**-Zweig. Für 100 % Zweigüberdeckung braucht es zusätzlich einen Test, der den **Nein**-Zweig nimmt.
+
 ## Abdeckung messen: der Mini-Shop \{#messen}
 
 In .NET misst **coverlet** die Abdeckung. Das Paket `coverlet.collector` ist in der NUnit-Projektvorlage bereits enthalten:
