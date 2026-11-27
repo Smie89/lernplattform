@@ -1,0 +1,93 @@
+.seite {
+  max-width: 720px;
+}
+
+.karte {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.karte h2 {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+.klein {
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+}
+
+.knopf {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 10px;
+  border: 2px solid var(--ifm-color-primary);
+  background: transparent;
+  color: var(--ifm-color-primary);
+  cursor: pointer;
+}
+
+.knopf:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.primaer {
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.feld {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 10px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  word-break: break-all;
+  resize: vertical;
+}
+
+.feld:focus {
+  outline: none;
+  border-color: var(--ifm-color-primary);
+}
+
+.unsichtbar {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.erfolg {
+  border-left: 4px solid var(--ifm-color-success);
+  background: var(--ifm-color-success-contrast-background);
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+}
+
+.fehler {
+  border-left: 4px solid var(--ifm-color-danger);
+  background: var(--ifm-color-danger-contrast-background);
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+}

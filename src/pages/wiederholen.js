@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import Layout from '@theme/Layout';
+import Link from '@docusaurus/Link';
 import clsx from 'clsx';
 import Quiz from '@site/src/components/Quiz';
 import {ladeFortschritt, istFaellig, plan} from '@site/src/components/Quiz/fortschritt';
@@ -135,6 +136,10 @@ export default function Wiederholen() {
                     Heute ist nichts fällig. 🎉 Beantworte Quizfragen in den Lektionen oder probiere „10 neue Fragen“.
                   </p>
                 )}
+
+                <p className={styles.hinweis}>
+                  Lernst du auf Handy und PC? <Link to="/fortschritt">💾 Fortschritt übertragen</Link>
+                </p>
               </>
             )}
           </>
