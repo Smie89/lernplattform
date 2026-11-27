@@ -54,6 +54,12 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 3
+          lifecycle:
+            preStop:
+              # Beim Löschen nimmt Kubernetes den Pod aus dem Service und beendet ihn GLEICHZEITIG. Ohne diese Pause
+              # bekamen Anfragen manchmal "connection refused" (gefunden von test_selbstheilung_nach_ausfall_eines_pods).
+              sleep:
+                seconds: 5
           resources:
             requests:
               cpu: 100m

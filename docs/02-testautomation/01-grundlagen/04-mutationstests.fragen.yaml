@@ -1,0 +1,159 @@
+# Fragen zur Lektion "Mutationstests"
+
+- id: ta-mu-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was misst ein Mutationstest?"
+  optionen:
+    - "Wie viel Code die Tests ausführen"
+    - "Ob die Tests absichtlich eingebaute Fehler bemerken"
+    - "Wie schnell die Tests laufen"
+    - "Wie viele Anforderungen umgesetzt sind"
+  richtig: [1]
+  erklaerung: "Abdeckung misst Ausführung; Mutationstests messen, ob Änderungen am Code zu roten Tests führen."
+  artikel: "#idee"
+  tags: [mutationstests]
+
+- id: ta-mu-002
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem Status seine Bedeutung zu."
+  paare:
+    - ["getötet", "Mindestens ein Test schlägt fehl"]
+    - ["überlebt", "Alle Tests bleiben grün"]
+    - ["nicht abgedeckt", "Kein Test führt die Stelle aus"]
+    - ["äquivalent", "Die Änderung verändert das Verhalten nicht"]
+  erklaerung: "Getötete Mutanten sind gut; überlebende zeigen mögliche Lücken."
+  artikel: "#idee"
+  tags: [mutationstests]
+
+- id: ta-mu-003
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "100 % Codeabdeckung bedeutet, dass jeder eingebaute Fehler von den Tests gefunden wird."
+  richtig: [1]
+  erklaerung: "Falsch. Ein Test ohne passende Assertion deckt Code ab und prüft nichts. Genau das zeigen Mutationstests."
+  artikel: "#idee"
+  tags: [mutationstests, abdeckung]
+
+- id: ta-mu-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Der Mutant „betrag <= Limit“ → „betrag < Limit“ überlebt. Welcher Test fehlt?"
+  optionen:
+    - "Ein Test mit einem Betrag weit unter dem Limit"
+    - "Ein Test mit einem Betrag genau auf dem Limit"
+    - "Ein Test mit negativem Betrag"
+    - "Ein Lasttest"
+  richtig: [1]
+  erklaerung: "Nur genau auf der Grenze unterscheiden sich <= und <. Der Mutationstest hat einen fehlenden Grenzwerttest aufgedeckt."
+  artikel: "#zweiter-lauf"
+  tags: [mutationstests, grenzwerte]
+
+- id: ta-mu-005
+  typ: single
+  schwierigkeit: 3
+  frage: "Stryker ändert Guid.NewGuid().ToString(\"N\")[..6] zu ToString(\"\")[..6]. Der Mutant überlebt. Wie ist er zu bewerten?"
+  optionen:
+    - "Als Lücke – ein Test für das genaue GUID-Format fehlt"
+    - "Als äquivalenter Mutant – die ersten 6 Zeichen sind in beiden Formaten Hex-Ziffern"
+    - "Als Fehler von Stryker"
+    - "Als Hinweis, dass GUIDs nicht verwendet werden dürfen"
+  richtig: [1]
+  erklaerung: "Das Verhalten bleibt gleich; kein Test kann den Mutanten töten. Solche Mutanten nimmt man mit Begründung aus."
+  artikel: "#zweiter-lauf"
+  tags: [mutationstests, aequivalent]
+
+- id: ta-mu-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Wie sollte man mit einem überlebenden Mutanten umgehen?"
+  optionen:
+    - "Prüfen, ob ein Test für dieses Verhalten fehlt, und ihn ergänzen"
+    - "Prüfen, ob der Mutant äquivalent ist, und ihn dann begründet ausnehmen"
+    - "Bei unwichtigem Code die Ausnahme mit Begründung dokumentieren"
+    - "Alle Überlebenden ohne Prüfung pauschal ausnehmen"
+  richtig: [0, 1, 2]
+  erklaerung: "Jeder Überlebende verlangt eine Entscheidung. Pauschale Ausnahmen machen den Score wertlos."
+  artikel: "#zweiter-lauf"
+  tags: [mutationstests]
+
+- id: ta-mu-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum stieg der Score von 61,6 % auf 90,4 %, ohne dass ein Test geändert wurde?"
+  optionen:
+    - "Stryker wurde schneller."
+    - "Die API-Tests wurden einbezogen; sie prüfen Stellen, die die Unit-Tests nicht abdecken."
+    - "Die Mutanten wurden zufällig anders erzeugt."
+    - "Die Schwelle wurde gesenkt."
+  richtig: [1]
+  erklaerung: "Mit nur einem Testprojekt erscheinen Stellen als Lücke, die andere Tests sehr wohl prüfen – etwa der HTTP-Zahlungsdienst."
+  artikel: "#erster-lauf"
+  tags: [mutationstests, stryker]
+
+- id: ta-mu-008
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Welche Zeile nimmt mehr aus, als nötig ist?"
+  sprache: csharp
+  code: |
+    // Stryker disable String : Demo-Daten, keine Logik
+    private static readonly Produkt[] Produkte = [ … ];
+    // Stryker restore String
+    // Stryker disable all : Bestellnummer ist nicht so wichtig
+    var nummer = $"B-{jetzt:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6]}";
+  richtig: [3]
+  erklaerung: "„disable all“ schaltet alle Operatoren aus und hat keine fachliche Begründung. Ausnahmen so eng wie möglich: ein Operator, ein kleiner Bereich, eine echte Begründung."
+  artikel: "#ausnahmen"
+  tags: [mutationstests, ausnahmen]
+
+- id: ta-mu-009
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem Werkzeug seine Sprache zu."
+  paare:
+    - ["Stryker.NET", "C# / .NET"]
+    - ["PIT", "Java"]
+    - ["mutmut", "Python"]
+    - ["StrykerJS", "JavaScript / TypeScript"]
+  erklaerung: "Für fast jede Sprache gibt es ein Mutationswerkzeug; die Begriffe sind überall dieselben."
+  artikel: "#stryker"
+  tags: [mutationstests, werkzeuge]
+
+- id: ta-mu-010
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Aussagen zu Mutationstests in der CI treffen zu?"
+  optionen:
+    - "Eine break-Schwelle lässt den Job fehlschlagen, wenn der Score sinkt."
+    - "Bei großen Projekten nur geänderte Dateien oder nachts mutieren."
+    - "Mutationstests gehören in die schnelle Rückmeldung bei jedem Commit über das ganze Projekt."
+    - "Ein eigener Job trennt sie von den schnellen Tests."
+  richtig: [0, 1, 3]
+  erklaerung: "Jeder Mutant bedeutet einen Testlauf – das ist zu langsam für jeden Commit über das ganze Projekt."
+  artikel: "#ci"
+  tags: [mutationstests, ci]
+
+- id: ta-mu-011
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Mutationstests finden auch Anforderungen, die nie programmiert wurden."
+  richtig: [1]
+  erklaerung: "Falsch. Mutiert wird nur vorhandener Code. Fehlende Funktionen finden Reviews und Tests gegen die Anforderungen."
+  artikel: "#grenzen"
+  tags: [mutationstests, grenzen]
+
+- id: ta-mu-012
+  typ: single
+  schwierigkeit: 3
+  frage: "mutmut entfernt rounding=ROUND_HALF_UP aus quantize(). Die parametrisierten Tests und Hypothesis bleiben grün. Was fehlt?"
+  optionen:
+    - "Mehr zufällige Beträge in Hypothesis"
+    - "Ein Testfall genau auf dem halben Cent, bei dem kaufmännisches und Banker's Rounding verschieden runden"
+    - "Ein Lasttest"
+    - "Nichts – der Mutant ist äquivalent"
+  richtig: [1]
+  erklaerung: "Z. B. 10,30 € − 5 % = 9,785 €: kaufmännisch 9,79 €, gerade gerundet 9,78 €. Die Hypothesis-Eigenschaften gelten mit beiden Rundungen."
+  artikel: "#mutmut-ergebnis"
+  tags: [mutationstests, mutmut, rundung]

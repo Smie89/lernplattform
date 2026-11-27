@@ -1,6 +1,10 @@
-﻿using Shop.Core.Bestellungen;
+using Shop.Core.Bestellungen;
 using Shop.Core.Katalog;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Shop.Core.Preise;
+using Shop.Core.Telemetrie;
 using Shop.Core.Warenkoerbe;
 using Shop.Core.Zahlung;
 using Shop.Web.Api;
@@ -18,6 +22,26 @@ builder.Services.AddSingleton<Rabattrechner>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<BestellService>();
 builder.Services.AddOpenApi();   // beschreibt die API maschinenlesbar unter /openapi/v1.json
+
+// Observability (Lektion "Observability"): Traces und Metriken mit OpenTelemetry.
+// - Traces: jede Anfrage automatisch, dazu eigene Spans aus Shop.Core ("Bestellung aufgeben").
+//   Exportiert per OTLP, aber nur, wenn ein Empfänger konfiguriert ist (OTEL_EXPORTER_OTLP_ENDPOINT, z. B. Jaeger).
+// - Metriken: Anfragen (Dauer, Statuscodes), Laufzeit (GC, Threads) und eigene Zähler – abrufbar unter /metrics.
+var otlpEndpunkt = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(ressource => ressource.AddService(builder.Configuration["OTEL_SERVICE_NAME"] ?? "mini-shop"))
+    .WithTracing(traces =>
+    {
+        traces.AddAspNetCoreInstrumentation()
+              .AddHttpClientInstrumentation()
+              .AddSource(ShopTelemetrie.Name);
+        if (!string.IsNullOrEmpty(otlpEndpunkt)) traces.AddOtlpExporter();
+    })
+    .WithMetrics(metriken => metriken
+        .AddAspNetCoreInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddMeter(ShopTelemetrie.Name)
+        .AddPrometheusExporter());
 
 var app = builder.Build();
 
@@ -37,6 +61,7 @@ app.UseDefaultFiles();   // liefert wwwroot/index.html für "/"
 app.UseStaticFiles();
 app.MapOpenApi();
 app.MapShopApi();        // alle Endpunkte unter /api, siehe Api/ShopApi.cs
+app.MapPrometheusScrapingEndpoint();   // /metrics im Textformat von Prometheus
 
 app.Run();
 

@@ -15,8 +15,10 @@ const bereiche = [
   {icon: '🌐', titel: 'Netzwerke', text: 'IP und Subnetze, TCP/UDP, DNS, HTTP und TLS, Wireshark', pfad: '/lernen/netzwerke'},
   {icon: '☁️', titel: 'Cloud', text: 'Geteilte Verantwortung, IAM, Infrastructure as Code', pfad: '/lernen/cloud'},
   {icon: '☸️', titel: 'Kubernetes', text: 'Pods, Deployments, Probes und Tests gegen einen Cluster', pfad: '/lernen/kubernetes'},
+  {icon: '📈', titel: 'Observability', text: 'Logs, Metriken und Traces – und wie man sie testet', pfad: '/lernen/observability'},
   {icon: '🎓', titel: 'ISTQB-Zertifizierung', text: 'Test Automation Engineering (CTAL-TAE) mit Prüfungssimulation', pfad: '/lernen/istqb'},
   {icon: '📇', titel: 'Stichwortverzeichnis', text: 'Alle Themen von A bis Z – schnell nachschlagen', pfad: '/stichwortverzeichnis'},
+  {icon: '💾', titel: 'Fortschritt übertragen', text: 'Lernstand zwischen Handy und PC austauschen', pfad: '/fortschritt'},
   {icon: '🔁', titel: 'Wiederholen', text: 'Fällige Fragen aus allen Lektionen – mit Wiederholungsplan', pfad: '/wiederholen'},
 ];
 

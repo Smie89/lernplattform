@@ -13,6 +13,7 @@ public sealed class Rabattrechner
     public decimal RabattSatz(decimal zwischensumme, bool stammkunde)
     {
         if (zwischensumme < 0)
+            // Stryker disable once String : interne Schutzprüfung – Zwischensummen sind nie negativ, kein Nutzer sieht die Meldung
             throw new ArgumentOutOfRangeException(nameof(zwischensumme), "Die Zwischensumme darf nicht negativ sein.");
 
         var satz = zwischensumme >= Rabattschwelle ? MengenRabatt : 0m;

@@ -1,4 +1,4 @@
-﻿using Shop.Core.Bestellungen;
+using Shop.Core.Bestellungen;
 using Shop.Core.Katalog;
 using Shop.Core.Preise;
 using Shop.Core.Warenkoerbe;
@@ -62,7 +62,7 @@ public static class ShopApi
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         api.MapPost("/warenkoerbe/{id:guid}/bestellung",
-            (Guid id, BestellAnfrage anfrage, IWarenkorbSpeicher speicher, BestellService service) =>
+            (Guid id, BestellAnfrage anfrage, IWarenkorbSpeicher speicher, BestellService service, ILoggerFactory logs) =>
             {
                 if (speicher.Finde(id) is not { } warenkorb) return NichtGefunden("Warenkorb");
 
@@ -80,7 +80,13 @@ public static class ShopApi
                     if (ergebnis.Erfolgreich) speicher.Entfernen(id);
                 }
 
-                if (!ergebnis.Erfolgreich) return Results.Problem(ergebnis.Fehler, statusCode: 422);
+                if (!ergebnis.Erfolgreich)
+                {
+                    // Strukturiertes Log: Platzhalter werden eigene Felder; die TraceId kommt automatisch über den Scope dazu.
+                    // Bewusst ohne Kundennamen – Logs werden lange aufbewahrt und von vielen gelesen.
+                    logs.CreateLogger("Shop.Bestellungen").LogWarning("Zahlung für Warenkorb {WarenkorbId} abgelehnt", id);
+                    return Results.Problem(ergebnis.Fehler, statusCode: 422);
+                }
                 var b = ergebnis.Bestellung!;
                 return Results.Created($"/api/bestellungen/{b.Bestellnummer}",
                     new BestellAntwort(b.Bestellnummer, b.Kunde.Name, b.Zwischensumme, b.Endpreis));

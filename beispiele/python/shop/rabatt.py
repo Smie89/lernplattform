@@ -11,7 +11,7 @@ STAMMKUNDEN_RABATT = Decimal("0.05")
 
 def rabatt_satz(zwischensumme: Decimal, stammkunde: bool = False) -> Decimal:
     if zwischensumme < 0:
-        raise ValueError("Die Zwischensumme darf nicht negativ sein.")
+        raise ValueError("Die Zwischensumme darf nicht negativ sein.")  # pragma: no mutate – interne Meldung
     satz = MENGEN_RABATT if zwischensumme >= RABATTSCHWELLE else Decimal("0")
     if stammkunde:
         satz += STAMMKUNDEN_RABATT

@@ -1,0 +1,132 @@
+# Fragen zur Lektion "Observability und Testen"
+
+- id: ob-te-001
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedes Beispiel der passenden Blickrichtung zu."
+  paare:
+    - ["Prüfen, ob eine abgelehnte Zahlung einen roten Span erzeugt", "Telemetrie testen"]
+    - ["Im Trace nachsehen, warum ein UI-Test langsam war", "Mit Telemetrie testen"]
+    - ["Prüfen, dass kein Kundenname in den Logs steht", "Telemetrie testen (Datenschutz)"]
+  erklaerung: "Telemetrie ist Anforderung und Werkzeug zugleich."
+  artikel: "#blickrichtungen"
+  tags: [observability, testen]
+
+- id: ob-te-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum läuft die Testklasse mit ActivityListener und MeterListener mit [NonParallelizable]?"
+  optionen:
+    - "Weil die Lauscher sehr langsam sind"
+    - "Weil die Lauscher prozessweit sind und sonst Spans und Messungen anderer, parallel laufender Tests sähen"
+    - "Weil NUnit das bei Telemetrie verlangt"
+    - "Weil Spans nur einzeln erzeugt werden können"
+  richtig: [1]
+  erklaerung: "Parallele Tests würden die Ergebnislisten mit fremden Spans füllen – die Tests würden wackeln."
+  artikel: "#unit"
+  tags: [observability, unit-test]
+
+- id: ob-te-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie findet ein Integrationstest „seinen“ Trace in Jaeger zuverlässig?"
+  optionen:
+    - "Er nimmt den neuesten Trace."
+    - "Er schickt eine selbst erzeugte Trace-ID im traceparent-Header mit und fragt genau diesen Trace ab."
+    - "Er sucht nach dem Dienstnamen."
+    - "Er wartet 30 Sekunden und nimmt dann irgendeinen."
+  richtig: [1]
+  erklaerung: "Die Anwendung übernimmt den mitgeschickten Kontext; so kennt der Test die Trace-ID vorher."
+  artikel: "#traceparent"
+  tags: [observability, traces]
+
+- id: ob-te-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum fragen die Tests Prometheus und Jaeger wiederholt ab, statt einmal nach einer festen Pause?"
+  optionen:
+    - "Weil die APIs sonst gesperrt werden"
+    - "Weil Telemetrie mit Verzögerung ankommt; feste Pausen wären zu kurz (Fehlschlag) oder zu lang (Zeitverschwendung)"
+    - "Weil pytest keine Pausen kennt"
+    - "Weil Jaeger nur jede zweite Anfrage beantwortet"
+  richtig: [1]
+  erklaerung: "Spans werden gebündelt gesendet, Prometheus fragt in Intervallen ab – Warten auf Bedingungen mit Timeout ist robust."
+  artikel: "#warten"
+  tags: [observability, warten]
+
+- id: ob-te-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Wo durchsucht der Datenschutz-Test nach dem Kundennamen?"
+  optionen:
+    - "Im Trace aus Jaeger"
+    - "Im Metrik-Endpunkt /metrics"
+    - "In den Logs des Shops"
+    - "Im Quellcode des Shops"
+  richtig: [0, 1, 2]
+  erklaerung: "Alle drei Signale werden geprüft – der Quellcode ist Sache von Reviews und statischer Analyse."
+  artikel: "#datenschutz"
+  tags: [observability, datenschutz]
+
+- id: ob-te-006
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Verfahren seine Idee zu."
+  paare:
+    - ["Synthetisches Monitoring", "Automatisierte Abläufe laufen regelmäßig gegen Produktion"]
+    - ["Canary Release", "Neue Version zuerst für wenige Nutzer, Vergleich der Metriken"]
+    - ["Feature-Flag", "Funktion für eine Gruppe einschalten"]
+  erklaerung: "Alle drei nutzen Telemetrie, um in Produktion sicher zu testen."
+  artikel: "#produktion"
+  tags: [observability, produktion]
+
+- id: ob-te-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein k6-Lasttest zeigt steigende Antwortzeiten. Was hilft am meisten, die Ursache zu finden?"
+  optionen:
+    - "Den Test mit weniger Last wiederholen"
+    - "Traces der langsamsten Anfragen und Laufzeitmetriken während des Tests auswerten"
+    - "Die Schwellen im Test lockern"
+    - "Mehr virtuelle Nutzer"
+  richtig: [1]
+  erklaerung: "Der Lasttest zeigt dass, die Telemetrie zeigt warum – z. B. Zeit im Zahlungsdienst oder Garbage Collection."
+  artikel: "#lasttests"
+  tags: [observability, last]
+
+- id: ob-te-008
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Wie stellt man sicher, dass ein Alarm im Ernstfall wirklich auslöst?"
+  optionen:
+    - "Alarmregeln als Code mit Review"
+    - "Regeln automatisch testen, z. B. mit promtool test rules"
+    - "Regelmäßig Fehler einspielen und prüfen, ob der Alarm kommt"
+    - "Darauf vertrauen, dass er schon funktionieren wird"
+  richtig: [0, 1, 2]
+  erklaerung: "Ein Alarm, der nie ausgelöst wurde, ist ungetestet – wie Code ohne Tests."
+  artikel: "#alarme"
+  tags: [observability, alarme]
+
+- id: ob-te-009
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Schreibt ein fehlschlagender API-Test die Trace-ID seiner Anfrage in den Bericht, lässt sich der ganze Ablauf in Jaeger direkt finden."
+  richtig: [0]
+  erklaerung: "Wahr. Die Trace-ID verbindet Testbericht, Trace und Logs – Analyse ohne Suchen."
+  artikel: "#analyse"
+  tags: [observability, analyse]
+
+- id: ob-te-010
+  typ: single
+  schwierigkeit: 3
+  frage: "Nach einem Refactoring fehlt der Span „Bestellung aufgeben“, alle fachlichen Tests sind grün. Welcher Test hätte das gefunden?"
+  optionen:
+    - "Ein UI-Test"
+    - "Ein Unit-Test der Telemetrie mit ActivityListener"
+    - "Ein Lasttest"
+    - "Keiner – Telemetrie lässt sich nicht testen"
+  richtig: [1]
+  erklaerung: "Telemetrie ist eine Anforderung; ein Test mit ActivityListener prüft Span, Status und Attribute in Millisekunden."
+  artikel: "#unit"
+  tags: [observability, unit-test]

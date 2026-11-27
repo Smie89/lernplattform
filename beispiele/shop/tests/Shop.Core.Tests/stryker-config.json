@@ -1,0 +1,11 @@
+{
+  "stryker-config": {
+    "project": "Shop.Core.csproj",
+    "test-projects": [
+      "./Shop.Core.Tests.csproj",
+      "../Shop.Api.Tests/Shop.Api.Tests.csproj"
+    ],
+    "reporters": ["progress", "html", "json"],
+    "thresholds": { "high": 95, "low": 90, "break": 90 }
+  }
+}

@@ -1,0 +1,145 @@
+# Fragen zur Lektion "Observability – Grundlagen"
+
+- id: ob-gl-001
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem Signal zu, wofür es am stärksten ist."
+  paare:
+    - ["Metriken", "Trends, Alarme und Dashboards"]
+    - ["Traces", "Weg einer Anfrage durch alle Dienste"]
+    - ["Logs", "Details eines einzelnen Ereignisses"]
+  erklaerung: "Zusammen beantworten sie dass, wo und was – verbunden über die Trace-ID."
+  artikel: "#signale"
+  tags: [observability, signale]
+
+- id: ob-gl-002
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Die Fehlerquote eines Shops steigt. In welcher Reihenfolge nutzt man die Signale typischerweise?"
+  elemente:
+    - "Metrik zeigt: Fehlerquote steigt"
+    - "Trace zeigt: Zeit hängt im Zahlungsdienst"
+    - "Log zeigt: Zeitüberschreitung beim Anbieter"
+  erklaerung: "Vom Überblick zum Detail: dass, wo, was."
+  artikel: "#signale"
+  tags: [observability, signale]
+
+- id: ob-gl-003
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Metrik ihren Typ zu."
+  paare:
+    - ["Anzahl der Bestellversuche seit dem Start", "Counter"]
+    - ["Belegter Arbeitsspeicher", "Gauge"]
+    - ["Verteilung der Antwortzeiten", "Histogramm"]
+  erklaerung: "Counter zählen nur aufwärts, Gauges sind Momentwerte, Histogramme erlauben Perzentile."
+  artikel: "#metriken"
+  tags: [observability, metriken]
+
+- id: ob-gl-004
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Entwickler möchte die Warenkorb-ID als Label an die Metrik der Antwortzeit hängen. Was ist das Problem?"
+  optionen:
+    - "Labels dürfen keine Zahlen enthalten."
+    - "Jede ID erzeugt eine eigene Zeitreihe – die Kardinalität explodiert und belastet den Metrikspeicher."
+    - "Prometheus kennt keine Labels."
+    - "Kein Problem, das ist Best Practice."
+  richtig: [1]
+  erklaerung: "Einzelne Anfragen gehören in Traces und Logs. Metrik-Labels brauchen wenige mögliche Werte, z. B. die Route-Vorlage."
+  artikel: "#metriken"
+  tags: [observability, kardinalitaet]
+
+- id: ob-gl-005
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den HTTP-Header, der den Trace-Kontext nach W3C weitergibt."
+  sprache: text
+  text: "___: 00-7107af57eccfa6067a2fe36ef9331608-0123456789abcdef-01"
+  luecken:
+    - ["traceparent"]
+  erklaerung: "Er enthält Version, Trace-ID, Eltern-Span-ID und das Sampling-Flag."
+  artikel: "#traces"
+  tags: [observability, traces]
+
+- id: ob-gl-006
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne den Buchstaben der RED-Methode ihre Bedeutung zu."
+  paare:
+    - ["R", "Anfragen pro Sekunde"]
+    - ["E", "Fehlerquote"]
+    - ["D", "Antwortzeit"]
+  erklaerung: "RED passt für Dienste; USE (Utilization, Saturation, Errors) für Ressourcen."
+  artikel: "#red-use"
+  tags: [observability, red]
+
+- id: ob-gl-007
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Begriff seine Bedeutung zu."
+  paare:
+    - ["SLI", "Gemessene Kennzahl aus Nutzersicht"]
+    - ["SLO", "Zielwert für die Kennzahl über einen Zeitraum"]
+    - ["SLA", "Vertrag mit Folgen bei Verletzung"]
+    - ["Fehlerbudget", "Erlaubter Anteil schlechter Anfragen"]
+  erklaerung: "Das Fehlerbudget verbindet Betrieb und Entwicklung: Ist es aufgebraucht, hat Stabilität Vorrang."
+  artikel: "#slo"
+  tags: [observability, slo]
+
+- id: ob-gl-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein SLO lautet 99,5 % erfolgreiche Anfragen über 30 Tage. Wie groß ist das Fehlerbudget ungefähr in Stunden?"
+  optionen:
+    - "etwa 0,5 Stunden"
+    - "etwa 3,6 Stunden"
+    - "etwa 36 Stunden"
+    - "etwa 99,5 Stunden"
+  richtig: [1]
+  erklaerung: "30 Tage = 720 Stunden; 0,5 % davon sind 3,6 Stunden."
+  artikel: "#slo"
+  tags: [observability, slo]
+
+- id: ob-gl-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Merkmale haben gute Alarme?"
+  optionen:
+    - "Sie melden Symptome, die Nutzer spüren."
+    - "Jeder Alarm verlangt eine Handlung."
+    - "Ein Runbook beschreibt, was zu tun ist."
+    - "Sie melden jede kurze CPU-Spitze."
+  richtig: [0, 1, 2]
+  erklaerung: "Zu viele Alarme ohne Handlung führen dazu, dass alle ignoriert werden (Alert Fatigue)."
+  artikel: "#alarme"
+  tags: [observability, alarme]
+
+- id: ob-gl-010
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile verstößt gegen den Datenschutz in Telemetrie?"
+  sprache: csharp
+  code: |
+    aktivitaet?.SetTag("shop.positionen", warenkorb.Positionen.Count);
+    aktivitaet?.SetTag("shop.stammkunde", kunde.IstStammkunde);
+    aktivitaet?.SetTag("shop.kunde", kunde.Name);
+    aktivitaet?.SetTag("shop.endpreis", (double)endpreis);
+  richtig: [2]
+  erklaerung: "Kundennamen sind personenbezogen und gehören nicht in Spans, Logs oder Metriken."
+  artikel: "#datenschutz"
+  tags: [observability, datenschutz]
+
+- id: ob-gl-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum zeigen Dashboards Antwortzeiten meist als p95 statt als Durchschnitt?"
+  optionen:
+    - "Weil der Durchschnitt schwerer zu berechnen ist"
+    - "Weil der Durchschnitt langsame Ausreißer versteckt, die viele Nutzer spüren"
+    - "Weil Prometheus keinen Durchschnitt kennt"
+    - "Weil p95 immer kleiner ist"
+  richtig: [1]
+  erklaerung: "Das p95 sagt: 95 % der Anfragen waren schneller. Ausreißer bleiben sichtbar."
+  artikel: "#metriken"
+  tags: [observability, perzentile]

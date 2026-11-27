@@ -1,0 +1,9 @@
+{
+  "label": "📈 Observability",
+  "position": 10.7,
+  "link": {
+    "type": "generated-index",
+    "slug": "/observability",
+    "description": "Logs, Metriken und Traces mit OpenTelemetry, Prometheus, Jaeger und Grafana – und wie man Telemetrie testet und zum Testen nutzt."
+  }
+}

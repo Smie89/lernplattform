@@ -23,6 +23,7 @@ def test_bestellung_bucht_den_endpreis_ab(voller_warenkorb):
 
     zahlung.abbuchen.assert_called_once_with("Anna", Decimal("94.62"))   # Mock: Aufruf prüfen
     assert ergebnis.endpreis == Decimal("94.62")
+    assert ergebnis.kunde == "Anna"   # Befund aus dem Mutationstest: wurde vorher nicht geprüft
 
 
 def test_abgelehnte_zahlung(voller_warenkorb):

@@ -230,6 +230,23 @@ Lehre: Bei Fehlschlägen, die nur in der CI auftreten, **mehr Daten sammeln stat
 Screenshot den App-Zustand, die aktive Activity und den Elementbaum ab, das CI-Skript das logcat.
 :::
 
+:::info[Befund 4: Element nach dem Drehen „veraltet“]
+Ein späterer CI-Lauf schlug im Drehtest mit `StaleElementReferenceException` fehl – im Lauf davor war er grün. Nach dem
+Drehen baut Android die Activity neu auf; ein Element, das der Test eben gefunden hatte, gab es beim Lesen seines Textes
+schon nicht mehr. Das Screen Object liest Werte deshalb über eine Hilfsfunktion, die bei veralteten Elementen neu sucht:
+
+```python
+FLUECHTIG = (NoSuchElementException, StaleElementReferenceException)
+
+def _wiederholt(self, lesen, beschreibung):
+    return WebDriverWait(self.driver, 20, poll_frequency=0.2, ignored_exceptions=FLUECHTIG).until(
+        lambda _: (lesen(),), message=beschreibung)[0]
+```
+
+Die Klammern `(lesen(),)` sind kein Zufall: `WebDriverWait.until` wertet `0` oder `""` als „noch nicht fertig“. Ohne
+das Tupel hätte `menge("Monitor")` bei Menge 0 bis zum Timeout gewartet.
+:::
+
 ## System, Tastatur, Drehen, Hintergrund \{#system}
 
 ```python
@@ -283,6 +300,7 @@ WebDriverWait(driver, 10).until(lambda d: d.query_app_state(PAKET) == Applicatio
 |---|---|
 | Animationen | in den Entwickleroptionen oder per Capability abschalten |
 | Suche, bevor die App bereit ist | `WebDriverWait` auf Zustände; kein `time.sleep` als Ersatz |
+| Element veraltet nach Drehen oder Neuaufbau | bei `StaleElementReferenceException` neu suchen (Befund 4) |
 | Elemente außerhalb des Bildschirms | gezielt scrollen – mit Abstand zu den Rändern, sonst greift die Gestensteuerung |
 | Systemdialoge (Berechtigungen, „App reagiert nicht“) | `autoGrantPermissions`; frisch gebooteten Emulator abwarten |
 | Zustand aus vorherigen Tests | App vor jedem Test zurücksetzen (`clearApp`) |

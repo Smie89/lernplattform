@@ -38,6 +38,13 @@ def anfrage(url: str, methode: str = "GET", json_daten: str | None = None) -> tu
     return int(status), "".join(koerper)
 
 
+@pytest.fixture(autouse=True)
+def zwei_bereite_pods():
+    """Vor jedem Test: beide Replikate bereit. Sonst hängt ein Test vom vorherigen ab – nach einem fehlgeschlagenen
+    Selbstheilungstest lief der Zustandstest mit nur einem Pod und fand den Befund nicht."""
+    kubectl("rollout", "status", "deployment/mini-shop", "--timeout=120s")
+
+
 @pytest.fixture(scope="session", autouse=True)
 def testclient():
     """Startet den Hilfs-Pod einmal für alle Tests und räumt ihn danach wieder ab."""

@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s          # alle 5 s /metrics abrufen (Standard: 1 min) – für schnelle Tests
+
+scrape_configs:
+  - job_name: mini-shop
+    static_configs:
+      - targets: ["shop:8080"]   # Prometheus holt die Metriken ab (Pull), der Shop schickt nichts

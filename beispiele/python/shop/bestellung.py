@@ -31,10 +31,10 @@ def bestellen(
     jetzt: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> Bestellung:
     if warenkorb.ist_leer:
-        raise ValueError("Ein leerer Warenkorb kann nicht bestellt werden.")
+        raise ValueError("Ein leerer Warenkorb kann nicht bestellt werden.")  # pragma: no mutate – interne Meldung
     if not kunde.strip():
-        raise ValueError("Der Name des Kunden fehlt.")
+        raise ValueError("Der Name des Kunden fehlt.")  # pragma: no mutate – interne Meldung
     betrag = endpreis(warenkorb.zwischensumme, stammkunde)
     if not zahlung.abbuchen(kunde.strip(), betrag):
-        raise ZahlungAbgelehnt("Die Zahlung wurde abgelehnt.")
+        raise ZahlungAbgelehnt("Die Zahlung wurde abgelehnt.")  # pragma: no mutate – Tests prüfen den Ausnahmetyp
     return Bestellung(nummer=f"B-{jetzt():%Y%m%d}", kunde=kunde.strip(), endpreis=betrag)

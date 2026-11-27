@@ -312,3 +312,67 @@ jobs:
             beispiele/mobile/testergebnisse
             beispiele/mobile/appium.log
           retention-days: 7
+
+  mutationstests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - name: "Stryker.NET: Shop.Core gegen Unit- und API-Tests (bricht unter 90 % ab)"
+        working-directory: beispiele/shop
+        run: |
+          dotnet tool restore
+          cd tests/Shop.Core.Tests
+          dotnet stryker
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: "mutmut: Python-Logik gegen die Unit-Tests"
+        working-directory: beispiele/python
+        run: |
+          pip install -r requirements.txt mutmut==3.8.1
+          mutmut run
+          # Jeden Überlebenden als Diff zeigen und dann abbrechen – jeder muss bewertet werden
+          ueberlebende=$(mutmut results | awk -F: '/survived/ {print $1}')
+          for m in $ueberlebende; do mutmut show "$m"; done
+          test -z "$ueberlebende"
+      - name: Berichte bei Fehlschlag sichern
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutationstests
+          path: |
+            beispiele/shop/tests/Shop.Core.Tests/StrykerOutput
+            beispiele/python/mutants
+          retention-days: 7
+
+  observability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: beispiele/observability
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: pytest installieren
+        run: pip install -r requirements.txt
+      - name: Container-Image des Mini-Shops bauen
+        run: docker build -t mini-shop:1.0 -f ../kubernetes/Dockerfile ../shop
+      - name: Stack starten (Shop, Jaeger, Prometheus, Grafana)
+        run: docker compose up -d
+      - name: Tests gegen den Stack (Metriken, Traces, Logs, Datenschutz, Grafana)
+        run: pytest tests -v
+      - name: Diagnose bei Fehlschlag
+        if: failure()
+        run: |
+          docker compose ps
+          docker compose logs --tail 80
+      - name: Stack beenden
+        if: always()
+        run: docker compose down

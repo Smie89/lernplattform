@@ -141,6 +141,17 @@ sequenceDiagram
 | `kubectl rollout undo deployment/mini-shop` | zurück zur vorherigen Version |
 | `kubectl rollout restart deployment/mini-shop` | alle Pods neu starten, z. B. nach geänderter ConfigMap |
 
+Beim Beenden eines Pods nimmt Kubernetes ihn **gleichzeitig** aus dem Service und schickt das Signal zum Beenden. Damit
+dabei keine Anfragen verloren gehen, wartet ein **preStop-Hook** ein paar Sekunden (siehe
+[Befund im Testen-Kapitel](./03-testen-mit-kubernetes.mdx#selbstheilung)):
+
+```yaml
+lifecycle:
+  preStop:
+    sleep:
+      seconds: 5
+```
+
 Startet die neue Version nicht (Readiness schlägt fehl), bleibt das Update stehen – die alten Pods laufen weiter. Darauf
 beruht die Sicherheit von Rolling Updates; ohne Readiness-Probe gibt es sie nicht.
 

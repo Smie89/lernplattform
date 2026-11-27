@@ -7,10 +7,15 @@ Locator-Strategien, von stabil zu wackelig:
   4. XPath                            – langsam und bricht bei jeder Layoutänderung; vermeiden
 """
 from appium.webdriver.common.appiumby import AppiumBy
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 PAKET = "de.lernplattform.minishop"
+
+# Befund 4: Nach dem Drehen baut Android die Activity neu auf. Ein eben gefundenes Element kann im nächsten
+# Augenblick "veraltet" sein (StaleElementReferenceException) – dann einfach neu suchen.
+FLUECHTIG = (NoSuchElementException, StaleElementReferenceException)
 
 
 def rid(name: str) -> tuple[str, str]:
@@ -64,7 +69,17 @@ class ShopScreen:
                 richtung[0] = "up" if richtung[0] == "down" else "down"
             return False
 
-        return WebDriverWait(self.driver, 20, poll_frequency=0.2).until(versuch, message=f"nicht gefunden: {locator[1]}")
+        return WebDriverWait(self.driver, 20, poll_frequency=0.2, ignored_exceptions=FLUECHTIG).until(
+            versuch, message=f"nicht gefunden: {locator[1]}")
+
+    def _wiederholt(self, lesen, beschreibung: str):
+        """Liest einen Wert und versucht es erneut, wenn das Element zwischendurch neu aufgebaut wurde.
+
+        Das Ergebnis wird in ein Tupel verpackt: WebDriverWait.until wertet 0 oder "" als "noch nicht fertig"
+        und würde bei Menge 0 bis zum Timeout warten.
+        """
+        return WebDriverWait(self.driver, 20, poll_frequency=0.2, ignored_exceptions=FLUECHTIG).until(
+            lambda _: (lesen(),), message=beschreibung)[0]
 
     def _scrollen_zu(self, beschreibung: str):
         return self._finden((AppiumBy.ACCESSIBILITY_ID, beschreibung))
@@ -80,18 +95,20 @@ class ShopScreen:
 
     def hinzufuegen(self, produktname: str, anzahl: int = 1) -> "ShopScreen":
         for _ in range(anzahl):
-            self._scrollen_zu(f"{produktname} in den Warenkorb")
-            self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, f"{produktname} in den Warenkorb").click()
+            self._wiederholt(lambda: self._scrollen_zu(f"{produktname} in den Warenkorb").click(), f"{produktname} hinzufügen")
         return self
 
     def menge(self, produktname: str) -> int:
-        zeile = self._scrollen_zu(f"Produkt {produktname}")
-        return int(zeile.find_element(*rid("menge")).text)   # Suche innerhalb der Zeile
+        def lesen():
+            zeile = self._scrollen_zu(f"Produkt {produktname}")
+            return int(zeile.find_element(*rid("menge")).text)   # Suche innerhalb der Zeile
+
+        return self._wiederholt(lesen, f"Menge von {produktname}")
 
     # ---------- Warenkorb ----------
 
     def text(self, name: str) -> str:
-        return self._scrollen_zu_id(name).text
+        return self._wiederholt(lambda: self._scrollen_zu_id(name).text, f"Text von {name}")
 
     @property
     def endpreis(self) -> str:

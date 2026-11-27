@@ -1,0 +1,48 @@
+# Observability-Stack für den Mini-Shop: Traces → Jaeger, Metriken → Prometheus, Dashboards → Grafana.
+#
+# Start (im Ordner beispiele/observability):
+#   docker build -t mini-shop:1.0 -f ../kubernetes/Dockerfile ../shop    # dasselbe Image wie im Kubernetes-Beispiel
+#   docker compose up -d
+#
+# Das Image wird bewusst vorher gebaut: Compose (mit dem Bake-Builder) liest kein Dockerfile außerhalb des
+# Build-Kontexts, ohne dass man das ausdrücklich erlaubt.
+services:
+  shop:
+    image: mini-shop:1.0
+    pull_policy: never                          # lokal gebaut, nicht aus einer Registry laden
+    environment:
+      OTEL_SERVICE_NAME: mini-shop
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_BSP_SCHEDULE_DELAY: "1000"            # Spans jede Sekunde senden statt alle 5 s – für schnelle Tests
+    ports:
+      - "8080:8080"
+    depends_on:
+      - jaeger
+
+  jaeger:
+    # 2.20 statt der neuesten Version: Ab Jaeger 2.21 fehlt die alte Abfrage-API /api/services, die das
+    # Jaeger-Plugin von Grafana 13.2 noch nutzt – Grafana fände dann keine Dienste (Befund aus der CI).
+    image: jaegertracing/jaeger:2.20.0           # nimmt OTLP auf 4317 an, Oberfläche und Abfrage-API auf 16686
+    ports:
+      - "16686:16686"
+
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:13.2.7
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"         # nur für die lokale Übung: ohne Anmeldung ansehen
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+      - jaeger

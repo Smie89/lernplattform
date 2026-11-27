@@ -8,3 +8,10 @@ markers = [
     "ui: Browser-Tests mit Playwright gegen den laufenden Mini-Shop",
     "langsam: Tests, die länger als eine Sekunde brauchen",
 ]
+
+[tool.mutmut]
+# Mutationstests: mutmut verändert den Code in shop/ und prüft, ob die Unit-Tests es merken.
+source_paths = ["shop/"]
+# Der API-Client wird nur von den Tests gegen den laufenden Shop geprüft – ohne Shop hätte jeder Mutant "überlebt".
+do_not_mutate = ["shop/api_client.py"]
+pytest_add_cli_args_test_selection = ["tests/unit"]

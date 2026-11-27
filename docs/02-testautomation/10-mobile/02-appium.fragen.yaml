@@ -145,3 +145,17 @@
   erklaerung: "Die Scrollgeste begann so nah am unteren Rand, dass Android sie als „zum Startbildschirm“ deutete. Echte Nutzer haben Gestensteuerung – der Test muss damit umgehen, nicht die Umgebung verbiegen."
   artikel: "#warten"
   tags: [mobile, gesten, befund]
+
+- id: mo-ap-012
+  typ: single
+  schwierigkeit: 3
+  frage: "Eine Hilfsfunktion wartet mit WebDriverWait.until(lambda _: lies_menge()) auf die Menge eines Produkts. Bei Menge 0 läuft sie bis zum Timeout. Warum?"
+  optionen:
+    - "Appium kann keine Nullen lesen."
+    - "until wertet einen Rückgabewert von 0 als „noch nicht fertig“ und versucht es weiter."
+    - "Die Menge 0 wird nie angezeigt."
+    - "WebDriverWait funktioniert nur mit Texten."
+  richtig: [1]
+  erklaerung: "0, \"\" und leere Listen sind in Python „falsy“. Lösung: das Ergebnis verpacken, z. B. als Tupel (lies_menge(),)."
+  artikel: "#system"
+  tags: [mobile, warten, python]

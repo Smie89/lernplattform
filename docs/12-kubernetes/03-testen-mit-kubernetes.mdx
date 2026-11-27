@@ -166,6 +166,26 @@ def test_selbstheilung_nach_ausfall_eines_pods():
     # … danach warten, bis wieder 2 bereite Pods ohne den gelöschten laufen
 ```
 
+:::info[Befund: Anfragen an einen Pod, der schon beendet ist]
+Der Test lief zunächst grün – bis sich nach einer Änderung am Shop das Timing verschob und er fehlschlug:
+`curl` meldete *connection refused*. Kubernetes macht beim Löschen eines Pods zwei Dinge **gleichzeitig**: Es nimmt ihn aus
+den Endpunkten des Services und schickt dem Container das Signal zum Beenden. Ist der Container schneller beendet, als
+alle Nodes die Endpunkte aktualisiert haben, landen Anfragen noch kurz bei ihm – und scheitern.
+
+Die übliche Lösung ist ein **preStop-Hook**: Der Container wartet ein paar Sekunden, bevor er sich beendet. In der Zeit
+verschwindet er aus dem Service, laufende Anfragen werden fertig.
+
+```yaml title="deployment.yaml (Auszug)"
+lifecycle:
+  preStop:
+    sleep:
+      seconds: 5
+```
+
+Dasselbe Problem trifft jedes **Rolling Update** – ohne preStop gibt es bei jedem Deployment ein paar Fehler. Der
+Selbstheilungstest hat es gefunden, weil er **während** des Ausfalls Anfragen schickt, nicht nur danach.
+:::
+
 Das ist **Chaos-Engineering im Kleinen**: einen Ausfall absichtlich herbeiführen und prüfen, dass der Dienst ihn
 übersteht. Werkzeuge wie **Chaos Mesh** oder **LitmusChaos** können auch Netzwerkverzögerungen, CPU-Last oder den Ausfall
 ganzer Nodes simulieren.
@@ -266,11 +286,15 @@ sichern:
 - Manifeste nur im Cluster testen – Sicherheitsregeln prüft ein statischer Scan schneller.
 - Bei Fehlschlag keine Logs und Ereignisse sichern – der Cluster ist danach weg.
 - Feste `sleep`-Pausen statt auf Zustände zu warten (`kubectl wait`, `rollout status`).
+- Kein `preStop`-Hook – beim Beenden von Pods gehen einzelne Anfragen verloren.
+- Tests, die vom Zustand des vorherigen Tests abhängen – jeder Test stellt seine Voraussetzungen selbst her
+  (im Beispiel: vor jedem Test `rollout status`).
 
 ## Zusammenfassung \{#zusammenfassung}
 
 - Ebenen: **statisch** (Checkov), **Bereitstellung** (`rollout status`), **Rauchtests**, **Resilienz**, **Last**.
 - **kind** startet einen echten Cluster in der CI; Images per `kind load` ohne Registry.
+- **preStop-Hook**, damit beendete Pods keine Anfragen mehr verlieren – gefunden vom Selbstheilungstest.
 - Tests mit **pytest und kubectl**; den Service **von innen** aufrufen, nicht per Port-Forward.
 - **Befund**: Zustand im Arbeitsspeicher + mehrere Pods = verlorene Warenkörbe. Lösung: zustandslose Pods mit
   gemeinsamem Speicher; Session-Affinität nur als Notlösung.

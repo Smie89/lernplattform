@@ -1,0 +1,209 @@
+---
+title: Observability und Testen
+description: Telemetrie als Anforderung testen – Unit-Tests mit ActivityListener und MeterListener, Integrationstests gegen Jaeger, Prometheus und Grafana in der CI, Datenschutz-Test für Kundennamen – und Telemetrie als Werkzeug zum Testen nutzen – Trace-ID im Testbericht, Lasttests mit Metriken auswerten, synthetisches Monitoring, Canary-Analyse und Alarme testen.
+tags: [observability, testen, opentelemetry, ci]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './03-observability-und-testen.fragen.yaml';
+
+# Observability und Testen
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- **Telemetrie testen** – im Unit-Test und gegen einen laufenden Stack,
+- prüfen, dass **keine personenbezogenen Daten** in der Telemetrie landen,
+- **Telemetrie zum Testen nutzen** – bei der Fehleranalyse, bei Lasttests und in Produktion,
+- **Alarme** und **SLOs** als testbare Anforderungen behandeln.
+:::
+
+## Zwei Blickrichtungen \{#blickrichtungen}
+
+| | Telemetrie **testen** | Mit Telemetrie **testen** |
+|---|---|---|
+| Frage | Liefert die Anwendung die Spans, Metriken und Logs, die der Betrieb braucht? | Was verrät die Telemetrie über das Verhalten im Test? |
+| Beispiel | Hat eine abgelehnte Zahlung einen roten Span? | Warum ist dieser UI-Test langsam? Wo bleibt die Zeit im Lasttest? |
+| Werkzeuge | ActivityListener, MeterListener, Tests gegen Jaeger und Prometheus | Trace-ID im Testbericht, Grafana während des Lasttests |
+
+## Telemetrie im Unit-Test \{#unit}
+
+Telemetrie ist eine **Anforderung** wie jede andere: Wenn nach einem Refactoring der Span fehlt oder der Zähler nicht mehr
+zählt, merkt das niemand – bis zum ersten Ausfall, bei dem der Betrieb blind ist. .NET bietet Lauscher, die ohne
+OpenTelemetry und ohne Jaeger funktionieren:
+
+```csharp title="beispiele/shop/tests/Shop.Core.Tests/Telemetrie/BestellTelemetrieTests.cs (Auszug)"
+_spanLauscher = new ActivityListener
+{
+    ShouldListenTo = quelle => quelle.Name == ShopTelemetrie.Name,
+    Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+    ActivityStopped = span => _spans.Add(span),
+};
+ActivitySource.AddActivityListener(_spanLauscher);
+
+[Test]
+public void Abgelehnte_Zahlung_markiert_den_Span_als_Fehler_und_zaehlt_getrennt()
+{
+    _zahlung.Abbuchen(Arg.Any<string>(), Arg.Any<decimal>()).Returns(false);
+
+    _service.Bestellen(EinWarenkorb().Mit(TestProdukte.Monitor).Bauen(), Anna);
+
+    var span = _spans.Single(s => s.DisplayName == "Bestellung aufgeben");
+    Assert.That(span.Status, Is.EqualTo(ActivityStatusCode.Error));
+    Assert.That(_messungen, Does.Contain(("shop.bestellungen", 1d, "abgelehnt")));
+}
+```
+
+Die Lauscher sind **prozessweit** – deshalb läuft die Testklasse mit `[NonParallelizable]`, sonst sähe sie Spans anderer
+Tests. In Python leistet das der `InMemorySpanExporter` von OpenTelemetry.
+
+Diese Tests haben einen Nebeneffekt: Ohne sie überlebten alle Mutanten im Telemetrie-Code den
+[Mutationstest](../02-testautomation/01-grundlagen/04-mutationstests.mdx). Mit ihnen liegt der Score bei 97 %.
+
+## Telemetrie gegen den laufenden Stack \{#integration}
+
+Ob die Daten auch **ankommen** – richtiger Dienstname, Spans richtig verschachtelt, Metriken in Prometheus, Dashboard
+in Grafana –, zeigt erst der ganze Stack. In der CI startet ihn Docker Compose, dann laufen pytest-Tests:
+
+```yaml title=".github/workflows/beispiele.yml (Auszug)"
+- name: Container-Image des Mini-Shops bauen
+  run: docker build -t mini-shop:1.0 -f ../kubernetes/Dockerfile ../shop
+- name: Stack starten (Shop, Jaeger, Prometheus, Grafana)
+  run: docker compose up -d
+- name: Tests gegen den Stack (Metriken, Traces, Logs, Datenschutz, Grafana)
+  run: pytest tests -v
+```
+
+### Den Trace vorher kennen \{#traceparent}
+
+Wie findet der Test „seinen“ Trace unter allen anderen? Er schickt den Header `traceparent` mit einer **selbst erzeugten
+Trace-ID** mit – der Shop übernimmt sie:
+
+```python title="beispiele/observability/tests/conftest.py (Auszug)"
+def neue_trace_id() -> tuple[str, str]:
+    trace_id = secrets.token_hex(16)
+    return trace_id, f"00-{trace_id}-{secrets.token_hex(8)}-01"
+
+trace_id, traceparent = neue_trace_id()
+requests.post(f"{SHOP}/api/warenkoerbe/{warenkorb}/bestellung", json={…}, headers={"traceparent": traceparent})
+```
+
+```python title="beispiele/observability/tests/test_observability.py (Auszug)"
+def test_trace_der_bestellung_zeigt_anfrage_und_eigenen_span(bestellungen):
+    trace = warte_bis(lambda: jaeger_trace(bestellungen["erfolgreich"]) …)
+    anfrage = span_mit_namen(trace, "POST /api/warenkoerbe/{id:guid}/bestellung")
+    eigener = span_mit_namen(trace, "Bestellung aufgeben")
+    eltern = {r["spanID"] for r in eigener["references"] if r["refType"] == "CHILD_OF"}
+    assert anfrage["spanID"] in eltern, "eigener Span hängt nicht unter der Anfrage"
+```
+
+### Warten statt schlafen \{#warten}
+
+Telemetrie kommt **mit Verzögerung** an: Spans werden gebündelt gesendet, Prometheus holt alle 5 Sekunden ab, `rate()`
+braucht mindestens zwei Abrufe. Feste Pausen wären zu kurz oder zu lang – die Tests fragen wiederholt ab, bis die
+Bedingung erfüllt ist, mit Timeout:
+
+```python
+def warte_bis(pruefung, timeout: float = 60, beschreibung: str = "Bedingung"):
+    frist = time.time() + timeout
+    while time.time() < frist:
+        ergebnis = pruefung()
+        if ergebnis:
+            return ergebnis
+        time.sleep(1)
+    raise AssertionError(f"{beschreibung} nach {timeout} s nicht erfüllt")
+```
+
+| Test | prüft |
+|---|---|
+| `test_metrik_endpunkt_liefert_anfragen_und_eigene_zaehler` | `/metrics` enthält HTTP-Histogramm und `shop_bestellungen_total` je Ergebnis |
+| `test_prometheus_sammelt_die_bestellungen_nach_ergebnis` | PromQL `sum by (ergebnis) (shop_bestellungen_total)` liefert beide Ergebnisse |
+| `test_prometheus_berechnet_die_antwortzeit_p95` | `histogram_quantile` ergibt einen plausiblen Wert |
+| `test_trace_der_bestellung_zeigt_anfrage_und_eigenen_span` | Trace in Jaeger, Span verschachtelt, Dienstname stimmt |
+| `test_abgelehnte_zahlung_ist_im_trace_als_fehler_markiert` | `otel.status_code = ERROR`, HTTP-Status 422 am Span |
+| `test_log_der_abgelehnten_zahlung_traegt_die_trace_id` | JSON-Log mit **derselben** Trace-ID wie der Trace |
+| `test_kundenname_steht_in_keiner_telemetrie` | Name weder in Trace, Metriken noch Logs |
+| `test_grafana_hat_datenquellen_und_dashboard` | Datenquellen erreichbar, Dashboard vorhanden |
+
+## Datenschutz testen \{#datenschutz}
+
+Alle Bestellungen im Test laufen auf den Namen „Erika Mustermann“. Danach durchsucht ein Test **alle drei Signale**:
+
+```python
+def test_kundenname_steht_in_keiner_telemetrie(bestellungen):
+    trace = …
+    nachname = KUNDENNAME.split()[-1]
+    assert nachname not in json.dumps(trace, ensure_ascii=False), "Name im Trace"
+    assert nachname not in requests.get(f"{SHOP}/metrics", timeout=5).text, "Name in den Metriken"
+    assert nachname not in shop_logs(), "Name in den Logs"
+```
+
+Schreibt jemand später `SetTag("shop.kunde", kunde.Name)` oder loggt die ganze Anfrage, schlägt der Test fehl. So wird
+eine Datenschutzanforderung **automatisch** überwacht – ein Muster, das sich auf E-Mail-Adressen, Tokens und
+Passwörter übertragen lässt (siehe auch [Sicherheitstests](../07-cybersecurity/04-sicherheitstests-devsecops.mdx)).
+
+## Mit Telemetrie testen \{#nutzen}
+
+### Fehlschläge analysieren \{#analyse}
+
+Ein API- oder UI-Test, der fehlschlägt, sollte die **Trace-ID** seiner Anfragen in den Testbericht schreiben – dann führt
+ein Klick vom roten Test direkt zum Trace mit allen beteiligten Diensten und Logs. Das ist der Schritt
+„Zustand des SUT prüfen“ aus der [Fehleranalyse](../11-istqb/04-tae-berichte-verifikation.mdx#analyse), nur ohne Suchen.
+
+### Lasttests auswerten \{#lasttests}
+
+Ein [k6-Lasttest](../02-testautomation/06-performance/02-lasttests-mit-k6.mdx) misst, **dass** die Antwortzeit steigt.
+Telemetrie zeigt, **warum**: Traces der langsamsten Anfragen, Laufzeitmetriken (Garbage Collection, Threads),
+Auslastung der Datenbank. Am besten läuft das Grafana-Dashboard während des Tests mit – und die Schwellen des Lasttests
+leiten sich aus den **SLOs** ab.
+
+### Testen in Produktion \{#produktion}
+
+| Verfahren | Idee | Telemetrie liefert |
+|---|---|---|
+| **Synthetisches Monitoring** | automatisierte Testabläufe laufen regelmäßig gegen Produktion (z. B. „Produkt suchen, in den Warenkorb“) | Verfügbarkeit und Antwortzeit aus Nutzersicht, auch nachts |
+| **Canary Release** | neue Version zuerst für wenige Prozent der Nutzer | Vergleich von Fehlerquote und Latenz zwischen alter und neuer Version – automatisches Zurückrollen bei Verschlechterung |
+| **Feature-Flags** | Funktion für eine Gruppe einschalten | Wirkung der Funktion auf fachliche Metriken |
+
+Damit verschwimmt die Grenze zwischen Test und Betrieb: Die Rauchtests aus der Pipeline werden zum synthetischen
+Monitor, die Metriken zum Abnahmekriterium.
+
+## Alarme und SLOs testen \{#alarme}
+
+Ein Alarm, der nie auslöst, ist wertlos – und man merkt es erst im Ernstfall. Deshalb:
+
+- **Alarmregeln als Code** (Prometheus-Regeln, Grafana-Alerting) im Repository, mit Review.
+- Regeln **automatisch prüfen**: Prometheus kann Regeln mit `promtool test rules` gegen erfundene Zeitreihen testen.
+- Regelmäßig **Fehler einspielen** (z. B. Zahlungsanbieter per [WireMock](../02-testautomation/08-api-vertieft/02-externe-dienste-wiremock.mdx)
+  ausfallen lassen) und prüfen, dass der Alarm kommt – Chaos-Engineering im Kleinen.
+
+```yaml title="Prometheus-Regel: zu viele abgelehnte Zahlungen"
+groups:
+  - name: mini-shop
+    rules:
+      - alert: VieleAbgelehnteZahlungen
+        expr: sum(rate(shop_bestellungen_total{ergebnis="abgelehnt"}[5m]))
+              / sum(rate(shop_bestellungen_total[5m])) > 0.2
+        for: 10m
+        annotations:
+          summary: "Mehr als 20 % der Bestellungen werden bei der Zahlung abgelehnt"
+          runbook: "https://wiki.example.org/runbooks/zahlung"
+```
+
+## Typische Fehler \{#typische-fehler}
+
+- Telemetrie als „Nebensache“ ohne Tests – nach einem Refactoring ist der Betrieb blind.
+- Feste Pausen statt Warten auf Bedingungen in Tests gegen Jaeger und Prometheus.
+- Tests suchen „irgendeinen“ Trace statt eines mit bekannter Trace-ID.
+- Personenbezogene Daten in Spans oder Logs, weil niemand danach sucht.
+- Lasttests ohne Telemetrie: Man sieht, dass es langsam wird, aber nicht warum.
+- Alarme, die nie ausgelöst und deshalb nie geprüft wurden.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Telemetrie testen**: im Unit-Test mit ActivityListener und MeterListener, im Stack gegen Jaeger, Prometheus und
+  Grafana – mit **eigener Trace-ID** im `traceparent`-Header und **Warten statt Schlafen**.
+- **Datenschutz** automatisch prüfen: Testname darf in keinem Signal auftauchen.
+- **Mit Telemetrie testen**: Trace-ID im Testbericht, Lasttests mit Dashboard, synthetisches Monitoring und Canary-Analyse.
+- **Alarme** als Code, mit Tests und gelegentlichem Fehlereinspielen.
+
+<Quiz fragen={fragen} titel="Quiz: Observability und Testen" />

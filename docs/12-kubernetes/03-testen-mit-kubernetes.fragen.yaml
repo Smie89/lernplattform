@@ -131,3 +131,17 @@
   erklaerung: "Jede Ebene findet andere Fehler – vom falschen Manifest bis zu knappen Ressourcen unter Last."
   artikel: "#ebenen"
   tags: [kubernetes, testen]
+
+- id: k8-te-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Pod wird gelöscht. Für wenige Sekunden scheitern einzelne Anfragen an den Service mit „connection refused“. Was hilft?"
+  optionen:
+    - "Mehr Replikate"
+    - "Ein preStop-Hook, der vor dem Beenden einige Sekunden wartet, bis der Pod aus dem Service genommen ist"
+    - "Eine längere Liveness-Probe"
+    - "Session-Affinität"
+  richtig: [1]
+  erklaerung: "Kubernetes nimmt den Pod gleichzeitig aus den Endpunkten und beendet ihn. Ohne Pause landen Anfragen noch beim schon beendeten Container – auch bei jedem Rolling Update."
+  artikel: "#selbstheilung"
+  tags: [kubernetes, prestop, befund]

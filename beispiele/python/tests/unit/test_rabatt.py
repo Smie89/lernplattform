@@ -27,10 +27,24 @@ def test_rabatt_satz_an_den_grenzen(zwischensumme, stammkunde, erwartet):
 
 @pytest.mark.parametrize(
     ("zwischensumme", "stammkunde", "erwartet"),
-    [(D("100"), False, D("90.00")), (D("100"), True, D("85.00")), (D("24.90"), True, D("23.66"))],
+    [
+        (D("100"), False, D("90.00")),
+        (D("100"), True, D("85.00")),
+        (D("24.90"), True, D("23.66")),
+        # 10,30 € − 5 % = 9,785 €: kaufmännisch 9,79 €, "Banker's Rounding" (Pythons Standard) ergäbe 9,78 €.
+        # Befund aus dem Mutationstest – ohne diesen Fall fiel ein Entfernen von ROUND_HALF_UP nicht auf.
+        (D("10.30"), True, D("9.79")),
+    ],
+    ids=["mengenrabatt", "beide-rabatte", "stammkunde", "kaufmaennisch-runden"],
 )
 def test_endpreis(zwischensumme, stammkunde, erwartet):
     assert endpreis(zwischensumme, stammkunde) == erwartet
+
+
+def test_ohne_angabe_gibt_es_keinen_stammkundenrabatt():
+    """Befund aus dem Mutationstest: Der Standardwert stammkunde=False war ungetestet."""
+    assert rabatt_satz(D("50")) == D("0")
+    assert endpreis(D("100")) == D("90.00")
 
 
 def test_negative_zwischensumme_wird_abgelehnt():

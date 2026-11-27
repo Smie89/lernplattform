@@ -1,0 +1,145 @@
+# Fragen zur Lektion "OpenTelemetry in der Praxis"
+
+- id: ob-ot-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Was ist der wichtigste Vorteil von OpenTelemetry?"
+  optionen:
+    - "Es speichert Telemetrie besonders günstig."
+    - "Man instrumentiert einmal herstellerunabhängig und wählt das Ziel später frei."
+    - "Es ersetzt alle Tests."
+    - "Es funktioniert nur mit Jaeger."
+  richtig: [1]
+  erklaerung: "API, SDKs und das Protokoll OTLP sind standardisiert – Jaeger, Prometheus, Grafana oder kommerzielle Dienste nehmen die Daten an."
+  artikel: "#opentelemetry"
+  tags: [observability, opentelemetry]
+
+- id: ob-ot-002
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem Werkzeug seine Aufgabe zu."
+  paare:
+    - ["Jaeger", "Traces speichern und anzeigen"]
+    - ["Prometheus", "Metriken abholen, speichern und abfragen"]
+    - ["Grafana", "Dashboards und Alarme über mehrere Quellen"]
+    - ["OpenTelemetry Collector", "Telemetrie annehmen, filtern und verteilen"]
+  erklaerung: "Im Beispiel sendet der Shop Traces direkt an Jaeger; Prometheus holt die Metriken ab."
+  artikel: "#stack"
+  tags: [observability, werkzeuge]
+
+- id: ob-ot-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie kommen die Metriken des Shops zu Prometheus?"
+  optionen:
+    - "Der Shop schickt sie per E-Mail."
+    - "Prometheus ruft regelmäßig den Endpunkt /metrics des Shops ab (Pull)."
+    - "Der Shop schreibt sie in eine Datei, die Prometheus liest."
+    - "Über Jaeger."
+  richtig: [1]
+  erklaerung: "Prometheus arbeitet nach dem Pull-Prinzip; im Beispiel alle 5 Sekunden."
+  artikel: "#stack"
+  tags: [observability, prometheus]
+
+- id: ob-ot-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum schreibt man in .NET aktivitaet?.SetTag(...) mit Fragezeichen?"
+  optionen:
+    - "Weil SetTag optional ist"
+    - "Weil StartActivity null liefert, wenn niemand zuhört – dann soll nichts passieren"
+    - "Weil Tags sonst doppelt gesetzt werden"
+    - "Aus Stilgründen"
+  richtig: [1]
+  erklaerung: "Ohne aktiven Listener (kein OpenTelemetry, kein Test-Listener) wird kein Span erzeugt – das spart Leistung."
+  artikel: "#eigene"
+  tags: [observability, dotnet]
+
+- id: ob-ot-005
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Umgebungsvariablen ihre Bedeutung zu."
+  paare:
+    - ["OTEL_SERVICE_NAME", "Name des Dienstes in Jaeger und Grafana"]
+    - ["OTEL_EXPORTER_OTLP_ENDPOINT", "Empfänger der Telemetrie"]
+    - ["OTEL_TRACES_SAMPLER", "Stichprobenverfahren für Traces"]
+    - ["OTEL_BSP_SCHEDULE_DELAY", "Wie oft gebündelte Spans gesendet werden"]
+  erklaerung: "Die Variablen heißen in allen Sprachen gleich – praktisch für Container und Kubernetes."
+  artikel: "#automatisch"
+  tags: [observability, konfiguration]
+
+- id: ob-ot-006
+  typ: zuordnen
+  schwierigkeit: 3
+  frage: "Ordne jeder Frage die passende PromQL-Funktion zu."
+  paare:
+    - ["Anfragen pro Sekunde aus einem Counter", "rate"]
+    - ["Antwortzeit p95 aus einem Histogramm", "histogram_quantile"]
+    - ["Zuwachs eines Counters in 5 Minuten", "increase"]
+    - ["Zeitreihen je Route zusammenfassen", "sum by"]
+  erklaerung: "Counter selbst steigen nur – interessant sind Rate und Zuwachs."
+  artikel: "#promql"
+  tags: [observability, promql]
+
+- id: ob-ot-007
+  typ: lueckentext
+  schwierigkeit: 3
+  frage: "Ergänze die PromQL-Abfrage für das p95 der Antwortzeit."
+  sprache: text
+  text: "histogram_quantile(0.95, sum by (___) (rate(http_server_request_duration_seconds_bucket[1m])))"
+  luecken:
+    - ["le"]
+  erklaerung: "le (less or equal) ist das Label der Bucket-Grenzen; histogram_quantile braucht es."
+  artikel: "#promql"
+  tags: [observability, promql]
+
+- id: ob-ot-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Aus der Metrik shop.bestellungen wird in Prometheus …"
+  optionen:
+    - "shop.bestellungen"
+    - "shop_bestellungen_total"
+    - "ShopBestellungen"
+    - "bestellungen_shop_count"
+  richtig: [1]
+  erklaerung: "Punkte werden zu Unterstrichen, Counter bekommen die Endung _total."
+  artikel: "#metriken-format"
+  tags: [observability, prometheus]
+
+- id: ob-ot-009
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Im Mini-Shop wird der OTLP-Exporter nur eingeschaltet, wenn ein Empfänger konfiguriert ist."
+  richtig: [0]
+  erklaerung: "Wahr. So versuchen Unit- und API-Tests ohne Jaeger nicht vergeblich, Spans zu senden."
+  artikel: "#automatisch"
+  tags: [observability, opentelemetry]
+
+- id: ob-ot-010
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Vorteile haben Dashboards und Datenquellen als Code (Provisioning)?"
+  optionen:
+    - "Sie sind versioniert und im Review sichtbar."
+    - "Nach einem Neuaufbau sind sie sofort wieder da."
+    - "Sie lassen sich in der CI testen."
+    - "Grafana braucht dann keine Datenquellen mehr."
+  richtig: [0, 1, 2]
+  erklaerung: "Im Beispiel prüft ein Test, dass Datenquellen erreichbar sind und das Dashboard existiert."
+  artikel: "#stack"
+  tags: [observability, grafana]
+
+- id: ob-ot-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Nach dem Update auf die neueste Jaeger-Version kommen alle Traces an, aber Grafanas Jaeger-Datenquelle meldet „404“. Was ist der sinnvollste nächste Schritt?"
+  optionen:
+    - "Grafana neu installieren"
+    - "Prüfen, welche APIs die neue Jaeger-Version anbietet und welche das Grafana-Plugin erwartet – dann eine passende Version festlegen"
+    - "Die Datenquelle löschen, Traces werden ohnehin gespeichert"
+    - "Prometheus statt Jaeger verwenden"
+  richtig: [1]
+  erklaerung: "Im Beispiel entfernte Jaeger 2.21 die alte API /api/services, die das Plugin von Grafana 13.2 noch nutzt. Mit Jaeger 2.20 passt beides zusammen."
+  artikel: "#versionskonflikt"
+  tags: [observability, versionen, befund]

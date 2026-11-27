@@ -47,7 +47,10 @@ public class WarenkorbTests
     {
         var warenkorb = new Warenkorb();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => warenkorb.Hinzufuegen(TestProdukte.Buch, menge));
+        var fehler = Assert.Throws<ArgumentOutOfRangeException>(() => warenkorb.Hinzufuegen(TestProdukte.Buch, menge));
+
+        // Die Meldung gibt die API als "detail" an den Nutzer weiter – also prüfen (Befund aus dem Mutationstest).
+        Assert.That(fehler.Message, Does.Contain("zwischen 1 und 99"));
     }
 
     [Test]

@@ -32,7 +32,7 @@ pip install -r requirements.txt
 pytest -v
 ```
 
-## Drei Befunde beim Schreiben der Tests
+## Vier Befunde beim Schreiben der Tests
 
 - `driver.background_app(2)` holte die App auf dem Emulator nur manchmal zurück. Stabil: in den Hintergrund,
   warten, `activate_app` und prüfen, dass die App im Vordergrund ist (`test_zustand.py`).
@@ -42,6 +42,8 @@ pytest -v
 - Nur in der CI (kleiner Emulator, Querformat): `UiScrollable` wischte so nah am unteren Rand, dass die
   Gestensteuerung von Android die App auf den Startbildschirm schickte (logcat: „Gesture Monitor swipe-up is
   stealing touch“). Das Screen Object wischt deshalb selbst, mit Abstand zu den Rändern.
+- Nach dem Drehen war ein eben gefundenes Element manchmal schon veraltet (`StaleElementReferenceException`).
+  Das Screen Object liest Werte deshalb mit Wiederholung (`_wiederholt`).
 
 Schlägt ein Test fehl, liegen unter `testergebnisse/` ein Screenshot und eine Textdatei mit App-Zustand, aktiver
 Activity und Elementbaum; das CI-Skript sichert zusätzlich das Android-Log (`logcat.txt`).
