@@ -1,0 +1,16 @@
+# Nur Pods aus demselben Namespace dürfen den Shop auf Port 8080 erreichen.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mini-shop-zugriff
+  namespace: mini-shop
+spec:
+  podSelector:
+    matchLabels:
+      app: mini-shop
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - port: 8080

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Feste resource-ids für die wichtigsten Elemente: daran finden die Appium-Tests sie. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/hinweis" />
+
+        <LinearLayout
+            android:id="@+id/produkte"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/warenkorb"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/zwischensumme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/rabatt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/endpreis"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <CheckBox
+            android:id="@+id/stammkunde"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="@string/stammkunde" />
+
+        <EditText
+            android:id="@+id/kundenname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:autofillHints="name"
+            android:hint="@string/name"
+            android:inputType="textPersonName" />
+
+        <Button
+            android:id="@+id/bestellen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/bestellen" />
+
+        <TextView
+            android:id="@+id/fehler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:accessibilityLiveRegion="polite"
+            android:textColor="#B00020" />
+    </LinearLayout>
+</ScrollView>

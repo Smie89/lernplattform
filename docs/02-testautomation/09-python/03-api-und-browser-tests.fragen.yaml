@@ -1,0 +1,132 @@
+# Fragen zur Lektion "API- und Browser-Tests mit Python"
+
+- id: py-ab-001
+  typ: single
+  schwierigkeit: 2
+  frage: "SHOP_URL ist gesetzt, aber der Shop antwortet nicht. Was sollte die Fixture tun?"
+  optionen:
+    - "Alle Tests überspringen"
+    - "Den Lauf fehlschlagen lassen, damit eine ausgefallene Umgebung auffällt"
+    - "Die Tests gegen localhost wiederholen"
+    - "Nichts, die Tests laufen trotzdem"
+  richtig: [1]
+  erklaerung: "Überspringen ist nur richtig, wenn bewusst keine Umgebung angegeben wurde. Sonst würde ein Ausfall als „alles übersprungen“ durchrutschen."
+  artikel: "#shop-url"
+  tags: [python, api, fixtures]
+
+- id: py-ab-002
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile kann eine Pipeline unbegrenzt blockieren?"
+  sprache: python
+  code: |
+    sitzung = requests.Session()
+    antwort = sitzung.get(f"{basis}/api/produkte")
+    assert antwort.status_code == 200
+    jsonschema.validate(antwort.json(), PRODUKT_SCHEMA)
+  richtig: [1]
+  erklaerung: "Ohne timeout wartet requests im Zweifel ewig auf einen hängenden Server. Immer timeout= setzen."
+  artikel: "#requests"
+  tags: [python, requests]
+
+- id: py-ab-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum geben die Methoden des ShopClient die ganze Antwort zurück und nicht nur die JSON-Daten?"
+  optionen:
+    - "Weil JSON in Python nicht unterstützt wird"
+    - "Damit Tests auch Statuscodes und Header prüfen können"
+    - "Damit die Tests schneller laufen"
+    - "Weil requests keine JSON-Daten liefert"
+  richtig: [1]
+  erklaerung: "Negativtests prüfen 400 oder 404, Sicherheitstests prüfen Header – dafür braucht der Test die vollständige Antwort."
+  artikel: "#requests"
+  tags: [python, api]
+
+- id: py-ab-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie vergleicht man einen Geldbetrag aus response.json() sicher mit Decimal(\"88.40\")?"
+  optionen:
+    - "Direkt: daten[\"endpreis\"] == Decimal(\"88.40\")"
+    - "Decimal(daten[\"endpreis\"]) == Decimal(\"88.40\")"
+    - "Decimal(str(daten[\"endpreis\"])) == Decimal(\"88.40\")"
+    - "round(daten[\"endpreis\"]) == 88"
+  richtig: [2]
+  erklaerung: "JSON-Zahlen werden zu float. Über str() entsteht Decimal(\"88.4\"), das gleich Decimal(\"88.40\") ist. Decimal(float) übernimmt Ungenauigkeiten."
+  artikel: "#decimal-im-test"
+  tags: [python, decimal]
+
+- id: py-ab-005
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Eine zweite, unabhängig geschriebene Implementierung der Rabattregeln kann als Testorakel für die API dienen."
+  richtig: [0]
+  erklaerung: "Wahr – sofern sie wirklich unabhängig entsteht. Abgeschriebener Code würde dieselben Fehler enthalten."
+  artikel: "#orakel"
+  tags: [python, orakel]
+
+- id: py-ab-006
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne dem Playwright-Aufruf in C# das Python-Gegenstück zu."
+  paare:
+    - ["Page.GotoAsync(\"/\")", "page.goto(\"/\")"]
+    - ["Page.GetByTestId(\"endpreis\")", "page.get_by_test_id(\"endpreis\")"]
+    - ["Expect(locator).ToHaveTextAsync(\"…\")", "expect(locator).to_have_text(\"…\")"]
+  erklaerung: "Dieselbe API, in Python mit snake_case und synchron."
+  artikel: "#playwright"
+  tags: [python, playwright]
+
+- id: py-ab-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein UI-Test klickt dreimal schnell auf „In den Warenkorb“ und erwartet Menge 3, sieht aber manchmal 2. Was ist die beste Lösung?"
+  optionen:
+    - "time.sleep(1) nach jedem Klick"
+    - "Nach jedem Klick mit expect auf die erwartete Menge warten"
+    - "Den Test mit pytest-rerunfailures wiederholen"
+    - "Nur einmal klicken und die Menge nicht prüfen"
+  richtig: [1]
+  erklaerung: "Jeder Klick löst einen API-Aufruf aus. Web-First Assertions warten genau so lange wie nötig; feste Pausen und Wiederholungen verdecken das Problem."
+  artikel: "#playwright"
+  tags: [python, playwright, flaky]
+
+- id: py-ab-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder pytest-playwright-Option ihre Wirkung zu."
+  paare:
+    - ["--headed", "Browser sichtbar starten"]
+    - ["--tracing retain-on-failure", "Trace bei Fehlschlag speichern"]
+    - ["--browser firefox", "Mit Firefox testen"]
+    - ["--slowmo 500", "Jede Aktion verzögern"]
+  erklaerung: "Traces lassen sich mit playwright show-trace Schritt für Schritt ansehen."
+  artikel: "#playwright-optionen"
+  tags: [python, playwright]
+
+- id: py-ab-009
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Befehl, der in der CI Chromium samt Systembibliotheken installiert."
+  sprache: bash
+  text: "python -m playwright install ___ chromium"
+  luecken:
+    - ["--with-deps"]
+  erklaerung: "--with-deps installiert unter Linux auch die Bibliotheken, die der Browser zum Starten braucht."
+  artikel: "#ci"
+  tags: [python, playwright, ci]
+
+- id: py-ab-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Woran sollte sich laut Lehrplan zur Testautomation die Wahl der Testsprache vor allem orientieren?"
+  optionen:
+    - "An der Sprache, die gerade am beliebtesten ist"
+    - "Am Team und am System unter Test"
+    - "Immer an Python, weil es am kürzesten ist"
+    - "Immer an der Sprache des Testwerkzeugs mit den meisten Downloads"
+  richtig: [1]
+  erklaerung: "Teamwissen und die Sprache des SUT sind Auswahlkriterien – etwa damit Entwickler beim Debuggen helfen können."
+  artikel: "#vergleich"
+  tags: [python, werkzeugauswahl]

@@ -1,0 +1,137 @@
+# Fragen zur Lektion "Kubernetes-Grundlagen"
+
+- id: k8-gl-001
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Komponente ihre Aufgabe zu."
+  paare:
+    - ["API-Server", "Einziger Eingang für alle Befehle"]
+    - ["etcd", "Speichert den Zustand des Clusters"]
+    - ["Scheduler", "Wählt den Node für neue Pods"]
+    - ["kubelet", "Startet Container auf seinem Node"]
+    - ["kube-proxy", "Macht Services auf dem Node erreichbar"]
+  erklaerung: "API-Server, etcd und Scheduler gehören zur Control Plane, kubelet und kube-proxy laufen auf jedem Node."
+  artikel: "#architektur"
+  tags: [kubernetes, architektur]
+
+- id: k8-gl-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Pod eines Deployments wird gelöscht. Was passiert?"
+  optionen:
+    - "Nichts, das Deployment hat dann einen Pod weniger."
+    - "Ein neuer Pod mit neuem Namen und neuer IP wird gestartet, weil Soll und Ist nicht mehr übereinstimmen."
+    - "Derselbe Pod wird mit seinem Arbeitsspeicher wiederhergestellt."
+    - "Das ganze Deployment wird gelöscht."
+  richtig: [1]
+  erklaerung: "Der Controller gleicht das Ist an das Soll an. Der Ersatz ist ein neuer Pod – Daten im Arbeitsspeicher des alten sind weg."
+  artikel: "#soll-ist"
+  tags: [kubernetes, deklarativ]
+
+- id: k8-gl-003
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jedem Objekt seine Aufgabe zu."
+  paare:
+    - ["Pod", "Ein oder mehrere Container mit gemeinsamer IP"]
+    - ["Deployment", "Image und Anzahl der Replikate, Updates"]
+    - ["Service", "Stabiler Name und Lastverteilung"]
+    - ["Namespace", "Logische Trennung von Objekten"]
+  erklaerung: "Deployments erzeugen über ReplicaSets die Pods; Services verbinden sich über Labels mit ihnen."
+  artikel: "#objekte"
+  tags: [kubernetes, objekte]
+
+- id: k8-gl-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Service existiert, antwortet aber nicht. kubectl get endpointslices zeigt keine Endpunkte. Was ist die wahrscheinlichste Ursache?"
+  optionen:
+    - "Der Namespace ist zu groß."
+    - "Der Selektor des Services passt nicht zu den Labels der Pods."
+    - "Der Service hat zu viele Ports."
+    - "etcd ist voll."
+  richtig: [1]
+  erklaerung: "Ohne passende Labels findet der Service keine Pods und hat keine Endpunkte."
+  artikel: "#labels"
+  tags: [kubernetes, service, fehlersuche]
+
+- id: k8-gl-005
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Service-Typ zu, von wo er erreichbar ist."
+  paare:
+    - ["ClusterIP", "Nur innerhalb des Clusters"]
+    - ["NodePort", "Von außen über einen hohen Port auf jedem Node"]
+    - ["LoadBalancer", "Von außen über einen Load Balancer der Cloud"]
+  erklaerung: "ClusterIP ist der Standard; für HTTP von außen nutzt man meist einen Ingress."
+  artikel: "#service"
+  tags: [kubernetes, service]
+
+- id: k8-gl-006
+  typ: reihenfolge
+  schwierigkeit: 1
+  frage: "Bringe die vier Felder eines Manifests in die übliche Reihenfolge."
+  elemente:
+    - "apiVersion"
+    - "kind"
+    - "metadata"
+    - "spec"
+  erklaerung: "Danach ergänzt Kubernetes selbst das Feld status mit dem tatsächlichen Zustand."
+  artikel: "#manifest"
+  tags: [kubernetes, manifest]
+
+- id: k8-gl-007
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem kubectl-Befehl seinen Zweck zu."
+  paare:
+    - ["kubectl describe pod", "Details und Ereignisse eines Pods"]
+    - ["kubectl logs", "Ausgaben eines Containers"]
+    - ["kubectl exec -it … -- sh", "Shell im Container"]
+    - ["kubectl port-forward", "Service lokal erreichbar machen"]
+    - ["kubectl apply -f", "Manifest anlegen oder ändern"]
+  erklaerung: "describe mit den Ereignissen am Ende ist die erste Anlaufstelle bei Problemen."
+  artikel: "#kubectl"
+  tags: [kubernetes, kubectl]
+
+- id: k8-gl-008
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Befehl, der ein lokal gebautes Image in einen kind-Cluster lädt."
+  sprache: bash
+  text: "kind ___ docker-image mini-shop:1.0 --name lernplattform"
+  luecken:
+    - ["load"]
+  erklaerung: "So braucht der Cluster keine Registry – praktisch in der CI."
+  artikel: "#lokal"
+  tags: [kubernetes, kind]
+
+- id: k8-gl-009
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "In Kubernetes beschreibt man die Schritte, mit denen eine Anwendung gestartet wird."
+  richtig: [1]
+  erklaerung: "Falsch. Kubernetes ist deklarativ: Man beschreibt den gewünschten Zustand, Controller sorgen dafür, dass er erreicht wird."
+  artikel: "#soll-ist"
+  tags: [kubernetes, deklarativ]
+
+- id: k8-gl-010
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Warum findet dieser Service keine Pods? Tippe auf die fehlerhafte Zeile."
+  sprache: yaml
+  code: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: mini-shop
+    spec:
+      selector:
+        app: minishop
+      ports:
+        - port: 80
+          targetPort: 8080
+  richtig: [6]
+  erklaerung: "Die Pods tragen das Label app: mini-shop. Mit app: minishop wählt der Selektor nichts aus."
+  artikel: "#labels"
+  tags: [kubernetes, service]

@@ -1,0 +1,9 @@
+# Konfiguration getrennt vom Image: dieselbe Image-Version läuft mit anderer Konfiguration in Test und Produktion.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mini-shop-konfiguration
+  namespace: mini-shop
+data:
+  ASPNETCORE_ENVIRONMENT: Production
+  Logging__LogLevel__Default: Warning   # doppelter Unterstrich = Ebene in appsettings.json

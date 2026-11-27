@@ -1,0 +1,121 @@
+# Fragen zur Lektion "Mobile Tests in der CI"
+
+- id: mo-ci-001
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Schritte des mobilen CI-Jobs in eine sinnvolle Reihenfolge."
+  elemente:
+    - "Unit-Tests ausführen und APK bauen"
+    - "Appium und Treiber installieren"
+    - "KVM freischalten"
+    - "Emulator starten und booten"
+    - "Appium starten und Tests ausführen"
+  erklaerung: "Schnelle Unit-Tests zuerst – schlagen sie fehl, startet der teure Emulator gar nicht erst."
+  artikel: "#ablauf"
+  tags: [mobile, ci]
+
+- id: mo-ci-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu muss auf dem Linux-Runner KVM freigeschaltet werden?"
+  optionen:
+    - "Damit Gradle schneller baut"
+    - "Damit der x86-Emulator Hardware-Beschleunigung nutzen kann"
+    - "Damit Appium installiert werden kann"
+    - "Damit Screenshots möglich sind"
+  richtig: [1]
+  erklaerung: "Ohne Beschleunigung startet der Emulator nicht oder ist für Tests viel zu langsam."
+  artikel: "#emulator"
+  tags: [mobile, emulator]
+
+- id: mo-ci-003
+  typ: single
+  schwierigkeit: 3
+  frage: "In script: von android-emulator-runner steht in der ersten Zeile „appium &“, in der zweiten „pytest“. Die Tests finden keinen Appium-Server. Warum?"
+  optionen:
+    - "Appium braucht länger als eine Stunde zum Starten."
+    - "Jede Zeile läuft als eigener Befehl; der im Hintergrund gestartete Prozess ist in der nächsten Zeile beendet."
+    - "pytest kann keine Hintergrundprozesse nutzen."
+    - "Der Emulator blockiert Port 4723."
+  richtig: [1]
+  erklaerung: "Deshalb steckt im Beispiel alles in ci-tests.sh: Appium starten, warten, testen, per trap beenden."
+  artikel: "#skript"
+  tags: [mobile, ci]
+
+- id: mo-ci-004
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Emulator-Option ihre Bedeutung zu."
+  paare:
+    - ["api-level: 34", "Android-Version des Systemabbilds"]
+    - ["arch: x86_64", "CPU-Architektur passend zum Runner"]
+    - ["-no-window", "Ohne Bildschirm starten"]
+    - ["disable-animations: true", "Animationen abschalten"]
+  erklaerung: "Ein ARM-Abbild auf einem x86-Runner wäre sehr langsam; Animationen machen Tests langsam und instabil."
+  artikel: "#emulator"
+  tags: [mobile, emulator]
+
+- id: mo-ci-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was sollte bei einem Fehlschlag gesichert werden, bevor der Emulator verschwindet?"
+  optionen:
+    - "Screenshots der fehlgeschlagenen Tests"
+    - "Das Appium-Log"
+    - "Das Android-Log (logcat)"
+    - "Das komplette Systemabbild des Emulators"
+  richtig: [0, 1, 2]
+  erklaerung: "Screenshots, Appium-Log und logcat reichen für die Analyse; das Systemabbild ist groß und bringt nichts."
+  artikel: "#diagnose"
+  tags: [mobile, diagnose]
+
+- id: mo-ci-006
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Wie lässt sich die Laufzeit mobiler CI-Jobs verringern?"
+  optionen:
+    - "Unit-Tests zuerst, Emulator-Job nur bei Erfolg"
+    - "Wenige Ende-zu-Ende-Tests, Logik in Unit-Tests"
+    - "AVD-Snapshots cachen"
+    - "Jeden Test in einer neuen Appium-Sitzung mit Neuinstallation starten"
+  richtig: [0, 1, 2]
+  erklaerung: "Eine neue Sitzung mit Installation pro Test kostet viel Zeit; eine Sitzung mit zurückgesetzter App reicht."
+  artikel: "#laufzeit"
+  tags: [mobile, laufzeit]
+
+- id: mo-ci-007
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "iOS-Tests mit Simulator lassen sich auf den Linux-Runnern von GitHub ausführen."
+  richtig: [1]
+  erklaerung: "Falsch. Xcode, Simulator und XCUITest gibt es nur unter macOS – dafür braucht es macOS-Runner."
+  artikel: "#ios"
+  tags: [mobile, ios]
+
+- id: mo-ci-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ändert sich am Testcode, wenn die Appium-Tests in einer Gerätefarm wie BrowserStack laufen sollen?"
+  optionen:
+    - "Alle Tests müssen in Java neu geschrieben werden."
+    - "Im Wesentlichen die Server-URL, Zugangsdaten (aus Secrets) und die Capabilities für das Gerät."
+    - "Nichts, nicht einmal die URL."
+    - "Die Locators müssen auf XPath umgestellt werden."
+  richtig: [1]
+  erklaerung: "Appium spricht WebDriver – der Server des Anbieters ersetzt den lokalen. Zugangsdaten gehören in Secrets."
+  artikel: "#geraetefarmen"
+  tags: [mobile, geraetefarm]
+
+- id: mo-ci-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum werden Appium und der UiAutomator2-Treiber mit festen Versionen installiert?"
+  optionen:
+    - "Weil neuere Versionen kostenpflichtig sind"
+    - "Weil neue Versionen Verhalten ändern können und die Ergebnisse sonst ohne Codeänderung schwanken"
+    - "Weil npm keine neuesten Versionen kennt"
+    - "Weil der Emulator nur alte Versionen unterstützt"
+  richtig: [1]
+  erklaerung: "Reproduzierbare Pipelines brauchen feste Versionen – Aktualisierungen bewusst und getestet einspielen."
+  artikel: "#appium-ci"
+  tags: [mobile, versionen]

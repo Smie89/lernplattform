@@ -1,0 +1,147 @@
+# Fragen zur Lektion "pytest vertieft"
+
+- id: py-pv-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie bekommt ein pytest-Test eine Fixture?"
+  optionen:
+    - "Über das Attribut [Fixture] an der Testklasse"
+    - "Indem er sie als Parameter mit dem Namen der Fixture anfordert"
+    - "Über einen Import aus conftest.py"
+    - "Über eine globale Variable"
+  richtig: [1]
+  erklaerung: "pytest erkennt Fixtures am Parameternamen. Fixtures aus conftest.py brauchen keinen Import."
+  artikel: "#fixtures"
+  tags: [python, pytest, fixtures]
+
+- id: py-pv-002
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Fixture den passenden Scope zu."
+  paare:
+    - ["Warenkorb, den jeder Test verändert", "function"]
+    - ["URL des Systems unter Test", "session"]
+    - ["Unveränderte Testdaten aus einer großen Datei, nur für eine Testdatei", "module"]
+  erklaerung: "Was Tests verändern, braucht Scope function. Teure, unveränderliche Dinge dürfen länger leben."
+  artikel: "#scope"
+  tags: [python, pytest, fixtures]
+
+- id: py-pv-003
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile wird nie ausgeführt, sodass der Testkunde nicht gelöscht wird?"
+  sprache: python
+  code: |
+    @pytest.fixture
+    def testkunde(client):
+        kunde = client.kunde_anlegen("Testkunde")
+        return kunde
+        client.kunde_loeschen(kunde["id"])
+  richtig: [4]
+  erklaerung: "Nach return läuft nichts mehr. Für Aufräumen yield verwenden – der Code danach läuft nach dem Test."
+  artikel: "#yield"
+  tags: [python, pytest, fixtures]
+
+- id: py-pv-004
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder eingebauten Fixture zu, was sie liefert."
+  paare:
+    - ["tmp_path", "Temporäres Verzeichnis pro Test"]
+    - ["monkeypatch", "Attribute und Umgebungsvariablen nur für einen Test ändern"]
+    - ["capsys", "Ausgaben auf stdout und stderr abfangen"]
+    - ["caplog", "Log-Meldungen abfangen"]
+  erklaerung: "Diese Fixtures bringt pytest mit – kein Import nötig."
+  artikel: "#eingebaut"
+  tags: [python, pytest, fixtures]
+
+- id: py-pv-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Wozu dient der Parameter ids bei @pytest.mark.parametrize?"
+  optionen:
+    - "Er legt die Reihenfolge der Tests fest."
+    - "Er gibt den einzelnen Fällen lesbare Namen in der Ausgabe."
+    - "Er überspringt Fälle."
+    - "Er macht die Tests parallel."
+  richtig: [1]
+  erklaerung: "Statt test_x[True-Decimal('100')] steht dann test_x[auf-schwelle] im Ergebnis – wichtig bei Fehlschlägen."
+  artikel: "#parametrize"
+  tags: [python, pytest, parametrize]
+
+- id: py-pv-006
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Marker seine Wirkung zu."
+  paare:
+    - ["skip", "Test immer überspringen"]
+    - ["skipif", "Test unter einer Bedingung überspringen"]
+    - ["xfail", "Fehlschlag wird erwartet"]
+    - ["eigener Marker api", "Tests gruppieren und mit -m auswählen"]
+  erklaerung: "Eigene Marker in pyproject.toml anmelden; --strict-markers meldet Tippfehler."
+  artikel: "#marker"
+  tags: [python, pytest, marker]
+
+- id: py-pv-007
+  typ: wahr-falsch
+  schwierigkeit: 3
+  frage: "Bei einem einfachen Mock() fällt ein Tippfehler im Methodennamen sofort mit einem Fehler auf."
+  richtig: [1]
+  erklaerung: "Falsch. Ein Mock ohne spec legt jede aufgerufene Methode still an. Mit spec oder create_autospec gibt es einen AttributeError."
+  artikel: "#mock"
+  tags: [python, mock]
+
+- id: py-pv-008
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Stub, sodass abbuchen True liefert, und die Prüfung des Aufrufs."
+  sprache: python
+  text: "zahlung.abbuchen.___ = True\nzahlung.abbuchen.___(\"Anna\", Decimal(\"94.62\"))"
+  luecken:
+    - ["return_value"]
+    - ["assert_called_once_with"]
+  erklaerung: "return_value legt die Antwort fest (Stub), assert_called_once_with prüft genau einen Aufruf mit diesen Argumenten (Mock)."
+  artikel: "#mock"
+  tags: [python, mock]
+
+- id: py-pv-009
+  typ: single
+  schwierigkeit: 2
+  frage: "Was macht Hypothesis, wenn es ein Gegenbeispiel gefunden hat?"
+  optionen:
+    - "Es bricht ohne Ausgabe ab."
+    - "Es verkleinert das Beispiel auf den einfachsten fehlschlagenden Fall und merkt es sich für den nächsten Lauf."
+    - "Es ignoriert den Fehler beim nächsten Mal."
+    - "Es ändert den Code automatisch."
+  richtig: [1]
+  erklaerung: "Shrinking liefert ein minimales Beispiel; die Datenbank in .hypothesis sorgt dafür, dass es wieder geprüft wird."
+  artikel: "#hypothesis"
+  tags: [python, hypothesis]
+
+- id: py-pv-010
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Eigenschaften eignen sich für eigenschaftsbasierte Tests der Rabattregeln?"
+  optionen:
+    - "Der Endpreis liegt zwischen 0 und der Zwischensumme."
+    - "Ein Stammkunde zahlt nie mehr als ein Neukunde."
+    - "Der Endpreis von 100 € ist genau 90 €."
+    - "Der Endpreis ist auf Cent gerundet."
+  richtig: [0, 1, 3]
+  erklaerung: "Eigenschaften gelten für alle Eingaben. „100 € → 90 €“ ist ein einzelnes Beispiel – dafür ist parametrize da."
+  artikel: "#hypothesis"
+  tags: [python, hypothesis]
+
+- id: py-pv-011
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Option erzeugt einen Testbericht, den CI-Systeme wie GitHub Actions oder Jenkins lesen können?"
+  optionen:
+    - "--lf"
+    - "--junitxml=ergebnis.xml"
+    - "-k bericht"
+    - "--strict-markers"
+  richtig: [1]
+  erklaerung: "JUnit-XML ist das gemeinsame Format für Testergebnisse in CI-Systemen und ist in pytest eingebaut."
+  artikel: "#plugins"
+  tags: [python, pytest, ci]

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mini-Shop</string>
+    <string name="hinweis">Ab 100 € gibt es 10 % Rabatt, Stammkunden erhalten zusätzlich 5 %.</string>
+    <string name="warenkorb">Warenkorb</string>
+    <string name="zwischensumme">Zwischensumme</string>
+    <string name="rabatt">Rabatt</string>
+    <string name="endpreis">Endpreis</string>
+    <string name="stammkunde">Stammkunde</string>
+    <string name="name">Name</string>
+    <string name="bestellen">Bestellen</string>
+    <string name="hinzufuegen">+</string>
+</resources>

@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mini-shop
+  namespace: mini-shop
+  labels:
+    app: mini-shop
+  annotations:
+    # Bewusste Ausnahmen für den Checkov-Scan – mit Begründung:
+    checkov.io/skip1: CKV_K8S_43=Image kommt per "kind load" in den Cluster; in Produktion per Digest (@sha256:...) referenzieren
+    checkov.io/skip2: CKV_K8S_15=Image liegt nur lokal im kind-Cluster; "Always" würde es vergeblich aus einer Registry laden
+spec:
+  replicas: 2                       # zwei Pods: fällt einer aus, antwortet der andere
+  selector:
+    matchLabels:
+      app: mini-shop
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0             # beim Update nie weniger als 2 bereite Pods
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: mini-shop
+    spec:
+      automountServiceAccountToken: false   # der Shop braucht keinen Zugriff auf die Kubernetes-API
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: shop
+          image: mini-shop:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: mini-shop-konfiguration
+          readinessProbe:           # erst bereit, wenn die API antwortet – vorher kein Verkehr vom Service
+            httpGet:
+              path: /api/produkte
+              port: http
+            periodSeconds: 5
+            failureThreshold: 2
+          livenessProbe:            # antwortet der Prozess dauerhaft nicht, startet Kubernetes den Container neu
+            httpGet:
+              path: /api/produkte
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp       # einziger beschreibbarer Ort im Container
+      volumes:
+        - name: tmp
+          emptyDir: {}

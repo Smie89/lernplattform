@@ -1,0 +1,269 @@
+---
+title: API- und Browser-Tests mit Python
+description: Den .NET-Mini-Shop aus Python testen – requests mit Session und Timeout, ein API-Client als Geschäftslogik-Schicht, Antworten mit JSON-Schema prüfen, Geldbeträge als Decimal vergleichen, eine zweite Implementierung als Testorakel, Browser-Tests mit pytest-playwright und Page Object, Traces und der Lauf in GitHub Actions.
+tags: [python, pytest, api, playwright]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './03-api-und-browser-tests.fragen.yaml';
+
+# API- und Browser-Tests mit Python
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- REST-APIs mit **requests** testen und einen **API-Client** als eigene Schicht bauen,
+- Antworten mit **JSON-Schema** prüfen und Geldbeträge sicher vergleichen,
+- Browser-Tests mit **pytest-playwright** und einem **Page Object** schreiben,
+- die Tests **gegen eine laufende Anwendung** in der CI ausführen.
+:::
+
+Getestet wird derselbe .NET-Mini-Shop wie in den C#- und Java-Lektionen. Die Testsprache muss nicht die Sprache der
+Anwendung sein – über HTTP und den Browser ist das egal.
+
+## Die laufende Anwendung als Fixture \{#shop-url}
+
+Die URL kommt aus einer **Umgebungsvariablen**. Fehlt sie, werden API- und UI-Tests **übersprungen** statt rot – so laufen
+die Unit-Tests auch ohne gestarteten Shop:
+
+```python title="tests/conftest.py (Auszug)"
+@pytest.fixture(scope="session")
+def shop_url() -> str:
+    url = os.environ.get("SHOP_URL")
+    if not url:
+        pytest.skip("SHOP_URL ist nicht gesetzt")
+    try:
+        requests.get(f"{url}/api/produkte", timeout=5).raise_for_status()
+    except requests.RequestException as fehler:
+        pytest.fail(f"Mini-Shop unter {url} nicht erreichbar: {fehler}")
+    return url
+```
+
+Ist die URL gesetzt, der Shop aber **nicht erreichbar**, schlägt der Lauf fehl – sonst würde eine ausgefallene
+Umgebung als „alles übersprungen“ durchrutschen.
+
+## requests und ein API-Client \{#requests}
+
+**requests** ist die Standardbibliothek für HTTP in Python. Zwei Regeln für Tests:
+
+- immer einen **Timeout** setzen – ohne wartet requests im Zweifel ewig,
+- eine **Session** wiederverwenden – Verbindungen und Header werden geteilt.
+
+Die Tests sprechen nicht direkt mit requests, sondern mit einem **ShopClient** – das ist die Geschäftslogik-Schicht aus der
+[Testautomationsarchitektur](../../11-istqb/02-tae-architektur.mdx#schichten). Ändert sich ein Pfad, ändert man eine Stelle:
+
+```python title="shop/api_client.py (Auszug)"
+class ShopClient:
+    def __init__(self, basis_url: str, timeout: float = 5.0):
+        self.basis_url = basis_url.rstrip("/")
+        self.timeout = timeout
+        self.sitzung = requests.Session()
+
+    def _anfrage(self, methode, pfad, **kwargs):
+        return self.sitzung.request(methode, f"{self.basis_url}/api{pfad}", timeout=self.timeout, **kwargs)
+
+    def hinzufuegen(self, warenkorb_id, produkt_id, menge=1):
+        return self._anfrage("POST", f"/warenkoerbe/{warenkorb_id}/positionen",
+                             json={"produktId": produkt_id, "menge": menge})
+```
+
+Die Methoden geben die **Antwort** zurück, nicht nur die Daten – so können Tests auch Statuscodes und Header prüfen.
+
+```python title="tests/api/test_shop_api.py (Auszug)"
+pytestmark = pytest.mark.api
+
+@pytest.mark.parametrize(("menge", "status"), [(0, 400), (1, 200), (99, 200), (100, 400)])
+def test_grenzen_der_menge(client, warenkorb_id, menge, status):
+    assert client.hinzufuegen(warenkorb_id, "tasse", menge).status_code == status
+
+def test_bestellung_von_anfang_bis_ende(client, warenkorb_id):
+    client.hinzufuegen(warenkorb_id, "kopfhoerer")
+    client.hinzufuegen(warenkorb_id, "tasse", 2)
+
+    antwort = client.bestellen(warenkorb_id, "Anna Berg", stammkunde=True)
+
+    assert antwort.status_code == 201
+    assert als_decimal(antwort.json()["endpreis"]) == Decimal("88.40")   # 104,00 € − 15 %
+    assert client.warenkorb(warenkorb_id).status_code == 404             # nach der Bestellung weg
+```
+
+## Antworten mit JSON-Schema prüfen \{#schema}
+
+Ein Schema prüft Struktur, Pflichtfelder und Typen auf einmal – statt vieler Einzel-Assertions
+(siehe [Schemavalidierung](../../11-istqb/05-tae-verbesserung.mdx#schemavalidierung)):
+
+```python
+PRODUKT_SCHEMA = {
+    "type": "array",
+    "minItems": 1,
+    "items": {
+        "type": "object",
+        "required": ["id", "name", "preis"],
+        "properties": {
+            "id": {"type": "string", "pattern": "^[a-z]+$"},
+            "name": {"type": "string", "minLength": 1},
+            "preis": {"type": "number", "exclusiveMinimum": 0},
+        },
+    },
+}
+
+def test_produktliste_entspricht_dem_schema(client):
+    antwort = client.produkte()
+    assert antwort.status_code == 200
+    jsonschema.validate(antwort.json(), PRODUKT_SCHEMA)
+```
+
+Bei einer Abweichung nennt `jsonschema` das betroffene Feld, z. B. *'preis' is a required property*.
+
+### Geldbeträge im Test \{#decimal-im-test}
+
+JSON kennt keine Dezimalzahlen; `response.json()` liefert **float**. Vor dem Vergleich deshalb über den String in Decimal
+umwandeln:
+
+```python
+def als_decimal(wert) -> Decimal:
+    return Decimal(str(wert))   # str(88.4) == "88.4" → Decimal("88.4")
+```
+
+### Eine zweite Implementierung als Testorakel \{#orakel}
+
+Das Projekt enthält die Rabattregeln auch in Python. Der Test prüft, dass der Shop **dasselbe** ausrechnet – für jede
+Kombination aus Produkt, Menge und Stammkunde:
+
+```python
+@pytest.mark.parametrize(("produkt", "menge", "stammkunde"), [("tasse", 2, False), ("monitor", 1, True), ("buch", 4, True)])
+def test_api_rechnet_wie_die_python_logik(client, warenkorb_id, produkt, menge, stammkunde):
+    client.hinzufuegen(warenkorb_id, produkt, menge)
+    daten = client.warenkorb(warenkorb_id, stammkunde).json()
+    assert als_decimal(daten["endpreis"]) == endpreis(als_decimal(daten["zwischensumme"]), stammkunde)
+```
+
+Eine unabhängige Zweitimplementierung ist ein starkes Orakel – vorausgesetzt, sie ist **wirklich unabhängig** geschrieben
+und nicht vom Produktivcode abgeschrieben.
+
+## Browser-Tests mit pytest-playwright \{#playwright}
+
+```bash
+pip install pytest-playwright
+python -m playwright install chromium
+```
+
+Das Plugin bringt Fixtures mit: **`page`** (eine frische Seite pro Test), `context`, `browser` und **`base_url`**. Die API
+entspricht der aus [Playwright für .NET](../04-browser/01-playwright-grundlagen.mdx) – nur in `snake_case`:
+
+| C# | Python |
+|---|---|
+| `await Page.GotoAsync("/")` | `page.goto("/")` |
+| `Page.GetByTestId("endpreis")` | `page.get_by_test_id("endpreis")` |
+| `Page.GetByRole(AriaRole.Button, new() { Name = "Bestellen" })` | `page.get_by_role("button", name="Bestellen")` |
+| `await Expect(locator).ToHaveTextAsync("…")` | `expect(locator).to_have_text("…")` |
+
+Die **synchrone** API (`playwright.sync_api`) reicht für Tests; Auto-Waiting und Web-First Assertions funktionieren
+genauso.
+
+```python title="tests/ui/seiten.py (Page Object, Auszug)"
+class ShopSeite:
+    def __init__(self, page: Page):
+        self.page = page
+        self.endpreis = page.get_by_test_id("endpreis")
+        self.rabatt = page.get_by_test_id("rabatt")
+
+    def oeffnen(self) -> "ShopSeite":
+        self.page.goto("/")
+        expect(self.page.get_by_test_id("produktliste").get_by_role("listitem")).to_have_count(5)
+        return self
+
+    def in_den_warenkorb(self, produkt_id: str, anzahl: int = 1) -> "ShopSeite":
+        knopf = self.page.get_by_test_id(f"produkt-{produkt_id}").get_by_role("button", name="In den Warenkorb")
+        menge = self.page.get_by_test_id(f"position-{produkt_id}").get_by_test_id("menge")
+        for i in range(1, anzahl + 1):
+            knopf.click()
+            expect(menge).to_have_text(str(i))   # warten, bis die API geantwortet hat
+        return self
+```
+
+```python title="tests/ui/test_shop_ui.py (Auszug)"
+pytestmark = pytest.mark.ui
+
+def test_rabatt_ab_100_euro(page):
+    shop = ShopSeite(page).oeffnen().in_den_warenkorb("rucksack", 2)   # 99,80 €
+    expect(shop.rabatt).to_have_text("0 %")
+    shop.in_den_warenkorb("tasse")                                      # 112,30 €
+    expect(shop.rabatt).to_have_text("10 %")
+    expect(shop.endpreis).to_have_text("101,07 €")
+```
+
+Die Zeile `expect(menge).to_have_text(str(i))` ist wichtig: Jeder Klick löst einen API-Aufruf aus. Ohne das Warten
+klickt der Test schneller, als die Oberfläche aktualisiert – ein klassischer [Flaky Test](../01-grundlagen/02-flaky-tests.mdx#timing).
+
+`base_url` setzt eine kleine `conftest.py` im UI-Ordner aus `SHOP_URL`:
+
+```python title="tests/ui/conftest.py"
+@pytest.fixture(scope="session")
+def base_url(shop_url):
+    return shop_url
+```
+
+### Nützliche Optionen \{#playwright-optionen}
+
+| Option | Wirkung |
+|---|---|
+| `--headed` | Browser sichtbar starten |
+| `--browser firefox` / `--browser webkit` | anderen Browser nutzen (mehrfach angeben für alle) |
+| `--slowmo 500` | jede Aktion um 500 ms verzögern – zum Zuschauen |
+| `--tracing retain-on-failure` | bei Fehlschlag einen **Trace** speichern (`playwright show-trace trace.zip`) |
+| `--screenshot only-on-failure` | Screenshot bei Fehlschlag |
+
+## In der CI \{#ci}
+
+In GitHub Actions startet das Skript `tests-mit-app.sh` den Shop, wartet, bis er antwortet, führt die Tests aus und
+beendet ihn danach (siehe [Linux in der Testautomation](../../04-linux/07-linux-testautomation.mdx)):
+
+```yaml title=".github/workflows/beispiele.yml (Auszug)"
+- name: Abhängigkeiten installieren
+  working-directory: beispiele/python
+  run: |
+    pip install -r requirements.txt
+    python -m playwright install --with-deps chromium
+- name: API- und UI-Tests gegen den laufenden Shop
+  working-directory: beispiele/shop
+  run: ../linux/tests-mit-app.sh bash -c "cd ../python && SHOP_URL=http://localhost:5000 pytest -m 'api or ui' --tracing retain-on-failure"
+- name: Testergebnisse und Playwright-Traces bei Fehlschlag sichern
+  if: failure()
+  uses: actions/upload-artifact@v7
+  with:
+    name: testergebnisse-python
+    path: beispiele/python/test-results
+```
+
+`--with-deps` installiert unter Linux auch die Systembibliotheken, die der Browser braucht.
+
+## Python oder C#/Java? \{#vergleich}
+
+| | Python + pytest | C# + NUnit / Java + JUnit |
+|---|---|---|
+| Einstieg | sehr schnell, wenig Code | mehr Struktur, Typen helfen in großen Suiten |
+| Gleiche Sprache wie die Anwendung | bei Python-Backends | bei .NET- oder Java-Anwendungen |
+| Stärken | Skripte, Daten, API-Tests, KI- und Security-Werkzeuge | große Suiten, Refactoring mit IDE-Unterstützung |
+| Werkzeuge | pytest, requests, Playwright, Appium, Robot Framework, Locust | NUnit/JUnit, RestSharp/REST Assured, Playwright, Appium |
+
+Der Lehrplan zur Testautomation empfiehlt, die Sprache passend zum **Team und zum SUT** zu wählen – siehe
+[Werkzeuge passend zum SUT wählen](../../11-istqb/01-tae-ziele-vorbereitung.mdx#werkzeugauswahl).
+
+## Typische Fehler \{#typische-fehler}
+
+- requests **ohne Timeout** – ein hängender Server blockiert die Pipeline.
+- Geldbeträge als float vergleichen: `assert daten["endpreis"] == 88.4` geht oft gut, aber nicht immer.
+- Tests rufen `requests.post(...)` direkt auf – jede API-Änderung betrifft viele Dateien.
+- Fehlende Umgebung führt zu „alles übersprungen“ statt zu einem Fehler.
+- Im UI-Test mehrfach klicken, ohne auf die Aktualisierung zu warten.
+- `playwright install` in der CI vergessen – der Browser fehlt.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **SHOP_URL** als Session-Fixture: fehlt sie, überspringen; ist der Shop nicht erreichbar, fehlschlagen.
+- **requests** mit Session und Timeout, gekapselt in einem **API-Client**.
+- **JSON-Schema** für Struktur, **Decimal** für Geld, eine **Zweitimplementierung** als Orakel.
+- **pytest-playwright**: Fixture `page`, `expect`, Page Objects, Traces bei Fehlschlag.
+- In der CI: Shop starten, warten, testen, beenden – Ergebnisse bei Fehlschlag sichern.
+
+<Quiz fragen={fragen} titel="Quiz: API- und Browser-Tests mit Python" />

@@ -1,0 +1,9 @@
+{
+  "label": "Mobile Apps mit Appium",
+  "position": 10,
+  "link": {
+    "type": "generated-index",
+    "slug": "/testautomation/mobile",
+    "description": "Besonderheiten mobiler Apps, Emulator, echtes Gerät und Gerätefarm, Appium mit UiAutomator2, Screen Objects und Appium-Tests im Android-Emulator in GitHub Actions."
+  }
+}

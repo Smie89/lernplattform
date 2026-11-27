@@ -1,0 +1,137 @@
+# Fragen zur Lektion "Konfiguration und Betrieb"
+
+- id: k8-kb-001
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Die Werte eines Kubernetes-Secrets sind verschlüsselt und deshalb sicher im Git-Repository aufgehoben."
+  richtig: [1]
+  erklaerung: "Falsch. Secrets sind nur Base64-kodiert. Schutz entsteht durch RBAC, Verschlüsselung in etcd und externe Tresore – ins Repository gehören sie nie im Klartext."
+  artikel: "#konfiguration"
+  tags: [kubernetes, secrets]
+
+- id: k8-kb-002
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Probe zu, was bei einem Fehlschlag passiert."
+  paare:
+    - ["Readiness", "Pod bekommt keinen Verkehr mehr vom Service"]
+    - ["Liveness", "Container wird neu gestartet"]
+    - ["Startup", "Die anderen Probes warten, bis der Start abgeschlossen ist"]
+  erklaerung: "Readiness steuert den Verkehr, Liveness den Neustart, Startup schützt langsam startende Anwendungen."
+  artikel: "#probes"
+  tags: [kubernetes, probes]
+
+- id: k8-kb-003
+  typ: single
+  schwierigkeit: 3
+  frage: "Die Liveness-Probe eines Dienstes prüft auch die Datenbankverbindung. Die Datenbank fällt für fünf Minuten aus. Was passiert?"
+  optionen:
+    - "Nichts, Probes ignorieren Abhängigkeiten."
+    - "Alle Pods werden immer wieder neu gestartet – der Ausfall wird schlimmer."
+    - "Die Datenbank wird automatisch neu gestartet."
+    - "Die Pods werden nur aus dem Service genommen."
+  richtig: [1]
+  erklaerung: "Liveness führt zu Neustarts, die das Problem nicht lösen. Abhängigkeiten gehören höchstens in die Readiness-Probe."
+  artikel: "#probes"
+  tags: [kubernetes, probes]
+
+- id: k8-kb-004
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Ressourcenangabe ihre Wirkung zu."
+  paare:
+    - ["CPU-Limit überschritten", "Der Container wird gebremst"]
+    - ["Speicher-Limit überschritten", "Der Container wird beendet (OOMKilled)"]
+    - ["Request", "Reserviert Ressourcen; danach plant der Scheduler"]
+  erklaerung: "CPU lässt sich drosseln, Speicher nicht – deshalb führt zu wenig Speicher zu Neustarts. Zu hohe Requests lassen Pods im Status Pending."
+  artikel: "#ressourcen"
+  tags: [kubernetes, ressourcen]
+
+- id: k8-kb-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein neuer Pod bleibt im Status Pending. Was ist eine typische Ursache?"
+  optionen:
+    - "Das Image existiert nicht."
+    - "Kein Node hat genug freie Ressourcen für die Requests des Pods."
+    - "Die Anwendung stürzt beim Start ab."
+    - "Die Readiness-Probe schlägt fehl."
+  richtig: [1]
+  erklaerung: "Pending heißt: noch keinem Node zugeordnet. Image-Probleme zeigen ImagePullBackOff, Abstürze CrashLoopBackOff."
+  artikel: "#fehlersuche"
+  tags: [kubernetes, fehlersuche]
+
+- id: k8-kb-006
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Status den ersten sinnvollen Schritt zu."
+  paare:
+    - ["ImagePullBackOff", "Image-Name, Tag und Registry-Zugang prüfen"]
+    - ["CrashLoopBackOff", "kubectl logs --previous ansehen"]
+    - ["Running, aber 0/1 bereit", "Pfad und Port der Readiness-Probe prüfen"]
+    - ["Pending", "Ereignisse in kubectl describe pod lesen"]
+  erklaerung: "Die Ereignisse am Ende von describe und die Logs des vorherigen Versuchs zeigen meist die Ursache."
+  artikel: "#fehlersuche"
+  tags: [kubernetes, fehlersuche]
+
+- id: k8-kb-007
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Befehl, mit dem man nach einem fehlerhaften Update zur vorherigen Version zurückkehrt."
+  sprache: bash
+  text: "kubectl rollout ___ deployment/mini-shop"
+  luecken:
+    - ["undo"]
+  erklaerung: "rollout undo stellt das vorherige ReplicaSet wieder her; rollout history zeigt die Versionen."
+  artikel: "#rolling-update"
+  tags: [kubernetes, rollout]
+
+- id: k8-kb-008
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Deployment hat maxUnavailable: 0 und eine Readiness-Probe. Die neue Version startet, wird aber nie bereit. Was passiert?"
+  optionen:
+    - "Die alten Pods werden trotzdem beendet; der Dienst fällt aus."
+    - "Das Update bleibt stehen, die alten Pods laufen weiter."
+    - "Kubernetes rollt automatisch zurück und löscht die neue Version."
+    - "Beide Versionen bekommen Verkehr."
+  richtig: [1]
+  erklaerung: "Alte Pods werden erst beendet, wenn neue bereit sind. Das Update hängt, kubectl rollout status meldet nach dem Timeout einen Fehler – zurück geht es mit rollout undo."
+  artikel: "#rolling-update"
+  tags: [kubernetes, rollout]
+
+- id: k8-kb-009
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Einstellungen härten einen Pod?"
+  optionen:
+    - "runAsNonRoot: true"
+    - "readOnlyRootFilesystem: true"
+    - "capabilities: drop: [\"ALL\"]"
+    - "privileged: true"
+    - "automountServiceAccountToken: false"
+  richtig: [0, 1, 2, 4]
+  erklaerung: "privileged: true gibt dem Container fast alle Rechte des Hosts – das Gegenteil von Härtung."
+  artikel: "#sicherheit"
+  tags: [kubernetes, sicherheit]
+
+- id: k8-kb-010
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Ohne NetworkPolicy darf in Kubernetes jeder Pod jeden anderen Pod im Cluster erreichen."
+  richtig: [0]
+  erklaerung: "Wahr. Standardmäßig ist alles erlaubt. NetworkPolicies schränken das ein, sofern das Netzwerk-Plugin sie umsetzt."
+  artikel: "#sicherheit"
+  tags: [kubernetes, networkpolicy]
+
+- id: k8-kb-011
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Werkzeug seinen typischen Einsatz zu."
+  paare:
+    - ["Kustomize", "Eigene Manifeste mit Überlagerungen je Umgebung"]
+    - ["Helm", "Fertige Software als versioniertes Chart installieren"]
+    - ["Ingress", "HTTP von außen nach Host und Pfad an Services leiten"]
+  erklaerung: "Kustomize ist in kubectl eingebaut (apply -k); Helm arbeitet mit Vorlagen und values.yaml."
+  artikel: "#kustomize-helm"
+  tags: [kubernetes, kustomize, helm]

@@ -1,0 +1,118 @@
+# Fragen zur Lektion "Mobile Apps testen – Grundlagen"
+
+- id: mo-gl-001
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jeder App-Art ihre Beschreibung zu."
+  paare:
+    - ["Native App", "In Kotlin/Java oder Swift mit Bedienelementen des Systems"]
+    - ["Hybride App", "Webinhalte in einer nativen Hülle (WebView)"]
+    - ["Mobile Web / PWA", "Website im mobilen Browser"]
+    - ["Plattformübergreifend", "Eine Codebasis wie Flutter oder React Native"]
+  erklaerung: "Die App-Art bestimmt, welche Werkzeuge und Kontexte ein Test braucht."
+  artikel: "#app-arten"
+  tags: [mobile, grundlagen]
+
+- id: mo-gl-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum ist nach dem Drehen eines Android-Geräts der Warenkorb mancher Apps leer?"
+  optionen:
+    - "Weil Android beim Drehen den Arbeitsspeicher löscht"
+    - "Weil Android die Activity neu aufbaut und die App ihren Zustand nicht gesichert hat"
+    - "Weil das Netzwerk beim Drehen kurz ausfällt"
+    - "Weil Appium den Zustand zurücksetzt"
+  richtig: [1]
+  erklaerung: "Die Activity wird zerstört und neu erzeugt. Was nicht in onSaveInstanceState oder einem ViewModel gesichert ist, geht verloren."
+  artikel: "#besonderheiten"
+  tags: [mobile, lebenszyklus]
+
+- id: mo-gl-003
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Prüfungen sind typisch für mobile Apps, aber im Web selten?"
+  optionen:
+    - "App in den Hintergrund schicken und zurückholen"
+    - "Berechtigung für die Kamera ablehnen"
+    - "Gerät drehen"
+    - "Wechsel von WLAN zu Mobilfunk"
+    - "Prüfen, ob eine HTML-Seite valide ist"
+  richtig: [0, 1, 2, 3]
+  erklaerung: "Lebenszyklus, Berechtigungen, Ausrichtung und Netzwechsel sind mobile Besonderheiten."
+  artikel: "#besonderheiten"
+  tags: [mobile, besonderheiten]
+
+- id: mo-gl-004
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Umgebung ihren typischen Einsatz zu."
+  paare:
+    - ["Emulator", "Tägliche Tests in der CI"]
+    - ["Echtes Gerät", "Leistung und Hardwarefunktionen wie Kamera"]
+    - ["Gerätefarm", "Kompatibilität über viele Modelle"]
+  erklaerung: "Die Mischung macht's: schnell und billig in der CI, realistisch vor dem Release."
+  artikel: "#geraete"
+  tags: [mobile, geraete]
+
+- id: mo-gl-005
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Den iOS-Simulator kann man auch unter Windows und Linux nutzen."
+  richtig: [1]
+  erklaerung: "Falsch. Simulator und XCUITest laufen nur unter macOS – für iOS braucht man einen Mac oder macOS-Runner in der CI."
+  artikel: "#geraete"
+  tags: [mobile, ios]
+
+- id: mo-gl-006
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Ordne die Stufen der mobilen Testpyramide von unten (viele, schnelle Tests) nach oben."
+  elemente:
+    - "Unit-Tests mit JUnit oder XCTest"
+    - "Instrumentierte Tests mit Espresso oder XCUITest"
+    - "Ende-zu-Ende-Tests mit Appium"
+  erklaerung: "Logik in schnellen Unit-Tests, Oberfläche in instrumentierten Tests, wenige echte Abläufe mit Appium."
+  artikel: "#testpyramide"
+  tags: [mobile, testpyramide]
+
+- id: mo-gl-007
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist ein Vorteil von Appium gegenüber Espresso und XCUITest?"
+  optionen:
+    - "Appium-Tests laufen schneller."
+    - "Mit einem Werkzeug und einer Sprache lassen sich Android und iOS testen – auch Systemdialoge und andere Apps."
+    - "Appium braucht kein Gerät."
+    - "Appium-Tests werden automatisch erzeugt."
+  richtig: [1]
+  erklaerung: "Espresso und XCUITest sind schneller und laufen im App-Prozess; Appium bedient die App von außen über das System."
+  artikel: "#testpyramide"
+  tags: [mobile, appium]
+
+- id: mo-gl-008
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Woran orientiert sich eine gute Gerätematrix?"
+  optionen:
+    - "An den Nutzungsdaten der eigenen App"
+    - "An der ältesten und neuesten unterstützten Version"
+    - "An kleinsten und größten Bildschirmen"
+    - "Ausschließlich am Telefon des Testers"
+  richtig: [0, 1, 2]
+  erklaerung: "Reale Nutzung und Ränder abdecken – ein einzelnes Gerät reicht nicht."
+  artikel: "#geraetematrix"
+  tags: [mobile, geraetematrix]
+
+- id: mo-gl-009
+  typ: single
+  schwierigkeit: 1
+  frage: "Eine reine mobile Website soll auf Smartphone-Größe getestet werden. Was reicht oft aus?"
+  optionen:
+    - "Appium mit echtem Gerät"
+    - "Playwright mit Geräteemulation (Bildschirm, Touch, User-Agent)"
+    - "Espresso"
+    - "XCUITest"
+  richtig: [1]
+  erklaerung: "Für Websites ohne installierte App genügt oft die Emulation im Browser. Appium braucht man, sobald eine App installiert wird."
+  artikel: "#app-arten"
+  tags: [mobile, playwright]

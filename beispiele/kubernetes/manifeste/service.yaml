@@ -1,0 +1,28 @@
+# Stabiler Name und Lastverteilung auf alle bereiten Pods mit dem Label app=mini-shop.
+apiVersion: v1
+kind: Service
+metadata:
+  name: mini-shop
+  namespace: mini-shop
+spec:
+  selector:
+    app: mini-shop
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+# Gleiche Pods, aber jede Client-IP landet immer beim selben Pod (siehe test_zustand.py).
+apiVersion: v1
+kind: Service
+metadata:
+  name: mini-shop-sticky
+  namespace: mini-shop
+spec:
+  selector:
+    app: mini-shop
+  sessionAffinity: ClientIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

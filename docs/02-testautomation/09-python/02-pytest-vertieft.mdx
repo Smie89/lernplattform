@@ -1,0 +1,265 @@
+---
+title: pytest vertieft
+description: Fixtures mit Scope, Teardown per yield und conftest.py, eingebaute Fixtures wie tmp_path und monkeypatch, Parametrisierung mit IDs, Marker mit skip, skipif und xfail, Testdoubles mit unittest.mock (Stub, Mock, Fake, patch, autospec), eigenschaftsbasiertes Testen mit Hypothesis, Plugins und Berichte für die CI.
+tags: [python, pytest, fixtures, mock, hypothesis]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './02-pytest-vertieft.fragen.yaml';
+
+# pytest vertieft
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- **Fixtures** mit passendem Scope und Aufräumen schreiben und in `conftest.py` teilen,
+- Tests mit **`parametrize`** für viele Eingaben schreiben,
+- **Marker** für Auswahl, Überspringen und erwartete Fehlschläge einsetzen,
+- Abhängigkeiten mit **Mock, Fake und monkeypatch** ersetzen,
+- mit **Hypothesis** eigenschaftsbasiert testen,
+- Ergebnisse für die **CI** als Bericht ausgeben.
+:::
+
+## Fixtures \{#fixtures}
+
+Eine **Fixture** stellt bereit, was ein Test braucht. Der Test fordert sie einfach als **Parameter** an – pytest erkennt
+sie am Namen und ruft sie auf:
+
+```python title="tests/conftest.py (Auszug)"
+import pytest
+
+@pytest.fixture
+def warenkorb() -> Warenkorb:
+    """Jeder Test bekommt einen frischen, leeren Warenkorb."""
+    return Warenkorb()
+
+@pytest.fixture
+def buch() -> Produkt:
+    return Produkt("buch", "Fachbuch Testautomation", Decimal("24.90"))
+```
+
+```python title="tests/unit/test_warenkorb.py"
+def test_entfernen(warenkorb, buch, monitor):
+    warenkorb.hinzufuegen(buch)
+    warenkorb.hinzufuegen(monitor)
+    warenkorb.entfernen("buch")
+    assert [p.produkt.id for p in warenkorb.positionen] == ["monitor"]
+```
+
+Im Vergleich zu NUnit ersetzen Fixtures `[SetUp]` und Felder in der Testklasse – aber jeder Test fordert **nur an, was er
+braucht**, und Fixtures lassen sich kombinieren.
+
+### conftest.py \{#conftest}
+
+Fixtures in einer Datei **`conftest.py`** gelten für alle Tests in diesem Ordner und darunter – **ohne Import**. Eine
+`conftest.py` im Ordner `tests/ui/` kann Fixtures für UI-Tests ergänzen oder überschreiben.
+
+### Scope: wie lange eine Fixture lebt \{#scope}
+
+| Scope | Erzeugt | Typisch für |
+|---|---|---|
+| `function` (Standard) | für jeden Test neu | Testdaten, Warenkorb – **unabhängige** Tests |
+| `class` | einmal pro Testklasse | selten |
+| `module` | einmal pro Datei | teure Daten, die nicht verändert werden |
+| `session` | einmal für den ganzen Lauf | URL des Systems, HTTP-Client, Datenbankverbindung |
+
+```python
+@pytest.fixture(scope="session")
+def client(shop_url) -> ShopClient:      # Fixtures können andere Fixtures nutzen
+    return ShopClient(shop_url)
+```
+
+Eine Fixture darf nur Fixtures mit **gleichem oder längerem** Scope anfordern – eine Session-Fixture kann keine
+Function-Fixture nutzen.
+
+### Aufräumen mit yield \{#yield}
+
+Code **nach** `yield` läuft nach dem Test – auch wenn er fehlschlägt:
+
+```python
+@pytest.fixture
+def testkunde(client):
+    kunde = client.kunde_anlegen("Testkunde")
+    yield kunde                          # hier läuft der Test
+    client.kunde_loeschen(kunde["id"])   # Teardown
+```
+
+### Eingebaute Fixtures \{#eingebaut}
+
+| Fixture | Liefert |
+|---|---|
+| `tmp_path` | ein leeres, temporäres Verzeichnis (`pathlib.Path`) pro Test |
+| `monkeypatch` | ändert Attribute, Umgebungsvariablen, Wörterbücher – nur für diesen Test |
+| `capsys` | fängt Ausgaben auf `stdout`/`stderr` ab |
+| `caplog` | fängt Log-Meldungen ab |
+| `request` | Informationen über den laufenden Test |
+
+```python
+def test_bericht_wird_geschrieben(tmp_path):
+    datei = tmp_path / "bericht.txt"
+    schreibe_bericht(datei)
+    assert datei.read_text(encoding="utf-8").startswith("Bericht")
+```
+
+## Parametrisieren \{#parametrize}
+
+Ein Test, viele Eingaben – jede Zeile wird ein eigener Testfall:
+
+```python title="tests/unit/test_rabatt.py (Auszug)"
+@pytest.mark.parametrize(
+    ("zwischensumme", "stammkunde", "erwartet"),
+    [
+        (D("99.99"), False, D("0")),       # knapp unter der Schwelle
+        (D("100.00"), False, D("0.10")),   # genau auf der Schwelle
+        (D("100.01"), False, D("0.10")),
+        (D("100.00"), True, D("0.15")),
+    ],
+    ids=["unter-schwelle", "auf-schwelle", "ueber-schwelle", "stammkunde-auf"],
+)
+def test_rabatt_satz_an_den_grenzen(zwischensumme, stammkunde, erwartet):
+    assert rabatt_satz(zwischensumme, stammkunde) == erwartet
+```
+
+```text
+tests/unit/test_rabatt.py::test_rabatt_satz_an_den_grenzen[unter-schwelle] PASSED
+tests/unit/test_rabatt.py::test_rabatt_satz_an_den_grenzen[auf-schwelle] PASSED
+```
+
+Mit **`ids`** bekommen die Fälle lesbare Namen – wichtig, wenn einer fehlschlägt. Zwei `parametrize`-Dekoratoren
+übereinander erzeugen **alle Kombinationen** (Kreuzprodukt).
+
+## Marker \{#marker}
+
+| Marker | Wirkung |
+|---|---|
+| `@pytest.mark.skip(reason="…")` | Test immer überspringen |
+| `@pytest.mark.skipif(sys.platform == "win32", reason="…")` | unter einer Bedingung überspringen |
+| `@pytest.mark.xfail(reason="SHOP-42")` | Fehlschlag **erwartet** (bekannter Fehler); besteht er unerwartet, meldet pytest XPASS |
+| eigene Marker wie `@pytest.mark.api` | Tests gruppieren, Auswahl mit `pytest -m api` oder `-m "not ui"` |
+
+Eigene Marker werden in `pyproject.toml` angemeldet. Mit **`--strict-markers`** ist ein Tippfehler wie `@pytest.mark.apii`
+ein Fehler statt eines stillschweigend neuen Markers:
+
+```toml title="pyproject.toml"
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "api: API-Tests gegen den laufenden Mini-Shop (SHOP_URL)",
+    "ui: Browser-Tests mit Playwright gegen den laufenden Mini-Shop",
+]
+```
+
+`pytestmark = pytest.mark.api` am Anfang einer Datei setzt den Marker für **alle** Tests darin.
+
+## Testdoubles mit unittest.mock \{#mock}
+
+Die Bestellung braucht einen Zahlungsdienst. Im Test ersetzen wir ihn – die Begriffe sind dieselben wie in
+[Testdoubles mit NSubstitute](../02-csharp/02-testdoubles-nsubstitute.mdx):
+
+```python title="tests/unit/test_bestellung.py (Auszug)"
+from unittest.mock import Mock
+
+def test_bestellung_bucht_den_endpreis_ab(voller_warenkorb):
+    zahlung = Mock()
+    zahlung.abbuchen.return_value = True             # Stub: feste Antwort
+
+    ergebnis = bestellen(voller_warenkorb, " Anna ", zahlung, stammkunde=True)
+
+    zahlung.abbuchen.assert_called_once_with("Anna", Decimal("94.62"))   # Mock: Aufruf prüfen
+    assert ergebnis.endpreis == Decimal("94.62")
+```
+
+| Werkzeug | Wofür |
+|---|---|
+| `Mock()` | Objekt, das jede Methode „hat“ und Aufrufe aufzeichnet |
+| `.return_value` / `.side_effect` | feste Antwort / Ausnahme oder Folge von Antworten |
+| `assert_called_once_with(…)`, `assert_not_called()` | Aufrufe prüfen |
+| `Mock(spec=Zahlungsdienst)` bzw. `create_autospec(…)` | nur Methoden erlauben, die es wirklich gibt – **Tippfehler fallen auf** |
+| `patch("modul.name")` | ein Objekt in einem Modul für die Dauer eines Tests austauschen |
+| `monkeypatch.setattr(modul, "name", ersatz)` | dasselbe als pytest-Fixture |
+
+:::warning[Ein Mock ohne spec verzeiht alles]
+`zahlung.abbuchn.return_value = True` (Tippfehler) legt bei einem einfachen `Mock()` still eine neue Methode an – der Test
+prüft dann etwas anderes als gedacht. Mit `spec` oder `autospec` gibt es sofort einen `AttributeError`.
+:::
+
+Oft ist ein **Fake** lesbarer als ein Mock – eine kleine, echte Implementierung:
+
+```python
+class FakeZahlung:
+    def __init__(self, limit: Decimal):
+        self.limit = limit
+        self.buchungen = []
+
+    def abbuchen(self, kunde, betrag):
+        if betrag > self.limit:
+            return False
+        self.buchungen.append((kunde, betrag))
+        return True
+```
+
+**Zeit** und **Zufall** reicht man am besten als Parameter herein, statt sie zu mocken:
+
+```python
+def bestellen(warenkorb, kunde, zahlung, stammkunde=False, jetzt=lambda: datetime.now(timezone.utc)): ...
+
+# im Test
+bestellen(..., jetzt=lambda: datetime(2026, 11, 27, tzinfo=timezone.utc))
+```
+
+## Eigenschaftsbasiertes Testen mit Hypothesis \{#hypothesis}
+
+Statt einzelne Beispiele aufzuschreiben, beschreibt man eine **Eigenschaft**, die für **alle** Eingaben gelten muss.
+**Hypothesis** erzeugt Hunderte Eingaben – gezielt auch Grenzfälle wie 0 oder sehr große Werte – und sucht ein
+Gegenbeispiel:
+
+```python
+from hypothesis import given, strategies as st
+
+betraege = st.decimals(min_value=0, max_value=100_000, places=2)
+
+@given(zwischensumme=betraege, stammkunde=st.booleans())
+def test_endpreis_liegt_zwischen_null_und_zwischensumme(zwischensumme, stammkunde):
+    assert Decimal("0") <= endpreis(zwischensumme, stammkunde) <= zwischensumme
+```
+
+Findet Hypothesis einen Fehler, **verkleinert** es das Beispiel auf den einfachsten Fall (*Shrinking*) und merkt es sich
+im Ordner `.hypothesis` für den nächsten Lauf. Gute Eigenschaften: Ergebnis liegt in einem Bereich, Umkehrbarkeit
+(`lesen(schreiben(x)) == x`), Vergleich mit einer einfacheren Implementierung, „Stammkunde zahlt nie mehr“.
+
+## Plugins und Berichte \{#plugins}
+
+| Plugin / Option | Nutzen |
+|---|---|
+| `--junitxml=ergebnis.xml` | JUnit-XML für CI-Systeme (GitHub Actions, Azure DevOps, Jenkins) – eingebaut |
+| `pytest-xdist` (`-n auto`) | Tests **parallel** auf mehreren Kernen – nur für unabhängige Tests |
+| `pytest-cov` (`--cov=shop`) | Codeabdeckung |
+| `pytest-html` | HTML-Bericht |
+| `pytest-rerunfailures` | Fehlschläge wiederholen – mit Vorsicht, versteckt [Flaky Tests](../01-grundlagen/02-flaky-tests.mdx#retries) |
+| `pytest-playwright` | Browser-Fixtures, siehe nächste Lektion |
+
+```yaml title=".github/workflows/beispiele.yml (Auszug)"
+- name: Unit-Tests (Fixtures, parametrize, Mocks, Hypothesis)
+  working-directory: beispiele/python
+  run: pytest tests/unit --junitxml=testergebnisse/unit.xml
+```
+
+## Typische Fehler \{#typische-fehler}
+
+- Fixture mit Scope `session`, die von Tests **verändert** wird – Tests beeinflussen sich gegenseitig.
+- Teardown nach `return` statt nach `yield` – er läuft nie.
+- `Mock()` ohne `spec`: Tippfehler in Methodennamen bleiben unbemerkt.
+- `patch` am falschen Ort: Man ersetzt dort, wo ein Name **benutzt** wird, nicht wo er definiert ist.
+- `xfail` für Fehler, die niemand mehr verfolgt – sie bleiben für immer gelb.
+- Hypothesis-Strategien mit `float` für Geldbeträge – erzeugt NaN und Rundungsprobleme.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Fixtures** als Parameter anfordern, in `conftest.py` teilen, Scope bewusst wählen, aufräumen nach `yield`.
+- **`parametrize`** mit `ids` für Grenzwerte und Äquivalenzklassen.
+- **Marker** zum Gruppieren, `skipif` und `xfail` für Sonderfälle, `--strict-markers` gegen Tippfehler.
+- **Mock** mit `spec`, **Fake** für lesbare Tests, Zeit und Zufall als Parameter.
+- **Hypothesis** prüft Eigenschaften über viele erzeugte Eingaben.
+- Für die CI: `--junitxml`, parallel mit `pytest-xdist`.
+
+<Quiz fragen={fragen} titel="Quiz: pytest vertieft" />

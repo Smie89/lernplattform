@@ -185,3 +185,130 @@ jobs:
         run: |
           checkov -d unsicher --framework terraform -o json > checkov.json || true
           python pruefe_scan.py checkov.json
+
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: beispiele/python/requirements.txt
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - name: Abhängigkeiten installieren
+        working-directory: beispiele/python
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Unit-Tests (Fixtures, parametrize, Mocks, Hypothesis)
+        working-directory: beispiele/python
+        run: pytest tests/unit --junitxml=testergebnisse/unit.xml
+      - name: Mini-Shop bauen
+        working-directory: beispiele/shop
+        run: dotnet build src/Shop.Web
+      - name: API- und UI-Tests gegen den laufenden Shop
+        working-directory: beispiele/shop
+        run: ../linux/tests-mit-app.sh bash -c "cd ../python && SHOP_URL=http://localhost:5000 pytest -m 'api or ui' --junitxml=testergebnisse/e2e.xml --tracing retain-on-failure"
+      - name: Testergebnisse und Playwright-Traces bei Fehlschlag sichern
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: testergebnisse-python
+          path: |
+            beispiele/python/testergebnisse
+            beispiele/python/test-results
+          retention-days: 7
+
+  kubernetes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: beispiele/kubernetes
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: pytest installieren
+        run: pip install -r requirements.txt
+      - name: "Manifeste prüfen: Checkov ohne Befunde (eigene Umgebung über pipx)"
+        run: pipx run --spec checkov==3.4.11 checkov -d manifeste --framework kubernetes --compact --quiet
+      - name: Container-Image des Mini-Shops bauen
+        run: docker build -t mini-shop:1.0 -f Dockerfile ../shop
+      - name: Kubernetes-Cluster mit kind starten
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: lernplattform
+      - name: Image in den Cluster laden (ohne Registry)
+        run: kind load docker-image mini-shop:1.0 --name lernplattform
+      - name: Bereitstellen und warten, bis alle Pods bereit sind
+        run: |
+          kubectl apply -k manifeste
+          kubectl -n mini-shop rollout status deployment/mini-shop --timeout=180s
+      - name: Tests gegen den Cluster (Rauchtests, Selbstheilung, Zustand)
+        run: pytest tests -v
+      - name: Diagnose bei Fehlschlag
+        if: failure()
+        run: |
+          kubectl -n mini-shop get all,endpointslices,events -o wide || true
+          kubectl -n mini-shop describe pods || true
+          kubectl -n mini-shop logs -l app=mini-shop --tail=50 --prefix || true
+
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: beispiele/mobile
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: "8.10.2"
+      - name: Unit-Tests der App (JVM, ohne Emulator) und APK bauen
+        run: gradle --no-daemon testDebugUnitTest assembleDebug
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Appium und UiAutomator2-Treiber installieren
+        run: |
+          npm install -g appium@4.0.2
+          appium driver install uiautomator2@10.4.0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Python-Client installieren
+        run: pip install -r requirements.txt
+      - name: Hardware-Beschleunigung (KVM) für den Emulator freischalten
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Emulator starten und Appium-Tests ausführen
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          working-directory: beispiele/mobile
+          script: ./ci-tests.sh
+      - name: Screenshots und Appium-Log bei Fehlschlag sichern
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: testergebnisse-mobile
+          path: |
+            beispiele/mobile/testergebnisse
+            beispiele/mobile/appium.log
+          retention-days: 7

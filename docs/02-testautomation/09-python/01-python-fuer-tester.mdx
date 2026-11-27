@@ -1,0 +1,210 @@
+---
+title: Python für Tester
+description: Python kompakt für alle, die C# oder Java kennen – virtuelle Umgebung und pip, Syntax im Vergleich, Listen, Dictionaries, f-Strings, Comprehensions, Dataclasses, Ausnahmen, Decimal statt float für Geld – und der erste Test mit pytest, Testerkennung, Assertions und die wichtigsten Aufrufoptionen.
+tags: [python, pytest, grundlagen]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './01-python-fuer-tester.fragen.yaml';
+
+# Python für Tester
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- ein Python-Projekt mit **virtueller Umgebung** und **requirements.txt** einrichten,
+- Python-Code lesen und schreiben, wenn du **C# oder Java** kennst,
+- erklären, warum Geldbeträge **Decimal** statt float brauchen,
+- einen ersten Test mit **pytest** schreiben und gezielt ausführen.
+:::
+
+Python ist neben Java und C# die häufigste Sprache in Stellenanzeigen für Testautomation – beliebt wegen der knappen
+Syntax, vieler Bibliotheken (pytest, requests, Playwright, Appium, Robot Framework) und weil Datenanalyse, KI und
+Sicherheitswerkzeuge oft in Python geschrieben sind. Alle Beispiele stehen im Projekt
+[beispiele/python](https://github.com/Smie89/lernplattform/tree/main/beispiele/python) und laufen in der CI.
+
+## Projekt einrichten \{#einrichten}
+
+```bash
+python -m venv .venv                 # eigene Umgebung pro Projekt
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+pip install -r requirements.txt      # Abhängigkeiten installieren
+```
+
+| Begriff | Bedeutung | Gegenstück in .NET / Java |
+|---|---|---|
+| **virtuelle Umgebung** (`venv`) | eigener Ordner mit Python und Paketen – Projekte stören sich nicht | Projekt-Abhängigkeiten in `.csproj` / `pom.xml` |
+| **pip** | Paketmanager, lädt von PyPI | NuGet / Maven |
+| **requirements.txt** | Liste der Pakete mit **festen Versionen** | `PackageReference` / `<dependency>` |
+| **pyproject.toml** | Projektkonfiguration, auch für pytest | `.csproj` / `pom.xml` |
+
+```text title="requirements.txt"
+pytest==9.2.0
+requests==2.34.2
+```
+
+Feste Versionen (`==`) sorgen dafür, dass lokal und in der CI dasselbe läuft. Die `.venv` gehört **nicht** ins Repository.
+
+## Syntax im Vergleich \{#syntax}
+
+| | C# | Python |
+|---|---|---|
+| Blöcke | `{ … }` | **Einrückung** (4 Leerzeichen) |
+| Variable | `var preis = 24.90m;` | `preis = Decimal("24.90")` |
+| Typen | statisch, Pflicht | dynamisch; **Typ-Hinweise** optional: `preis: Decimal` |
+| Zeichenkette mit Werten | `$"Summe: {summe}"` | `f"Summe: {summe}"` |
+| Liste | `new List<int> { 1, 2 }` | `[1, 2]` |
+| Wörterbuch | `new Dictionary<string,int>` | `{"buch": 1, "tasse": 2}` |
+| null | `null` | `None` |
+| Bedingung | `if (a && !b)` | `if a and not b:` |
+| Schleife | `foreach (var p in liste)` | `for p in liste:` |
+| Methode | `public int Summe(int a, int b)` | `def summe(a: int, b: int) -> int:` |
+| Lambda | `x => x * 2` | `lambda x: x * 2` |
+| Ausnahme | `try { } catch (Exception e) { }` | `try: … except ValueError as e: …` |
+| Aufräumen | `using var datei = …` | `with open(…) as datei:` |
+
+```python title="Python in 15 Zeilen"
+produkte = [{"id": "buch", "preis": 24.90}, {"id": "tasse", "preis": 12.50}]
+
+for produkt in produkte:
+    print(f"{produkt['id']}: {produkt['preis']:.2f} €")
+
+teure = [p["id"] for p in produkte if p["preis"] > 20]   # List Comprehension → ["buch"]
+preise = {p["id"]: p["preis"] for p in produkte}         # Dict Comprehension
+
+def summe(werte: list[float], rabatt: float = 0.0) -> float:   # Standardwert für Parameter
+    return sum(werte) * (1 - rabatt)
+
+summe([10, 20], rabatt=0.1)   # benannte Argumente
+```
+
+### Klassen und Dataclasses \{#klassen}
+
+Für Datenobjekte gibt es **Dataclasses** – ähnlich wie `record` in C#: Konstruktor, Vergleich und Textdarstellung
+entstehen automatisch.
+
+```python title="shop/warenkorb.py (Auszug)"
+from dataclasses import dataclass, field
+from decimal import Decimal
+
+@dataclass(frozen=True)          # frozen = unveränderlich
+class Produkt:
+    id: str
+    name: str
+    preis: Decimal
+
+@dataclass
+class Warenkorb:
+    positionen: list = field(default_factory=list)   # nie "= []" als Standardwert!
+
+    @property                    # wie eine Eigenschaft in C#
+    def ist_leer(self) -> bool:
+        return not self.positionen
+```
+
+`self` ist das `this` von Python und steht ausdrücklich als erster Parameter jeder Methode.
+
+### Ausnahmen \{#ausnahmen}
+
+```python
+def rabatt_satz(zwischensumme: Decimal, stammkunde: bool = False) -> Decimal:
+    if zwischensumme < 0:
+        raise ValueError("Die Zwischensumme darf nicht negativ sein.")
+    ...
+```
+
+`raise` entspricht `throw`. Typische eingebaute Ausnahmen: `ValueError` (falscher Wert), `TypeError` (falscher Typ),
+`KeyError` (Schlüssel fehlt im Dictionary).
+
+## Geld: Decimal statt float \{#decimal}
+
+```python
+>>> 0.1 + 0.2
+0.30000000000000004
+>>> from decimal import Decimal
+>>> Decimal("0.1") + Decimal("0.2")
+Decimal('0.3')
+```
+
+`float` speichert Zahlen binär und kann 0,1 nicht exakt darstellen. Für Geldbeträge deshalb immer `Decimal` – und zwar aus
+einem **String** erzeugt (`Decimal("24.90")`), denn `Decimal(24.90)` übernimmt den ungenauen float-Wert. Gerundet wird
+ausdrücklich:
+
+```python title="shop/rabatt.py (Auszug)"
+preis.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)   # kaufmännisch auf Cent
+```
+
+Das ist auch ein Testthema: JSON kennt nur Zahlen, `requests` macht daraus float. Vor dem Vergleich von Geldbeträgen
+deshalb in Decimal umwandeln – siehe [API-Tests mit Python](./03-api-und-browser-tests.mdx#decimal-im-test).
+
+## Der erste Test mit pytest \{#erster-test}
+
+**pytest** ist das Standardwerkzeug für Tests in Python. Ein Test ist eine einfache Funktion, die mit `test_` beginnt – ohne
+Klasse, ohne Attribut, mit dem normalen `assert`:
+
+```python title="tests/unit/test_warenkorb.py"
+from decimal import Decimal
+from shop.warenkorb import Produkt, Warenkorb
+
+def test_zwischensumme_ueber_mehrere_produkte():
+    warenkorb = Warenkorb()
+    warenkorb.hinzufuegen(Produkt("buch", "Fachbuch", Decimal("24.90")), 2)
+    warenkorb.hinzufuegen(Produkt("monitor", "Monitor", Decimal("349.00")))
+    assert warenkorb.zwischensumme == Decimal("398.80")
+```
+
+Schlägt der Test fehl, zeigt pytest **beide Werte** – ohne `Assert.That`, weil pytest das `assert` beim Laden umschreibt:
+
+```text
+>       assert warenkorb.zwischensumme == Decimal("398.80")
+E       AssertionError: assert Decimal('373.90') == Decimal('398.80')
+```
+
+Ausnahmen prüft man mit `pytest.raises`:
+
+```python
+import pytest
+
+def test_negative_zwischensumme_wird_abgelehnt():
+    with pytest.raises(ValueError, match="negativ"):
+        rabatt_satz(Decimal("-0.01"))
+```
+
+### Wie pytest Tests findet \{#testerkennung}
+
+| Regel | Beispiel |
+|---|---|
+| Dateien `test_*.py` oder `*_test.py` | `test_warenkorb.py` |
+| Funktionen, die mit `test` beginnen | `def test_entfernen():` |
+| Klassen, die mit `Test` beginnen (ohne `__init__`) | `class TestHinzufuegen:` |
+| Startordner aus `testpaths` in `pyproject.toml` | `testpaths = ["tests"]` |
+
+### pytest aufrufen \{#aufruf}
+
+| Aufruf | Wirkung |
+|---|---|
+| `pytest` | alle Tests |
+| `pytest tests/unit -v` | nur ein Ordner, jeder Test einzeln aufgelistet |
+| `pytest tests/unit/test_rabatt.py::test_endpreis` | ein einzelner Test |
+| `pytest -k rabatt` | Tests, deren Name „rabatt“ enthält |
+| `pytest -m api` | Tests mit dem Marker `api` |
+| `pytest -x` | beim ersten Fehlschlag aufhören |
+| `pytest --lf` | nur die zuletzt fehlgeschlagenen Tests (*last failed*) |
+| `pytest -ra` | am Ende Gründe für übersprungene und fehlgeschlagene Tests |
+
+## Typische Fehler \{#typische-fehler}
+
+- Pakete **global** statt in einer virtuellen Umgebung installieren – Versionen kollidieren zwischen Projekten.
+- Versionen in `requirements.txt` **nicht festlegen** – die CI installiert plötzlich eine neue Hauptversion.
+- `float` für Geld oder `Decimal(24.90)` statt `Decimal("24.90")`.
+- Eine veränderliche Liste als Standardwert: `def f(liste=[])` – die Liste wird zwischen Aufrufen geteilt.
+- Testdatei `warenkorb_tests.py` – pytest findet sie nicht.
+- Leerzeichen und Tabs gemischt – Python bricht mit `IndentationError` ab.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- Pro Projekt eine **virtuelle Umgebung**, Pakete mit festen Versionen in `requirements.txt`.
+- Python: Einrückung statt Klammern, `f"…"`-Strings, Listen und Dictionaries, Comprehensions, **Dataclasses**.
+- **Decimal** aus Strings für Geld, ausdrücklich runden.
+- pytest: Funktionen `test_…`, einfaches `assert`, `pytest.raises`; gezielt ausführen mit `-k`, `-m`, `-x`, `--lf`.
+
+<Quiz fragen={fragen} titel="Quiz: Python für Tester" />

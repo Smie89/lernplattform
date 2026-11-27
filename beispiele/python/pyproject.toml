@@ -1,0 +1,10 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# -ra: am Ende kurz zeigen, was übersprungen wurde oder fehlschlug
+# --strict-markers: Tippfehler in Markern sind ein Fehler statt eines neuen Markers
+addopts = "-ra --strict-markers"
+markers = [
+    "api: API-Tests gegen den laufenden Mini-Shop (SHOP_URL)",
+    "ui: Browser-Tests mit Playwright gegen den laufenden Mini-Shop",
+    "langsam: Tests, die länger als eine Sekunde brauchen",
+]

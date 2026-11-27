@@ -1,0 +1,9 @@
+{
+  "label": "Python mit pytest",
+  "position": 9,
+  "link": {
+    "type": "generated-index",
+    "slug": "/testautomation/python",
+    "description": "Python für Tester, pytest mit Fixtures, Parametrisierung, Mocks und Hypothesis, API-Tests mit requests und Browser-Tests mit Playwright für Python."
+  }
+}

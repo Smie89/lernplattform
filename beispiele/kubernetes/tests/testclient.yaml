@@ -1,0 +1,29 @@
+# Hilfs-Pod für die Tests: ruft den Shop von innen über die Services auf.
+# Nur so kommt der Lastausgleich des Services ins Spiel – "kubectl port-forward" hängt an einem einzigen Pod.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: testclient
+  namespace: mini-shop
+  labels:
+    rolle: test
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10002
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: curl
+      image: curlimages/curl:8.11.1
+      command: ["sleep", "infinity"]
+      resources:
+        limits:
+          cpu: 200m
+          memory: 64Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]

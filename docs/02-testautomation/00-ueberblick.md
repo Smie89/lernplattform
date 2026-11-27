@@ -49,9 +49,21 @@ Empfohlene Reihenfolge:
 18. [Externe Dienste simulieren mit WireMock](./08-api-vertieft/02-externe-dienste-wiremock.mdx) – Zahlungsanbieter mit Fehlern, Zeitüberschreitung und Ausfall
 19. [Contract-Tests, Authentifizierung und GraphQL](./08-api-vertieft/03-contract-auth-graphql.mdx) – Pact, OAuth 2.0 und JWT, Idempotenz, GraphQL
 
-Die C#-, Java- und Desktop-Module kannst du auch in beliebiger Reihenfolge oder nur eines davon bearbeiten.
+**Python mit pytest**
 
-Querverbindungen: Selenium Grid, Playwright im Container und Testcontainers im Bereich 🐳 [Docker](../05-docker/05-docker-testautomation.mdx).
+20. [Python für Tester](./09-python/01-python-fuer-tester.mdx) – Python kompakt für C#- und Java-Kenner, venv und pip, Decimal, erster Test mit pytest
+21. [pytest vertieft](./09-python/02-pytest-vertieft.mdx) – Fixtures, Parametrisierung, Marker, Mock und Fake, Hypothesis, Berichte
+22. [API- und Browser-Tests mit Python](./09-python/03-api-und-browser-tests.mdx) – requests, JSON-Schema, pytest-playwright gegen den Mini-Shop
+
+**Mobile Apps mit Appium**
+
+23. [Mobile Apps testen – Grundlagen](./10-mobile/01-mobile-testen-grundlagen.mdx) – App-Arten, Lebenszyklus und Drehen, Emulator oder Gerät, mobile Testpyramide
+24. [Appium mit Python](./10-mobile/02-appium.mdx) – Architektur, Capabilities, Locators, Screen Object, zwei echte Befunde
+25. [Mobile Tests in der CI](./10-mobile/03-mobile-in-der-ci.mdx) – Android-Emulator in GitHub Actions, Diagnose, iOS und Gerätefarmen
+
+Die C#-, Java-, Python- und Desktop-Module kannst du auch in beliebiger Reihenfolge oder nur eines davon bearbeiten.
+
+Querverbindungen: Selenium Grid, Playwright im Container und Testcontainers im Bereich 🐳 [Docker](../05-docker/05-docker-testautomation.mdx), Tests gegen einen Cluster im Bereich ☸️ [Kubernetes](../12-kubernetes/00-ueberblick.md).
 
 Zertifizierung: Die Theorie hinter Architektur, Einführung, Berichten und Verbesserung von Testautomation – passend zur
 Prüfung ISTQB Test Automation Engineering – steht im Bereich 🎓 [ISTQB-Zertifizierung](../11-istqb/00-ueberblick.md),

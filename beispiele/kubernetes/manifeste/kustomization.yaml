@@ -1,0 +1,9 @@
+# Alles auf einmal anwenden: kubectl apply -k manifeste
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - networkpolicy.yaml

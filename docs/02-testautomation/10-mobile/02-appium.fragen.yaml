@@ -1,0 +1,147 @@
+# Fragen zur Lektion "Appium mit Python"
+
+- id: mo-ap-001
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Stationen eines Appium-Befehls in die richtige Reihenfolge."
+  elemente:
+    - "Test mit Appium-Python-Client"
+    - "Appium-Server"
+    - "Treiber UiAutomator2"
+    - "Android-Gerät oder Emulator"
+  erklaerung: "Der Client spricht WebDriver über HTTP mit dem Server, der den Befehl an den passenden Treiber weiterreicht."
+  artikel: "#architektur"
+  tags: [mobile, appium, architektur]
+
+- id: mo-ap-002
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jeder Capability ihre Bedeutung zu."
+  paare:
+    - ["appium:automationName", "Treiber, z. B. UiAutomator2"]
+    - ["appium:app", "Pfad zur APK, die installiert wird"]
+    - ["appium:noReset", "App-Daten zwischen Sitzungen behalten"]
+    - ["appium:autoGrantPermissions", "Berechtigungen automatisch erteilen"]
+  erklaerung: "Capabilities beschreiben Gerät, App und Treiber der Sitzung."
+  artikel: "#capabilities"
+  tags: [mobile, appium]
+
+- id: mo-ap-003
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Ordne die Locator-Strategien von am stabilsten zu am wackeligsten."
+  elemente:
+    - "Accessibility ID"
+    - "resource-id"
+    - "UiAutomator-Selektor"
+    - "XPath"
+  erklaerung: "Accessibility IDs helfen zugleich Screenreader-Nutzern; XPath ist langsam und bricht bei Layoutänderungen."
+  artikel: "#locators"
+  tags: [mobile, locators]
+
+- id: mo-ap-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Die App hat weder resource-ids noch Beschreibungen. Was ist der beste nächste Schritt?"
+  optionen:
+    - "Alle Tests mit XPath über Positionen schreiben"
+    - "Die Entwicklung bitten, Accessibility IDs und feste ids zu vergeben"
+    - "Tests per Koordinaten-Tippen schreiben"
+    - "Auf mobile Tests verzichten"
+  richtig: [1]
+  erklaerung: "Testbarkeit ist Aufgabe der Entwicklung. Accessibility IDs machen Tests stabil und die App barrierefreier."
+  artikel: "#locators"
+  tags: [mobile, testbarkeit]
+
+- id: mo-ap-005
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum sucht das Screen Object erst die Zeile „Produkt Tasse“ und darin das Element mit der id menge?"
+  optionen:
+    - "Weil Appium sonst abstürzt"
+    - "Weil jede Produktzeile dieselbe id menge enthält – erst die Zeile macht die Suche eindeutig"
+    - "Weil ids nur in Zeilen erlaubt sind"
+    - "Weil das schneller ist als jede andere Suche"
+  richtig: [1]
+  erklaerung: "Wiederholte Elemente findet man eindeutig über einen Container – wie verschachtelte Locators im Web."
+  artikel: "#screen-object"
+  tags: [mobile, screen-object]
+
+- id: mo-ap-006
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Appium wartet wie Playwright automatisch, bis ein Element bereit ist."
+  richtig: [1]
+  erklaerung: "Falsch. Appium kennt kein Auto-Waiting; man wartet ausdrücklich, z. B. mit WebDriverWait."
+  artikel: "#warten"
+  tags: [mobile, warten]
+
+- id: mo-ap-007
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Test meldet „Element nicht gefunden“. Der Screenshot vom Fehlschlag zeigt das Element deutlich auf dem Bildschirm. Was ist die sinnvollste Folgerung?"
+  optionen:
+    - "Die Wartezeit verdoppeln"
+    - "Die Suchstrategie prüfen – das Element ist da, aber der Locator oder die Scroll-Suche findet es nicht"
+    - "Den Test mit Wiederholungen versehen"
+    - "Die App neu installieren"
+  richtig: [1]
+  erklaerung: "So kam Befund 1 zustande: UiScrollable fand keinen scrollbaren Container, obwohl das Element sichtbar war. Ohne Screenshot hätte man auf Timing getippt."
+  artikel: "#warten"
+  tags: [mobile, flaky, befund]
+
+- id: mo-ap-008
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Befehl seine Wirkung zu."
+  paare:
+    - ["driver.orientation = \"LANDSCAPE\"", "Gerät quer drehen"]
+    - ["driver.hide_keyboard()", "Bildschirmtastatur ausblenden"]
+    - ["driver.terminate_app(paket)", "App beenden"]
+    - ["driver.query_app_state(paket)", "Zustand der App abfragen"]
+  erklaerung: "Lebenszyklus, Ausrichtung und Tastatur sind typische mobile Testschritte."
+  artikel: "#system"
+  tags: [mobile, appium]
+
+- id: mo-ap-009
+  typ: single
+  schwierigkeit: 3
+  frage: "Nach driver.background_app(2) findet der Test die App-Elemente manchmal nicht; der Startbildschirm ist vorn. Was ist die robuste Lösung?"
+  optionen:
+    - "Danach zehn Sekunden schlafen"
+    - "App ausdrücklich in den Hintergrund, warten, mit activate_app zurückholen und prüfen, dass sie im Vordergrund ist"
+    - "Den Test löschen"
+    - "Den Emulator vor jedem Test neu starten"
+  richtig: [1]
+  erklaerung: "So ist Befund 2 gelöst: nicht darauf verlassen, dass ein Befehl wirkt, sondern den Zustand prüfen."
+  artikel: "#system"
+  tags: [mobile, lebenszyklus, befund]
+
+- id: mo-ap-010
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile macht diesen Locator anfällig für jede Layoutänderung?"
+  sprache: python
+  code: |
+    endpreis = driver.find_element(AppiumBy.ID, f"{PAKET}:id/endpreis")
+    knopf = driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Tasse in den Warenkorb")
+    menge = driver.find_element(AppiumBy.XPATH, "//android.widget.LinearLayout[2]/android.widget.TextView[3]")
+    dialog = driver.find_element(AppiumBy.ID, "android:id/message")
+  richtig: [2]
+  erklaerung: "Ein XPath über Positionen bricht, sobald sich Reihenfolge oder Verschachtelung ändern."
+  artikel: "#locators"
+  tags: [mobile, locators]
+
+- id: mo-ap-011
+  typ: single
+  schwierigkeit: 3
+  frage: "Ein Test schlägt nur in der CI fehl: Nach dem Scrollen im Querformat ist die App im Hintergrund. Im logcat steht „Gesture Monitor swipe-up is stealing touch“. Was ist die beste Lösung?"
+  optionen:
+    - "Die Gestensteuerung des Emulators dauerhaft abschalten"
+    - "Selbst scrollen und dabei Abstand zu den Bildschirmrändern halten"
+    - "Den Test im Querformat streichen"
+    - "Längere Wartezeiten nach dem Drehen einbauen"
+  richtig: [1]
+  erklaerung: "Die Scrollgeste begann so nah am unteren Rand, dass Android sie als „zum Startbildschirm“ deutete. Echte Nutzer haben Gestensteuerung – der Test muss damit umgehen, nicht die Umgebung verbiegen."
+  artikel: "#warten"
+  tags: [mobile, gesten, befund]

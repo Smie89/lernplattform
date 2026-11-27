@@ -1,0 +1,140 @@
+# Fragen zur Lektion "Python für Tester"
+
+- id: py-gl-001
+  typ: single
+  schwierigkeit: 1
+  frage: "Wozu dient eine virtuelle Umgebung (venv)?"
+  optionen:
+    - "Sie startet Python in einer virtuellen Maschine."
+    - "Jedes Projekt bekommt eigene Pakete in eigenen Versionen, ohne andere Projekte zu stören."
+    - "Sie macht Python schneller."
+    - "Sie ersetzt die requirements.txt."
+  richtig: [1]
+  erklaerung: "Eine venv ist ein eigener Ordner mit Python und Paketen. Die requirements.txt beschreibt, was hineingehört."
+  artikel: "#einrichten"
+  tags: [python, venv]
+
+- id: py-gl-002
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne dem C#-Ausdruck das Python-Gegenstück zu."
+  paare:
+    - ["$\"Summe: {summe}\"", "f\"Summe: {summe}\""]
+    - ["null", "None"]
+    - ["throw", "raise"]
+    - ["foreach (var p in liste)", "for p in liste:"]
+    - ["using var datei = …", "with open(…) as datei:"]
+  erklaerung: "Die Konzepte sind gleich, nur die Schreibweise unterscheidet sich."
+  artikel: "#syntax"
+  tags: [python, syntax]
+
+- id: py-gl-003
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "In Python ergibt 0.1 + 0.2 genau 0.3."
+  richtig: [1]
+  erklaerung: "Falsch. float kann 0,1 nicht exakt darstellen; das Ergebnis ist 0.30000000000000004. Für Geld deshalb Decimal."
+  artikel: "#decimal"
+  tags: [python, decimal]
+
+- id: py-gl-004
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile erzeugt einen ungenauen Geldbetrag?"
+  sprache: python
+  code: |
+    from decimal import Decimal
+
+    buch = Decimal(24.90)
+    tasse = Decimal("12.50")
+    versand = Decimal("4.95")
+    summe = buch + tasse + versand
+  richtig: [2]
+  erklaerung: "Decimal(24.90) übernimmt den ungenauen float-Wert (24.89999999999999857891452847979962825775146484375). Decimal immer aus einem String erzeugen."
+  artikel: "#decimal"
+  tags: [python, decimal]
+
+- id: py-gl-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Dateien bzw. Funktionen findet pytest standardmäßig als Tests?"
+  optionen:
+    - "Datei test_warenkorb.py"
+    - "Datei warenkorb_test.py"
+    - "Datei warenkorb_tests.py"
+    - "Funktion test_entfernen()"
+    - "Funktion pruefe_entfernen()"
+  richtig: [0, 1, 3]
+  erklaerung: "Dateien test_*.py oder *_test.py, Funktionen mit dem Präfix test. warenkorb_tests.py endet auf _tests und wird nicht gefunden."
+  artikel: "#testerkennung"
+  tags: [python, pytest]
+
+- id: py-gl-006
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Test, der eine Ausnahme erwartet."
+  sprache: python
+  text: "with pytest.___(ValueError, match=\"negativ\"):"
+  luecken:
+    - ["raises"]
+  erklaerung: "pytest.raises als Kontextmanager prüft, dass im Block die Ausnahme auftritt; match prüft die Meldung."
+  artikel: "#erster-test"
+  tags: [python, pytest]
+
+- id: py-gl-007
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem pytest-Aufruf seine Wirkung zu."
+  paare:
+    - ["pytest -k rabatt", "Tests mit „rabatt“ im Namen"]
+    - ["pytest -m api", "Tests mit dem Marker api"]
+    - ["pytest -x", "beim ersten Fehlschlag aufhören"]
+    - ["pytest --lf", "nur die zuletzt fehlgeschlagenen Tests"]
+  erklaerung: "So führt man gezielt Teile der Suite aus – praktisch beim Debuggen."
+  artikel: "#aufruf"
+  tags: [python, pytest]
+
+- id: py-gl-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum braucht pytest kein Assert.That wie NUnit?"
+  optionen:
+    - "pytest kann keine Werte vergleichen."
+    - "pytest schreibt das normale assert beim Laden um und zeigt bei Fehlschlag beide Werte an."
+    - "Python hat kein assert."
+    - "pytest vergleicht nur Strings."
+  richtig: [1]
+  erklaerung: "Durch das Umschreiben (assertion rewriting) liefert ein einfaches assert aussagekräftige Fehlermeldungen."
+  artikel: "#erster-test"
+  tags: [python, pytest]
+
+- id: py-gl-009
+  typ: fehler-finden
+  schwierigkeit: 3
+  frage: "Welche Zeile führt dazu, dass sich alle Warenkörbe dieselbe Liste teilen?"
+  sprache: python
+  code: |
+    class Warenkorb:
+        def __init__(self, positionen=[]):
+            self.positionen = positionen
+
+        def hinzufuegen(self, produkt):
+            self.positionen.append(produkt)
+  richtig: [1]
+  erklaerung: "Der Standardwert [] wird einmal erzeugt und bei jedem Aufruf wiederverwendet. Richtig: None als Standardwert oder field(default_factory=list) in Dataclasses."
+  artikel: "#typische-fehler"
+  tags: [python, fallstricke]
+
+- id: py-gl-010
+  typ: single
+  schwierigkeit: 1
+  frage: "Warum stehen in der requirements.txt feste Versionen wie pytest==9.2.0?"
+  optionen:
+    - "Weil pip sonst nicht funktioniert"
+    - "Damit lokal und in der CI dieselben Versionen laufen und keine neue Hauptversion überraschend Tests bricht"
+    - "Weil neuere Versionen kostenpflichtig sind"
+    - "Damit Python schneller startet"
+  richtig: [1]
+  erklaerung: "Reproduzierbare Umgebungen vermeiden Fehlschläge, die nur durch neue Paketversionen entstehen."
+  artikel: "#einrichten"
+  tags: [python, pip]

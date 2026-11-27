@@ -1,0 +1,133 @@
+# Fragen zur Lektion "Testen mit Kubernetes"
+
+- id: k8-te-001
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Schritte der Pipeline in die richtige Reihenfolge."
+  elemente:
+    - "Manifeste statisch prüfen"
+    - "Container-Image bauen"
+    - "kind-Cluster starten und Image laden"
+    - "Manifeste anwenden und auf rollout status warten"
+    - "Tests gegen den Cluster ausführen"
+  erklaerung: "Schnelle statische Prüfungen zuerst; getestet wird erst, wenn alle Pods bereit sind."
+  artikel: "#ebenen"
+  tags: [kubernetes, ci]
+
+- id: k8-te-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum testet das Beispiel den Service über einen Hilfs-Pod im Cluster statt per kubectl port-forward?"
+  optionen:
+    - "port-forward funktioniert in der CI nicht."
+    - "port-forward verbindet sich mit genau einem Pod und umgeht so die Lastverteilung des Services."
+    - "port-forward ist langsamer als curl."
+    - "port-forward braucht Administratorrechte."
+  richtig: [1]
+  erklaerung: "Wer das echte Verhalten des Services prüfen will – etwa die Verteilung auf mehrere Pods –, muss ihn von innen aufrufen."
+  artikel: "#von-innen"
+  tags: [kubernetes, testen]
+
+- id: k8-te-003
+  typ: single
+  schwierigkeit: 3
+  frage: "Lokal mit einer Instanz funktioniert der Warenkorb. Im Cluster mit zwei Replikaten liefert er manchmal 404. Was ist die Ursache?"
+  optionen:
+    - "Die Readiness-Probe ist zu streng."
+    - "Der Warenkorb liegt im Arbeitsspeicher eines Pods; Folgeanfragen landen zufällig beim anderen Pod."
+    - "Die NetworkPolicy blockiert jede zweite Anfrage."
+    - "Kubernetes löscht Warenkörbe nach einer Minute."
+  richtig: [1]
+  erklaerung: "Zustand im Arbeitsspeicher und mehrere Replikate vertragen sich nicht. Jede neue Verbindung wird vom Service zufällig verteilt."
+  artikel: "#befund"
+  tags: [kubernetes, zustand, befund]
+
+- id: k8-te-004
+  typ: zuordnen
+  schwierigkeit: 3
+  frage: "Ordne jeder Lösung für das Zustandsproblem ihre Bewertung zu."
+  paare:
+    - ["Gemeinsamer Speicher wie Redis", "Richtige Lösung: Pods werden zustandslos"]
+    - ["Session-Affinität per Client-IP", "Notlösung: Beim Ausfall des Pods ist der Warenkorb trotzdem weg"]
+    - ["Nur ein Replikat", "Kein Ausfallschutz, jeder Neustart löscht alles"]
+  erklaerung: "Nur zustandslose Pods nutzen die Stärken von Kubernetes – Ausfallschutz und Skalierung – wirklich aus."
+  artikel: "#befund"
+  tags: [kubernetes, zustand]
+
+- id: k8-te-005
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Ein statischer Checkov-Scan ersetzt Tests gegen den laufenden Cluster."
+  richtig: [1]
+  erklaerung: "Falsch. Der Scan prüft, was im Manifest steht; Tests im Cluster prüfen, was tatsächlich passiert – etwa Zustandsprobleme oder Selbstheilung."
+  artikel: "#rauchtests"
+  tags: [kubernetes, checkov]
+
+- id: k8-te-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Rolle spielt kubectl rollout status vor den Tests?"
+  optionen:
+    - "Es startet die Tests."
+    - "Es ist das Eingangskriterium: Getestet wird erst, wenn alle Pods bereit sind."
+    - "Es löscht alte Pods."
+    - "Es prüft die Manifeste auf Sicherheitslücken."
+  richtig: [1]
+  erklaerung: "Schlägt rollout status fehl, ist die Bereitstellung kaputt – Tests dagegen würden nur Folgefehler melden."
+  artikel: "#kind-ci"
+  tags: [kubernetes, ci]
+
+- id: k8-te-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Vorteile hat eine eigene Testumgebung (Namespace) pro Pull Request?"
+  optionen:
+    - "Teams stören sich nicht gegenseitig."
+    - "Jeder Lauf hat gleiche Ausgangsbedingungen."
+    - "Aufräumen ist einfach: Namespace löschen."
+    - "Man braucht keine Tests mehr."
+  richtig: [0, 1, 2]
+  erklaerung: "Kurzlebige Umgebungen pro Änderung vermeiden die gemeinsam „kaputte“ Testumgebung."
+  artikel: "#pro-pull-request"
+  tags: [kubernetes, testumgebung]
+
+- id: k8-te-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Warum sichert die Pipeline bei Fehlschlag Ereignisse, Beschreibungen und Logs aus dem Cluster?"
+  optionen:
+    - "Weil kubectl sonst einen Fehler meldet"
+    - "Weil der kind-Cluster nach dem CI-Lauf nicht mehr existiert"
+    - "Weil die Tests sonst nicht fehlschlagen"
+    - "Weil GitHub das verlangt"
+  richtig: [1]
+  erklaerung: "Nach dem Lauf ist der Cluster weg. Was man zur Analyse braucht, muss im selben Lauf gesichert werden."
+  artikel: "#diagnose"
+  tags: [kubernetes, diagnose]
+
+- id: k8-te-009
+  typ: single
+  schwierigkeit: 2
+  frage: "pip meldet beim Installieren von pytest 9 und Checkov 3.4.11 in einer Umgebung einen unlösbaren Konflikt. Was ist die sauberste Lösung?"
+  optionen:
+    - "Eine Version von Hand in site-packages kopieren"
+    - "Checkov als Kommandozeilen-Werkzeug in eigener Umgebung starten, z. B. mit pipx"
+    - "Auf Tests verzichten"
+    - "pip mit --force-reinstall erzwingen"
+  richtig: [1]
+  erklaerung: "Kommandozeilen-Werkzeuge in eigenen Umgebungen vermeiden Konflikte zwischen ihren Abhängigkeiten."
+  artikel: "#statisch"
+  tags: [kubernetes, python, checkov]
+
+- id: k8-te-010
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Testebene ein passendes Werkzeug zu."
+  paare:
+    - ["Statisch", "Checkov"]
+    - ["Bereitstellung", "kubectl rollout status"]
+    - ["Resilienz", "Chaos Mesh"]
+    - ["Last", "k6"]
+  erklaerung: "Jede Ebene findet andere Fehler – vom falschen Manifest bis zu knappen Ressourcen unter Last."
+  artikel: "#ebenen"
+  tags: [kubernetes, testen]
