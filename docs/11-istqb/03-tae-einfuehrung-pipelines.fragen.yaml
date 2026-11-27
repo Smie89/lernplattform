@@ -1,0 +1,133 @@
+# Fragen zur Lektion "TAE: Einführung und Pipelines"
+
+- id: is-ep-001
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche nicht-technischen Aspekte sollten im Pilotprojekt bewertet werden?"
+  optionen:
+    - "Wissen und Erfahrung der Teammitglieder"
+    - "Lizenzen und Unternehmensregeln"
+    - "Die Teamstruktur"
+    - "Die Farbe der Oberfläche des Werkzeugs"
+  richtig: [0, 1, 2]
+  erklaerung: "Neben der Technik entscheiden Team, Struktur, Lizenzen und Regeln sowie geplante Testarten und Teststufen über den Erfolg."
+  artikel: "#pilot"
+  tags: [istqb, tae, pilot]
+
+- id: is-ep-002
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Die Anbindung an die CI/CD sollte erst nach einem erfolgreichen Pilotprojekt erfolgen."
+  richtig: [1]
+  erklaerung: "Falsch. Schon im Pilot integrieren – das deckt Probleme im SUT, in der TAS oder im Zusammenspiel der Werkzeuge früh auf."
+  artikel: "#pilot"
+  tags: [istqb, tae, pilot]
+
+- id: is-ep-003
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Ordne die Log-Level vom schwersten zum ausführlichsten."
+  elemente:
+    - "Fatal"
+    - "Error"
+    - "Warn"
+    - "Info"
+    - "Debug"
+    - "Trace"
+  erklaerung: "Fatal kann die Ausführung abbrechen, Error lässt den Test fehlschlagen, Warn unterbricht nicht, Info zeigt Grundinformationen, Debug und Trace helfen bei der Analyse."
+  artikel: "#log-level"
+  tags: [istqb, tae, logging]
+
+- id: is-ep-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Popup erscheint unerwartet, der Test schließt es und läuft normal weiter. Welches Log-Level passt?"
+  optionen:
+    - "Fatal"
+    - "Error"
+    - "Warn"
+    - "Trace"
+  richtig: [2]
+  erklaerung: "Warn: etwas Unerwartetes, das den Ablauf des Testfalls nicht unterbricht."
+  artikel: "#log-level"
+  tags: [istqb, tae, logging]
+
+- id: is-ep-005
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem technischen Bereitstellungsrisiko eine Gegenmaßnahme zu."
+  paare:
+    - ["Paketierung", "Testware versioniert in ein Repository legen"]
+    - ["Protokollierung", "Passende Log-Level festlegen"]
+    - ["Teststrukturierung", "Fixtures für wiederholbare, atomare Tests"]
+    - ["Aktualisierung", "Automatische Updates der Agents steuern"]
+  erklaerung: "Das sind die vier technischen Risiken, die der Lehrplan nennt."
+  artikel: "#risiken"
+  tags: [istqb, tae, risiken]
+
+- id: is-ep-006
+  typ: single
+  schwierigkeit: 2
+  frage: "Wie vermeidet man laut Lehrplan Hardcoding von Testdaten?"
+  optionen:
+    - "Werte direkt in jedes Testskript schreiben"
+    - "Datengetriebenes Testen mit einer gemeinsamen Datenquelle, Konstanten für selten geänderte Werte"
+    - "Werte zufällig erzeugen und nicht protokollieren"
+    - "Testdaten nur mündlich weitergeben"
+  richtig: [1]
+  erklaerung: "Eine gemeinsame Datenquelle und Konstanten reduzieren die Stellen, die man bei Änderungen pflegen muss."
+  artikel: "#wartbarkeit"
+  tags: [istqb, tae, wartbarkeit]
+
+- id: is-ep-007
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Teststufe ihren typischen Platz in der Pipeline zu."
+  paare:
+    - ["Komponententests", "Build-Schritt der CI als Qualitätsschranke"]
+    - ["Systemtests", "Continuous-Deployment-Pipeline als letzte Schranke"]
+    - ["Systemintegrationstests", "Continuous-Delivery-Pipeline"]
+    - ["Konfigurationstests des TAF", "Build des Testprojekts"]
+  erklaerung: "Je höher die Teststufe, desto später in der Pipeline – und desto näher am ausgelieferten System."
+  artikel: "#pipelines"
+  tags: [istqb, tae, pipeline]
+
+- id: is-ep-008
+  typ: single
+  schwierigkeit: 3
+  frage: "Systemtests laufen in einer eigenen Pipeline, die nach erfolgreichem Deployment startet. Was folgt daraus?"
+  optionen:
+    - "Ein Fehlschlag rollt das Deployment automatisch zurück."
+    - "Die Tests sind keine Qualitätsschranke; Rückrollen braucht andere, meist manuelle Schritte."
+    - "Jede Wiederholung der Tests erfordert ein neues Deployment."
+    - "Die Tests laufen vor dem Build."
+  richtig: [1]
+  erklaerung: "Nur als Teil der Deployment-Phase wirken Tests als Schranke mit Rollback. In einer eigenen Pipeline kann man sie dafür ohne neues Deployment wiederholen."
+  artikel: "#nach-deployment"
+  tags: [istqb, tae, pipeline]
+
+- id: is-ep-009
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze die zwei Wege, Testware zum Release passend zu halten."
+  text: "Entweder steuern ___ je Release, welche Suiten laufen, oder die Testware wird über Tags oder ___ mit derselben Version wie das SUT veröffentlicht."
+  luecken:
+    - ["Feature-Toggles", "Feature Toggles", "Toggles"]
+    - ["Branches", "Branch"]
+  erklaerung: "Beide Wege sorgen dafür, dass zu jeder SUT-Version die passenden Tests laufen."
+  artikel: "#konfiguration"
+  tags: [istqb, tae, konfiguration]
+
+- id: is-ep-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Was unterscheidet Contract-Tests von reiner Schemavalidierung?"
+  optionen:
+    - "Contract-Tests prüfen nur Datentypen."
+    - "Beide Seiten einigen sich auf die erlaubten Interaktionen, und der Vertrag wird von beiden Seiten geprüft."
+    - "Contract-Tests laufen nur in Produktion."
+    - "Es gibt keinen Unterschied."
+  richtig: [1]
+  erklaerung: "Contract-Tests halten die tatsächlich ausgetauschten Interaktionen in einem Vertrag fest, gegen den Konsument und Anbieter geprüft werden."
+  artikel: "#contract-tests"
+  tags: [istqb, tae, contract]

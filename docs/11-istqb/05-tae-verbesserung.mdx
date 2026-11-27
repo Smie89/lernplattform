@@ -1,0 +1,151 @@
+---
+title: "TAE: Kontinuierliche Verbesserung"
+description: "ISTQB CTAL-TAE Kapitel 8 – Testfälle mit Testhistogramm, KI und Schemavalidierung verbessern, eine laufende TAS technisch analysieren (Skripting, Wartemechanismen, Ausführung, Verifikation, TAA, TAF-Updates, Setup und Teardown), Testware an Änderungen des SUT anpassen und weitere Einsätze von Automationswerkzeugen."
+tags: [istqb, tae, verbesserung]
+---
+
+import Quiz from '@site/src/components/Quiz';
+import fragen from './05-tae-verbesserung.fragen.yaml';
+
+# TAE: Kontinuierliche Verbesserung
+
+:::info[Lernziele]
+Nach dieser Lektion kannst du …
+- mit **Testhistogramm, KI und Schemavalidierung** Verbesserungen an Testfällen finden,
+- eine laufende TAS **technisch analysieren** und Verbesserungen empfehlen,
+- **Testware umbauen**, wenn sich das SUT ändert,
+- weitere **Einsatzmöglichkeiten** von Automationswerkzeugen nennen.
+:::
+
+Kapitel 8 ist das punktstärkste Kapitel: 6 Fragen mit 13 Punkten, davon zwei K4-Fragen. Hier lohnt sich Übung mit
+Szenarien.
+
+## Verbesserungen durch Datenanalyse \{#datenanalyse}
+
+### Testhistogramm \{#testhistogramm}
+
+Ein **Testhistogramm** stellt die Ergebnisse vieler Läufe grafisch dar – pro Test, wie oft er bestand oder fehlschlug,
+mitsamt Ausnahmen, Meldungen und Screenshots. Viele CI- und Berichtswerkzeuge bieten das. Man erkennt damit **fragile
+Tests**, die man überarbeitet oder neu umsetzt.
+
+```text title="Beispiel: Ergebnisse der letzten 20 Nachtläufe"
+Test                               Läufe  ✔   ✘   Muster
+Warenkorb_Summe_stimmt               20  20   0   ████████████████████
+Login_mit_falschem_Passwort          20  20   0   ████████████████████
+Bestellung_per_Rechnung              20  14   6   ███▒██▒███▒▒███▒████   ← fragil
+Suche_findet_Kabel                   20   0  20   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   ← dauerhaft rot
+```
+
+Ein **dauerhaft roter** Test deutet auf einen echten Fehler oder einen veralteten Test, ein **wechselnder** auf einen
+Flaky Test.
+
+### Künstliche Intelligenz \{#ki}
+
+Werkzeuge mit **maschinellem Lernen und Bilderkennung** erkennen, dass sich ein **Locator** geändert hat, finden den neuen
+und **reparieren den Test selbst** (Self-Healing). Die Änderung erscheint im Bericht – das beschleunigt Versionsverwaltung
+und Wartung. Die Reparatur sollte trotzdem geprüft und in den Code übernommen werden.
+
+### Schemavalidierung \{#schemavalidierung}
+
+Mit **Schemavalidierung** prüft die TAS, ob eine Antwort der fachlichen Spezifikation entspricht – bei **APIs**
+(Pflichtfelder, Datentypen) und **Datenbanken** (erlaubte Typen, Wertebereiche). Statt viele Einzel-Assertions zu
+schreiben, beschreibt man das Schema einmal:
+
+```csharp title="Sechs Einzel-Assertions oder ein Schema"
+// ohne Schema – für jedes Feld
+Assert.That(json["name"]?.GetValue<string>(), Is.Not.Null);
+Assert.That(json["email"]?.GetValue<string>(), Is.Not.Null);
+// … vier weitere
+
+// mit Schema – ein Aufruf prüft Pflichtfelder und Typen
+var ergebnis = kundenSchema.Evaluate(JsonDocument.Parse(antwort).RootElement);
+Assert.That(ergebnis.IsValid, Is.True, ergebnis.ToString());
+```
+
+Der Testcode wird kürzer, und bei einem Bruch meldet die Validierung genau, **welches Feld** nicht passt. Mehr dazu in
+[OpenAPI und Vertragstests](../02-testautomation/08-api-vertieft/01-openapi-vertragstests.mdx).
+
+## Eine laufende TAS verbessern \{#verbesserung}
+
+Neben der normalen Wartung lässt sich eine TAS gezielt verbessern – für mehr Effizienz, einfachere Nutzung, neue
+Fähigkeiten. Was man angeht, entscheidet der **Nutzen für das Projekt**.
+
+| Bereich | Verbesserung |
+|---|---|
+| **Skripting** | auf einen besseren Ansatz umstellen (linear → datengetrieben → schlüsselwortgetrieben) – für neue Tests, nachträglich zumindest für die wartungsintensivsten; **doppelte Schrittfolgen** in Bibliotheksfunktionen auslagern, ähnliche **parametrisieren**; **Wiederanlauf** nach Fehlern (TAS macht mit dem nächsten Test weiter, SUT ggf. neu starten); **Wartemechanismen** prüfen |
+| **Testausführung** | auf mehreren Umgebungen **parallel** ausführen; Regression in Teile aufteilen, die je in ein Zeitfenster passen (z. B. eine Nacht); **Duplikate** entfernen; Pipelines **zeitgesteuert** starten |
+| **Verifikation** | **einheitliche Prüfmethoden** für alle Tests statt Eigenbau in jedem Test; ähnliche parametrisieren |
+| **TAA** | Architektur anpassen, um die **Testbarkeit** zu verbessern (z. B. Test-APIs im SUT) – wirksam, aber teuer, wenn spät |
+| **TAF** | neue **Kernbibliotheken** erst mit **Pilot und Auswirkungsanalyse** einführen, dann ein **Übernahmeplan**: alle Teams gleichzeitig über die Kernschicht, oder jedes Team in seiner Geschäftslogikschicht, am Ende zentral |
+| **Setup und Teardown** | Wiederholtes aus den Tests in Setup/Teardown verlagern; Vorbedingungen für UI-Tests **per API** herstellen (Benutzer anlegen, aufräumen) |
+| **Dokumentation** | Doku des Testcodes, Benutzerdoku der TAS, Berichte und Logs |
+| **TAS-Funktionen** | Berichte, Logs, Anbindungen ergänzen – **nur, was genutzt wird**; Ungenutztes erhöht Komplexität und senkt Zuverlässigkeit |
+| **TAF-Updates und Upgrades** | neue Werkzeugversionen zuerst mit **repräsentativen Beispieltests** (verschiedene SUTs, Testarten, Umgebungen) prüfen |
+
+### Wartemechanismen \{#warten}
+
+| Mechanismus | Bewertung |
+|---|---|
+| **Feste Wartezeit** (`Thread.Sleep(3000)`) | häufige Ursache für Fehler in der Testautomation – Antwortzeiten sind nicht vorhersehbar |
+| **Dynamisches Warten durch Abfragen** (Polling) | flexibler und effizienter: wartet nur so lange wie nötig; **Timeout** nicht vergessen, sonst wartet der Test bei einem Fehler ewig |
+| **Ereignis des SUT abonnieren** | am **zuverlässigsten**; braucht Unterstützung in der Skriptsprache und Ereignisse im SUT; ebenfalls mit Timeout |
+
+```csharp title="Von fest über Polling zum Ereignis"
+// feste Wartezeit – zu kurz oder zu lang
+Thread.Sleep(3000);
+
+// Polling mit Timeout – Playwright wartet auf den Zustand
+await Expect(page.GetByText("Bestellung abgeschlossen")).ToBeVisibleAsync(new() { Timeout = 10_000 });
+
+// Ereignis abonnieren – auf die Antwort des Servers warten
+var antwort = await page.RunAndWaitForResponseAsync(
+    () => page.GetByRole(AriaRole.Button, new() { Name = "Bestellen" }).ClickAsync(),
+    r => r.Url.EndsWith("/api/bestellungen"));
+```
+
+Siehe auch [Flaky Tests – Timing](../02-testautomation/01-grundlagen/02-flaky-tests.mdx#timing).
+
+## Testware an Änderungen des SUT anpassen \{#umstrukturieren}
+
+Jede Änderung am SUT – auch eine kleine – kann Zuverlässigkeit und Performance der TAS beeinträchtigen. Vorgehen:
+
+- **Änderungen an Umgebungskomponenten ermitteln**: Betreffen sie Testware, eigene Bibliotheken, das Betriebssystem?
+  Änderungen **schrittweise** einführen (Minimum Viable Product), mit einem **begrenzten Lauf** die Wirkung messen, dann
+  vollständig umsetzen. Am Ende eine **vollständige Regression**; Fehlschläge analysieren, um auszuschließen, dass sie von
+  der Umstellung kommen.
+- **Kernbibliotheken effizienter machen**: neue Techniken (optimierter Code, neuere Systembibliotheken) in die
+  Kernbibliotheken übernehmen – für aktuelle und künftige Projekte.
+- **Funktionen für denselben Steuerelementtyp zusammenfassen**: statt einer Spezialfunktion je Dropdown eine allgemeine
+  Funktion mit Parametern – weniger Code, weniger Wartung.
+- **TAA umbauen statt anflanschen**: Neue Fähigkeiten nicht „angeschraubt“ ergänzen, sondern in der Architektur
+  analysieren und sauber einbauen.
+- **Namenskonventionen** für neuen Code wie bisher einhalten.
+- **Bestehende Skripte bewerten**: Komplexe, langsame Tests in kleinere zerlegen; Tests, die selten oder nie laufen, für
+  die **Entfernung** vorsehen.
+
+## Weitere Einsätze von Automationswerkzeugen \{#weitere-einsaetze}
+
+| Einsatz | Beispiel |
+|---|---|
+| **Umgebung einrichten und steuern** | im Setup per Webservice Benutzer mit verschiedenen Profilen anlegen; danach Logs und Testware automatisch aufräumen |
+| **Datenalterung** (Data Aging) | Datumsfelder in der Testdatenbank regelmäßig nachziehen, damit Daten aktuell bleiben |
+| **Screenshots und Videos** | Bildschirmfotos und Videos für Release-Dokumentation oder Marketing erzeugen |
+
+## Typische Fehler \{#typische-fehler}
+
+- Self-Healing-Reparaturen ungeprüft hinnehmen.
+- Neue Kernbibliothek sofort für alle Teams einziehen – und viele Tests auf einmal brechen.
+- `Thread.Sleep` oder Polling ohne Timeout.
+- Funktionen „für später“ einbauen, die niemand nutzt.
+- Tests behalten, die seit Monaten nicht laufen.
+
+## Zusammenfassung \{#zusammenfassung}
+
+- **Testhistogramm** zeigt fragile Tests, **KI** repariert Locators, **Schemavalidierung** ersetzt viele Einzel-Assertions.
+- Verbesserungsfelder: Skripting, Ausführung, Verifikation, TAA, TAF, Setup/Teardown, Doku, Funktionen, Updates.
+- **Warten**: fest < Polling mit Timeout < Ereignis mit Timeout.
+- **Kernbibliothek-Upgrades** mit Pilot, Auswirkungsanalyse und Übernahmeplan.
+- SUT-Änderungen **schrittweise** nachziehen, Funktionen konsolidieren, ungenutzte Tests entfernen.
+- Werkzeuge helfen auch bei Umgebung, **Datenalterung** und Screenshots.
+
+<Quiz fragen={fragen} titel="Quiz: TAE – Kontinuierliche Verbesserung" />

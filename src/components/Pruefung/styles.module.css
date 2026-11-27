@@ -1,0 +1,445 @@
+.karte {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin: 2rem 0;
+  background: var(--ifm-background-surface-color);
+  scroll-margin-top: calc(var(--ifm-navbar-height) + 0.5rem);
+}
+
+.titel {
+  margin: 0 0 0.75rem;
+}
+
+.unterTitel {
+  margin: 1.75rem 0 0.6rem;
+}
+
+.regeln {
+  padding-left: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.regeln li {
+  margin-bottom: 0.3rem;
+}
+
+.klein {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.schalter {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin: 0.5rem 0 1rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.schalter input {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+.hinweisKasten {
+  border-left: 4px solid var(--ifm-color-warning);
+  background: var(--ifm-color-warning-contrast-background);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  margin: 1rem 0;
+}
+
+.hinweisKasten p {
+  margin-bottom: 0.5rem;
+}
+
+/* ---------- Knöpfe (wie im Quiz: mindestens 48px hoch) ---------- */
+
+.aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.knopf {
+  min-height: 48px;
+  padding: 0.7rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 10px;
+  border: 2px solid var(--ifm-color-primary);
+  background: transparent;
+  color: var(--ifm-color-primary);
+  cursor: pointer;
+}
+
+.knopf:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.primaer {
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.markiertKnopf {
+  border-color: var(--ifm-color-warning-darker);
+  background: var(--ifm-color-warning-contrast-background);
+  color: var(--ifm-font-color-base);
+}
+
+.textKnopf {
+  min-height: 44px;
+  padding: 0.4rem 0;
+  border: none;
+  background: none;
+  color: var(--ifm-color-emphasis-700);
+  font-family: inherit;
+  font-size: 0.95rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- Kapitel üben ---------- */
+
+.kapitelListe {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.6rem;
+}
+
+.kapitelKnopf {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.95rem;
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 10px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  cursor: pointer;
+}
+
+.kapitelKnopf:hover {
+  border-color: var(--ifm-color-primary);
+}
+
+/* ---------- Durchführung ---------- */
+
+.leiste {
+  position: sticky;
+  top: var(--ifm-navbar-height);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: -1.25rem -1.25rem 1rem;
+  padding: 0.6rem 1.25rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px 12px 0 0;
+  background: var(--ifm-background-surface-color);
+  scroll-margin-top: var(--ifm-navbar-height);
+}
+
+.uhr {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.uhrKnapp {
+  color: var(--ifm-color-danger);
+}
+
+.leistenKnopf {
+  min-height: 40px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.meta {
+  margin: 0 0 0.3rem;
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.frage {
+  font-size: 1.05rem;
+  font-weight: 600;
+  white-space: pre-line;
+  margin-bottom: 0.25rem;
+}
+
+.hinweis {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 0.75rem;
+}
+
+.optionen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.2rem 0.7rem;
+  min-height: 48px;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  text-align: left;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.4;
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 10px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  cursor: pointer;
+}
+
+.option > span:nth-child(2) {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.option:disabled {
+  cursor: default;
+}
+
+.buchstabe {
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.markierung {
+  flex-basis: 100%;
+  padding-left: 1.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.gewaehlt {
+  border-color: var(--ifm-color-primary);
+  background: var(--ifm-color-primary-contrast-background);
+}
+
+.richtig {
+  border-color: var(--ifm-color-success);
+  background: var(--ifm-color-success-contrast-background);
+}
+
+.falsch {
+  border-color: var(--ifm-color-danger);
+  background: var(--ifm-color-danger-contrast-background);
+}
+
+.navigation {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.navigation .knopf {
+  padding: 0.6rem 0.4rem;
+}
+
+.abgabe {
+  margin-top: 0.75rem;
+  text-align: right;
+}
+
+.abgabe .hinweisKasten {
+  text-align: left;
+}
+
+.raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 0.4rem;
+}
+
+.rasterFeld {
+  position: relative;
+  min-height: 48px;
+  border-radius: 8px;
+  border: 2px solid var(--ifm-color-emphasis-300);
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rasterBeantwortet {
+  background: var(--ifm-color-primary-contrast-background);
+  border-color: var(--ifm-color-primary-lighter);
+}
+
+.rasterAktuell {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 2px var(--ifm-color-primary);
+}
+
+.flagge {
+  position: absolute;
+  top: 1px;
+  right: 4px;
+  font-size: 0.75rem;
+  color: var(--ifm-color-warning-darker);
+}
+
+/* ---------- Ergebnis ---------- */
+
+.urteil {
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  border-left: 6px solid;
+}
+
+.urteil p {
+  margin-bottom: 0.3rem;
+}
+
+.urteilJa {
+  border-color: var(--ifm-color-success);
+  background: var(--ifm-color-success-contrast-background);
+}
+
+.urteilNein {
+  border-color: var(--ifm-color-danger);
+  background: var(--ifm-color-danger-contrast-background);
+}
+
+.urteilText {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.urteilZahl {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.tabelleRahmen {
+  overflow-x: auto;
+}
+
+.tabelle {
+  display: table;
+  width: 100%;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.tabelle td,
+.tabelle th {
+  padding: 0.4rem 0.6rem;
+}
+
+.balkenSpalte {
+  width: 25%;
+  min-width: 60px;
+}
+
+.zahl {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.zusatz {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.balken {
+  display: block;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--ifm-color-emphasis-200);
+  overflow: hidden;
+}
+
+.balkenFuellung {
+  display: block;
+  height: 100%;
+  background: var(--ifm-color-success);
+}
+
+.balkenSchwach {
+  background: var(--ifm-color-danger);
+}
+
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.filterKnopf {
+  min-height: 40px;
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.filterAktiv {
+  border-color: var(--ifm-color-primary);
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.rueckblick {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-left: 5px solid;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  background: var(--ifm-background-color);
+}
+
+.rueckRichtig {
+  border-left-color: var(--ifm-color-success);
+}
+
+.rueckFalsch {
+  border-left-color: var(--ifm-color-danger);
+}
+
+.rueckKopf {
+  margin-bottom: 0.5rem;
+}
+
+.erklaerung {
+  margin: 0.8rem 0 0.3rem;
+}

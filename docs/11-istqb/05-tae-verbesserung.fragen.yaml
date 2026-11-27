@@ -1,0 +1,113 @@
+# Fragen zur Lektion "TAE: Kontinuierliche Verbesserung"
+
+- id: is-vb-001
+  typ: single
+  schwierigkeit: 2
+  frage: "Wofür nutzt ein TAE ein Testhistogramm vor allem?"
+  optionen:
+    - "Um die Lizenzkosten zu berechnen"
+    - "Um fragile Tests über viele Läufe zu erkennen und gezielt zu überarbeiten"
+    - "Um Testdaten zu erzeugen"
+    - "Um die Testumgebung aufzubauen"
+  richtig: [1]
+  erklaerung: "Das Histogramm zeigt Ergebnisse vieler Läufe. Wechselnde Ergebnisse weisen auf fragile Tests hin."
+  artikel: "#testhistogramm"
+  tags: [istqb, tae, histogramm]
+
+- id: is-vb-002
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Ordne die Wartemechanismen von am wenigsten zu am meisten zuverlässig."
+  elemente:
+    - "Feste Wartezeit"
+    - "Dynamisches Warten durch Polling mit Timeout"
+    - "Ereignis des SUT abonnieren mit Timeout"
+  erklaerung: "Feste Wartezeiten sind unvorhersehbar zu kurz oder zu lang; Polling wartet nur so lange wie nötig; Ereignisse sind am zuverlässigsten, brauchen aber Unterstützung von Skriptsprache und SUT."
+  artikel: "#warten"
+  tags: [istqb, tae, warten]
+
+- id: is-vb-003
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Beim Warten auf ein Ereignis des SUT ist kein Timeout nötig, weil das Ereignis sicher eintrifft."
+  richtig: [1]
+  erklaerung: "Falsch. Bei einem Fehler im SUT trifft das Ereignis nie ein – ohne Timeout wartet der Test ewig."
+  artikel: "#warten"
+  tags: [istqb, tae, warten]
+
+- id: is-vb-004
+  typ: single
+  schwierigkeit: 2
+  frage: "Eine API liefert sechs Pflichtfelder vom Typ String. Wie prüft man das am effizientesten?"
+  optionen:
+    - "Sechs einzelne Assertions auf Typ und Nicht-Null"
+    - "Mit einer Schemavalidierung"
+    - "Gar nicht, weil die API dokumentiert ist"
+    - "Manuell im Browser"
+  richtig: [1]
+  erklaerung: "Die Schemavalidierung prüft Pflichtfelder und Typen in einem Schritt und meldet bei einem Bruch das betroffene Feld."
+  artikel: "#schemavalidierung"
+  tags: [istqb, tae, schema]
+
+- id: is-vb-005
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Verbesserungsbereich eine passende Maßnahme zu."
+  paare:
+    - ["Skripting", "Doppelte Schrittfolgen in eine Bibliotheksfunktion auslagern"]
+    - ["Testausführung", "Regression auf mehrere Umgebungen parallel verteilen"]
+    - ["Verifikation", "Einheitliche Prüfmethoden für alle Tests"]
+    - ["Setup und Teardown", "Testbenutzer per API vor dem UI-Test anlegen"]
+    - ["TAS-Funktionen", "Nur Funktionen ergänzen, die auch genutzt werden"]
+  erklaerung: "Das sind Bereiche, die der Lehrplan für die Verbesserung einer laufenden TAS nennt."
+  artikel: "#verbesserung"
+  tags: [istqb, tae, verbesserung]
+
+- id: is-vb-006
+  typ: single
+  schwierigkeit: 3
+  frage: "Eine neue Hauptversion der Kernbibliothek würde Tests vieler Teams brechen. Was empfiehlt der Lehrplan?"
+  optionen:
+    - "Sofort zentral aktualisieren, die Teams passen sich an"
+    - "Nie aktualisieren"
+    - "Pilot und Auswirkungsanalyse, dann ein Übernahmeplan – zentral oder je Team in der Geschäftslogikschicht"
+    - "Jedes Team kopiert die alte Version dauerhaft"
+  richtig: [2]
+  erklaerung: "Erst prüfen, dann planen: alle gleichzeitig über die Kernschicht oder jedes Team einzeln, bis am Ende zentral aktualisiert werden kann."
+  artikel: "#verbesserung"
+  tags: [istqb, tae, taf]
+
+- id: is-vb-007
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Begriff."
+  text: "Werden Datumsfelder in der Testdatenbank automatisch aktuell gehalten, spricht man von ___."
+  luecken:
+    - ["Datenalterung", "Data Aging", "Datenalterung (Data Aging)"]
+  erklaerung: "Data Aging ist ein Einsatz von Automationswerkzeugen außerhalb der eigentlichen Testausführung."
+  artikel: "#weitere-einsaetze"
+  tags: [istqb, tae, weitere-einsaetze]
+
+- id: is-vb-008
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Vorgehensweisen passen zum Anpassen der Testware an SUT-Änderungen?"
+  optionen:
+    - "Änderungen schrittweise einführen und mit einem begrenzten Lauf messen"
+    - "Am Ende eine vollständige Regression"
+    - "Neue Fähigkeiten in der Architektur analysieren statt anzuflanschen"
+    - "Selten laufende Tests für die Entfernung vorsehen"
+    - "Alle Änderungen auf einmal ohne Testlauf übernehmen"
+  richtig: [0, 1, 2, 3]
+  erklaerung: "Schrittweise mit Messung, Regression am Ende, saubere Architektur und Aufräumen alter Tests – nicht alles auf einmal."
+  artikel: "#umstrukturieren"
+  tags: [istqb, tae, umstrukturieren]
+
+- id: is-vb-009
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Self-Healing-Werkzeuge erkennen geänderte Locators mithilfe von maschinellem Lernen und Bilderkennung."
+  richtig: [0]
+  erklaerung: "Wahr. Sie finden den neuen Locator, reparieren den Test und vermerken die Änderung im Bericht."
+  artikel: "#ki"
+  tags: [istqb, tae, ki]

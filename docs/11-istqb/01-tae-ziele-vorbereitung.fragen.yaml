@@ -1,0 +1,131 @@
+# Fragen zur Lektion "TAE: Ziele und Vorbereitung"
+
+- id: is-zv-001
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jeder Abkürzung ihre Bedeutung zu."
+  paare:
+    - ["SUT", "Das System, das getestet wird"]
+    - ["TAS", "Die gesamte Lösung aus Werkzeugen, Framework, Tests, Daten und Konfiguration"]
+    - ["TAF", "Das Fundament der Lösung: Test-Harness, Bibliotheken, Skripte, Suiten"]
+    - ["TAA", "Der technische Entwurf einer konkreten Lösung"]
+    - ["gTAA", "Der allgemeine Bauplan, aus dem man Entwürfe ableitet"]
+  erklaerung: "Von groß nach klein: Die gTAA ist der allgemeine Bauplan, die TAA der konkrete Entwurf, die TAS die umgesetzte Lösung und das TAF ihr Fundament."
+  artikel: "#begriffe"
+  tags: [istqb, tae, begriffe]
+
+- id: is-zv-002
+  typ: single
+  schwierigkeit: 1
+  frage: "Wie viele Punkte sind für das Bestehen der CTAL-TAE-Prüfung nötig?"
+  optionen:
+    - "26 von 40"
+    - "43 von 66"
+    - "52 von 80"
+    - "58 von 88"
+  richtig: [1]
+  erklaerung: "40 Fragen mit zusammen 66 Punkten; 65 % davon sind 42,9 – also mindestens 43 Punkte."
+  artikel: "#pruefung"
+  tags: [istqb, tae, pruefung]
+
+- id: is-zv-003
+  typ: zuordnen
+  schwierigkeit: 1
+  frage: "Ordne jeder K-Stufe die Punkte pro Frage zu."
+  paare:
+    - ["K2 – Verstehen", "1 Punkt"]
+    - ["K3 – Anwenden", "2 Punkte"]
+    - ["K4 – Analysieren", "3 Punkte"]
+  erklaerung: "Szenariofragen (K3, K4) zählen mehr – es lohnt sich, dort genau zu lesen."
+  artikel: "#pruefung"
+  tags: [istqb, tae, pruefung]
+
+- id: is-zv-004
+  typ: wahr-falsch
+  schwierigkeit: 1
+  frage: "Ein automatisierter Test findet auch Fehler, für die er keine Prüfung enthält, weil er die ganze Anwendung durchläuft."
+  richtig: [1]
+  erklaerung: "Falsch. Ein automatisierter Test prüft nur, was programmiert wurde. Was keine Assertion hat, bleibt unbemerkt."
+  artikel: "#grenzen"
+  tags: [istqb, tae, grenzen]
+
+- id: is-zv-005
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Punkte sind Nachteile der Testautomation?"
+  optionen:
+    - "Anfangsinvestition für die Lösung"
+    - "Laufender Wartungsaufwand"
+    - "Weniger Tests pro Build als manuell"
+    - "Die Automation kann selbst Fehler enthalten"
+    - "Größere Anfälligkeit für menschliche Fehler bei der Ausführung"
+  richtig: [0, 1, 3]
+  erklaerung: "Automatisierte Tests schaffen mehr Tests pro Build und sind weniger anfällig für menschliche Fehler. Dafür kosten Aufbau und Wartung, und die Testware kann eigene Fehler haben."
+  artikel: "#vor-nachteile"
+  tags: [istqb, tae, vorteile]
+
+- id: is-zv-006
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Aspekt der Testbarkeit ein Beispiel zu."
+  paare:
+    - ["Beobachtbarkeit", "Ein Statusendpunkt zeigt den Zustand einer Bestellung"]
+    - ["Steuerbarkeit", "Eine API legt Testkunden direkt an"]
+    - ["Architekturtransparenz", "Ein Diagramm zeigt alle Komponenten und Schnittstellen"]
+  erklaerung: "Beobachten heißt Zustand sehen, steuern heißt Aktionen auslösen, Transparenz heißt verstehen, wo welche Schnittstelle liegt."
+  artikel: "#testbarkeit"
+  tags: [istqb, tae, testbarkeit]
+
+- id: is-zv-007
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Umgebungen in die Reihenfolge, in der ein Release-Kandidat sie durchläuft."
+  elemente:
+    - "Lokale Entwicklungsumgebung"
+    - "Build-Umgebung"
+    - "Integrationsumgebung"
+    - "Vorproduktion"
+    - "Produktion"
+  erklaerung: "Von White-Box-Tests am Arbeitsplatz über Komponententests im Build bis zu Black-Box-Tests, nicht-funktionalen Tests und Monitoring in Produktion."
+  artikel: "#umgebungen"
+  tags: [istqb, tae, umgebungen]
+
+- id: is-zv-008
+  typ: single
+  schwierigkeit: 2
+  frage: "In welcher Umgebung sollte laut Lehrplan zum ersten Mal Monitoring vorhanden sein?"
+  optionen:
+    - "Lokale Entwicklungsumgebung"
+    - "Build-Umgebung"
+    - "Integrationsumgebung"
+    - "Erst in Produktion"
+  richtig: [2]
+  erklaerung: "In der Integrationsumgebung läuft erstmals ein vollständig integrierter Release-Kandidat. Monitoring zeigt dort, was im Hintergrund passiert, und erleichtert die Fehleranalyse."
+  artikel: "#umgebungen"
+  tags: [istqb, tae, umgebungen]
+
+- id: is-zv-009
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Aufbau der Vergleichstabelle einer Werkzeugbewertung."
+  text: "Die Werkzeuge stehen in den ___, die Anforderungen in den ___."
+  luecken:
+    - ["Spalten"]
+    - ["Zeilen"]
+  erklaerung: "So sehen Stakeholder Anforderung für Anforderung, wie sich die Werkzeuge unterscheiden."
+  artikel: "#vergleichstabelle"
+  tags: [istqb, tae, werkzeugauswahl]
+
+- id: is-zv-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Team aus Fachtestern ohne Programmiererfahrung soll eine Weboberfläche automatisieren. Was ist laut Lehrplan eine mögliche Wahl?"
+  optionen:
+    - "Ein eigenes Framework in C++"
+    - "Ein Low-Code- oder No-Code-Werkzeug"
+    - "Gar keine Automation, weil Programmierkenntnisse Pflicht sind"
+    - "Ein Lasttestwerkzeug"
+  richtig: [1]
+  erklaerung: "Die Zusammensetzung des Teams ist ein Auswahlkriterium. Ohne Programmierkenntnisse kann Low-Code oder No-Code sinnvoll sein; programmierende Tester profitieren eher von der Sprache des SUT."
+  artikel: "#werkzeugauswahl"
+  tags: [istqb, tae, werkzeugauswahl]

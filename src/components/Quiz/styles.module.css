@@ -40,6 +40,7 @@
 .frage {
   font-size: 1.1rem;
   font-weight: 600;
+  white-space: pre-line;   /* mehrzeilige Fragen, z. B. Szenarien in der Prüfungssimulation */
   margin-bottom: 0.25rem;
 }
 

@@ -1,0 +1,37 @@
+---
+title: "Prüfungssimulation CTAL-TAE"
+description: "Prüfungssimulation für ISTQB Advanced Level Test Automation Engineering v2.0 – 40 Fragen nach der offiziellen Verteilung, 66 Punkte, bestanden ab 43, 90 Minuten mit Timer, Markieren, Übersicht und Auswertung je Kapitel und K-Stufe. Dazu ein Übungsmodus je Kapitel und Tipps für die Prüfung."
+tags: [istqb, tae, pruefung]
+hide_table_of_contents: true
+---
+
+import Pruefung from '@site/src/components/Pruefung';
+import pool from './pruefung-tae.yaml';
+
+# Prüfungssimulation CTAL-TAE
+
+Die Simulation zieht bei jedem Start **40 Fragen** aus einem Pool von rund 100 – genau so viele je Lernziel wie in der
+echten Prüfung. Die Antworten erscheinen jedes Mal in anderer Reihenfolge. Ausgewertet wird erst nach der Abgabe, mit
+Punkten je Kapitel und K-Stufe und einer Erklärung zu jeder Frage.
+
+Lädst du die Seite neu oder schließt den Browser, läuft die Prüfung beim nächsten Öffnen mit der restlichen Zeit weiter.
+Ergebnisse werden nur auf deinem Gerät gespeichert.
+
+<Pruefung pool={pool} />
+
+## Tipps für die Prüfung \{#tipps}
+
+- **Zeit einteilen**: 90 Minuten für 40 Fragen sind gut zwei Minuten je Frage. K2-Fragen gehen schneller – die
+  gesparte Zeit brauchst du für die langen K4-Szenarien.
+- **Punkte zählen, nicht Fragen**: Eine K4-Frage bringt dreimal so viel wie eine K2-Frage. Lies bei Szenarien jede Zeile
+  – meist ist genau ein Detail entscheidend (Priorität, Teamwissen, „kein automatischer Rollback gefordert“).
+- **Markieren statt hängen bleiben**: Unsichere Fragen markieren, weitergehen, am Ende zurückkommen.
+- **„Wähle ZWEI“** gibt nur Punkte, wenn beide stimmen. Es gibt keinen Abzug für falsche Antworten – lass nichts leer.
+- **Lehrplan-Wortlaut zählt**: Gefragt ist, was der Lehrplan empfiehlt, nicht was im eigenen Projekt üblich ist.
+- **Absolute Formulierungen** wie „immer“, „nie“, „ausschließlich“ sind oft ein Hinweis auf eine falsche Antwort.
+
+:::note[Eigene Fragen]
+Alle Fragen sind selbst geschrieben und orientieren sich an den Lernzielen des Lehrplans CTAL-TAE v2.0. Es sind keine
+offiziellen ISTQB-Fragen. Die offiziellen Beispielprüfungen gibt es kostenlos auf
+[istqb.org](https://istqb.org/certifications/certified-tester-advanced-level-test-automation-engineer).
+:::

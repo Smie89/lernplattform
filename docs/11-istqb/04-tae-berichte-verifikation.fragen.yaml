@@ -1,0 +1,136 @@
+# Fragen zur Lektion "TAE: Berichte, Metriken und Verifikation"
+
+- id: is-bv-001
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Bringe die Schritte der Fehleranalyse in die richtige Reihenfolge."
+  elemente:
+    - "Prüfen, ob derselbe Fehler schon in früheren Läufen auftrat"
+    - "Testfall identifizieren und klären, was er prüft"
+    - "Den Testschritt finden, in dem der Fehler auftrat"
+    - "Den Zustand des SUT anhand von Logs und Screenshots prüfen"
+    - "Bei falschem SUT-Zustand einen Fehlerbericht mit Belegen anlegen"
+  erklaerung: "Erst Bekanntes ausschließen, dann eingrenzen, dann den SUT-Zustand belegen und erst danach melden."
+  artikel: "#analyse"
+  tags: [istqb, tae, analyse]
+
+- id: is-bv-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Was bedeutet der Status „TAS-Fehler“?"
+  optionen:
+    - "Das SUT hat einen kritischen Fehler."
+    - "Der Fehler liegt nicht im SUT, sondern in der Testautomationslösung."
+    - "Der Test wurde übersprungen."
+    - "Der Test ist bestanden, aber langsam."
+  richtig: [1]
+  erklaerung: "Neben bestanden und fehlgeschlagen kennt der Lehrplan den TAS-Fehler: Ursache ist die Testautomation selbst."
+  artikel: "#tas-logging"
+  tags: [istqb, tae, logging]
+
+- id: is-bv-003
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Verwendet ein Test zufällige Parameter, sollten die gewählten Werte protokolliert werden."
+  richtig: [0]
+  erklaerung: "Wahr. Nur so lässt sich ein Fehlschlag mit denselben Werten wiederholen."
+  artikel: "#tas-logging"
+  tags: [istqb, tae, logging]
+
+- id: is-bv-004
+  typ: single
+  schwierigkeit: 2
+  frage: "In der Nacht schlagen 180 von 200 UI-Tests mit verschiedenen Meldungen fehl. Was ist zuerst zu prüfen?"
+  optionen:
+    - "180 Fehlerberichte anlegen"
+    - "Ob die Testumgebung zur Laufzeit (teilweise) ausgefallen war – etwa in den SUT-Logs"
+    - "Alle Tests löschen"
+    - "Den Testfortschrittsbericht an das Management schicken"
+  richtig: [1]
+  erklaerung: "Viele gleichzeitige Fehlschläge deuten auf eine nicht verfügbare Umgebung. Die SUT-Logs zeigen Ausfälle."
+  artikel: "#analyse"
+  tags: [istqb, tae, analyse]
+
+- id: is-bv-005
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder Stakeholdergruppe zu, was sie im Bericht am meisten interessiert."
+  paare:
+    - ["Management", "Trends wie Bestehensquote und neue Tests"]
+    - ["Operativ (Product Owner, Fachseite)", "Kennzahlen zur Produktnutzung"]
+    - ["Technisch (Entwicklung, TAE)", "Details auf niedriger Ebene"]
+  erklaerung: "Berichte unterscheiden sich in Inhalt und Detailtiefe je nach Empfänger."
+  artikel: "#bericht"
+  tags: [istqb, tae, bericht]
+
+- id: is-bv-006
+  typ: lueckentext
+  schwierigkeit: 2
+  frage: "Ergänze den Begriff."
+  text: "Eine eindeutige ___-ID begleitet eine Anfrage durch alle Dienste und verbindet Test- und SUT-Logs."
+  luecken:
+    - ["Correlation", "Korrelations", "Trace"]
+  erklaerung: "Correlation- oder Trace-IDs machen den Weg einer Anfrage nachvollziehbar."
+  artikel: "#correlation-id"
+  tags: [istqb, tae, logging]
+
+- id: is-bv-007
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Was gehört zur Verifikation der Testautomationsumgebung?"
+  optionen:
+    - "Installation und Konfiguration der Werkzeuge prüfen"
+    - "Wiederholbaren Auf- und Abbau der TAS sicherstellen"
+    - "Verbindungen zu internen und externen Systemen prüfen"
+    - "TAF-Komponenten selbst testen"
+    - "Die Anforderungen des SUT neu schreiben"
+  richtig: [0, 1, 2, 3]
+  erklaerung: "Das sind die vier Bereiche, die der Lehrplan für die Verifikation der Umgebung nennt."
+  artikel: "#umgebung-verifizieren"
+  tags: [istqb, tae, verifikation]
+
+- id: is-bv-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Was ist mit der Intrusivität eines Testwerkzeugs gemeint?"
+  optionen:
+    - "Wie teuer die Lizenz ist"
+    - "Dass das Werkzeug das Verhalten des SUT beeinflussen kann, sodass es anders reagiert als in Produktion"
+    - "Wie viele Tests pro Stunde laufen"
+    - "Ob das Werkzeug Open Source ist"
+  richtig: [1]
+  erklaerung: "Eine eng gekoppelte TAS kann Funktion und Performance des SUT verändern und Fehler zeigen, die es in Produktion nicht gibt."
+  artikel: "#suite-verifizieren"
+  tags: [istqb, tae, verifikation]
+
+- id: is-bv-009
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile würde eine statische Analyse des Testcodes als Sicherheitsproblem melden?"
+  sprache: csharp
+  code: |
+    [SetUp]
+    public async Task Anmelden()
+    {
+        var benutzer = Konfiguration.Get("TEST_USER");
+        var passwort = "Sommer2026!";
+        await login.AnmeldenAsync(benutzer, passwort);
+    }
+  richtig: [4]
+  erklaerung: "Ein Passwort im Klartext im Testskript. Es gehört in ein Secret der Pipeline oder der Umgebung."
+  artikel: "#statische-analyse"
+  tags: [istqb, tae, statische-analyse]
+
+- id: is-bv-010
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Test besteht in jedem Lauf, obwohl das Feature nachweislich kaputt ist. Was ist eine wahrscheinliche Ursache?"
+  optionen:
+    - "Die Testumgebung ist zu schnell."
+    - "Eine Assertion fehlt, das Ergebnis ist also nicht aussagekräftig."
+    - "Der Bericht ist falsch formatiert."
+    - "Das Log-Level ist auf Info gesetzt."
+  richtig: [1]
+  erklaerung: "Ohne Assertion wird nichts geprüft. Der Lehrplan empfiehlt ausdrücklich, fehlende Assertions zu prüfen."
+  artikel: "#unerwartet"
+  tags: [istqb, tae, verifikation]

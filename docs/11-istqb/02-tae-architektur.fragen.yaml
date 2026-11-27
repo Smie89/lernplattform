@@ -1,0 +1,135 @@
+# Fragen zur Lektion "TAE: Testautomationsarchitektur"
+
+- id: is-ar-001
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jeder gTAA-Schnittstelle zu, was sie beschreibt."
+  paare:
+    - ["SUT-Schnittstelle", "Verbindung zwischen System under Test und Framework"]
+    - ["Projektmanagement", "Fortschritt der Automatisierung"]
+    - ["Testmanagement", "Zuordnung von Testfalldefinitionen zu automatisierten Tests"]
+    - ["Konfigurationsmanagement", "Pipelines, Umgebungen und Testware"]
+  erklaerung: "Die gTAA zeigt, mit welchen Systemen die Testautomation verbunden ist."
+  artikel: "#schnittstellen"
+  tags: [istqb, tae, gtaa]
+
+- id: is-ar-002
+  typ: single
+  schwierigkeit: 2
+  frage: "Welche Fähigkeit der gTAA ist laut Lehrplan optional?"
+  optionen:
+    - "Testdefinition"
+    - "Testausführung"
+    - "Testgenerierung"
+    - "Testadaption"
+  richtig: [2]
+  erklaerung: "Testgenerierung aus einem Testmodell (z. B. modellbasiertes Testen) ist optional. Definition, Ausführung und Adaption braucht jede Lösung."
+  artikel: "#faehigkeiten"
+  tags: [istqb, tae, gtaa]
+
+- id: is-ar-003
+  typ: single
+  schwierigkeit: 2
+  frage: "Ein Team schreibt einen Adapter, der Tests über ein proprietäres TCP-Protokoll mit dem SUT verbindet. Zu welcher Fähigkeit gehört er?"
+  optionen:
+    - "Testgenerierung"
+    - "Testdefinition"
+    - "Testausführung"
+    - "Testadaption"
+  richtig: [3]
+  erklaerung: "Die Testadaption stellt Adapter für APIs, Protokolle und Dienste bereit – die Brücke zwischen Tests und SUT."
+  artikel: "#faehigkeiten"
+  tags: [istqb, tae, gtaa]
+
+- id: is-ar-004
+  typ: reihenfolge
+  schwierigkeit: 2
+  frage: "Ordne die TAF-Schichten von oben (nah am Testfall) nach unten (unabhängig vom SUT)."
+  elemente:
+    - "Testskripte"
+    - "Geschäftslogik"
+    - "Kernbibliotheken"
+  erklaerung: "Testskripte rufen die Geschäftslogik; die Geschäftslogik baut auf SUT-unabhängigen Kernbibliotheken auf."
+  artikel: "#schichten"
+  tags: [istqb, tae, taf]
+
+- id: is-ar-005
+  typ: fehler-finden
+  schwierigkeit: 2
+  frage: "Welche Zeile verletzt die Schichtenregel des TAF?"
+  sprache: csharp
+  code: |
+    [Test]
+    public async Task Bestellung_wird_angelegt()
+    {
+        var bestellung = await shop.BestelleAsync(produktId: 3, menge: 2);
+        var roh = await new HttpClient().GetStringAsync("https://test/api/bestellungen/1");
+        Assert.That(bestellung.Summe, Is.EqualTo(19.80m));
+    }
+  richtig: [4]
+  erklaerung: "Das Testskript ruft direkt einen HTTP-Client (Kernbibliothek) statt der Geschäftslogik. Testskripte sollen nur die Geschäftslogik nutzen."
+  artikel: "#schichten"
+  tags: [istqb, tae, taf]
+
+- id: is-ar-006
+  typ: zuordnen
+  schwierigkeit: 2
+  frage: "Ordne jedem Ansatz seine Kurzbeschreibung zu."
+  paare:
+    - ["Capture/Playback", "Manuelle Bedienung wird aufgezeichnet"]
+    - ["Strukturiertes Skripting", "Bibliotheken mit wiederverwendbaren Schritten"]
+    - ["Datengetrieben", "Dasselbe Skript mit Datenzeilen aus Dateien"]
+    - ["Schlüsselwortgetrieben", "Tabelle aus Aktionen aus Nutzersicht plus Daten"]
+    - ["BDD", "Akzeptanzkriterien in Given–When–Then"]
+  erklaerung: "Datengetrieben baut auf strukturiertem Skripting auf, schlüsselwortgetrieben meist auf datengetrieben."
+  artikel: "#ansaetze"
+  tags: [istqb, tae, ansaetze]
+
+- id: is-ar-007
+  typ: lueckentext
+  schwierigkeit: 1
+  frage: "Ergänze den TDD-Zyklus."
+  text: "Rot – ___ – Refactor"
+  luecken:
+    - ["Grün", "Gruen"]
+  erklaerung: "Erst ein fehlschlagender Test (rot), dann gerade genug Code (grün), dann aufräumen."
+  artikel: "#ansaetze"
+  tags: [istqb, tae, tdd]
+
+- id: is-ar-008
+  typ: single
+  schwierigkeit: 2
+  frage: "Welches Muster sorgt dafür, dass es nur einen Treiber gibt, der mit dem SUT kommuniziert?"
+  optionen:
+    - "Facade"
+    - "Singleton"
+    - "Page Object Model"
+    - "Flow Model"
+  richtig: [1]
+  erklaerung: "Der Singleton erzwingt genau eine Instanz, z. B. einen WebDriver oder eine Anwendungssitzung."
+  artikel: "#muster"
+  tags: [istqb, tae, muster]
+
+- id: is-ar-009
+  typ: wahr-falsch
+  schwierigkeit: 2
+  frage: "Das Flow Model ersetzt das Page Object Model."
+  richtig: [1]
+  erklaerung: "Falsch. Das Flow Model erweitert das Page Object Model um eine zusätzliche Fassade über den Page Objects (doppelte Fassade)."
+  artikel: "#muster"
+  tags: [istqb, tae, muster]
+
+- id: is-ar-010
+  typ: multiple
+  schwierigkeit: 2
+  frage: "Welche Punkte legt die TAA laut Lehrplan fest?"
+  optionen:
+    - "Werkzeuge und werkzeugspezifische Bibliotheken"
+    - "Verbindungen wie Firewalls, Datenbanken, Mocks und Message Queues"
+    - "Anbindung an Test- und Fehlermanagement"
+    - "Das Gehalt der TAEs"
+    - "Versionsverwaltung und Repositories"
+  richtig: [0, 1, 2, 4]
+  erklaerung: "Die TAA ist der technische Entwurf der TAS; Personalfragen gehören nicht dazu."
+  artikel: "#tas-entwerfen"
+  tags: [istqb, tae, taa]

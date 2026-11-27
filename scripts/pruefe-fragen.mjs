@@ -136,6 +136,70 @@ for (const datei of dateien) {
   }
 }
 
+// ---------- Prüfungspools (docs/**/pruefung-*.yaml) ----------
+//  - Lernziele mit K-Stufe 2–4 und Anzahl; jede Frage gehört zu einem bekannten Lernziel
+//  - genug Fragen je Lernziel (mindestens doppelt so viele wie pro Prüfung gezogen werden)
+//  - single: genau eine richtige Antwort, multiple: mindestens zwei; mindestens 3 Optionen
+//  - Artikel-Links zeigen auf existierende Seiten und Anker
+
+const PUNKTE_JE_K = {2: 1, 3: 2, 4: 3};
+const pools = findeDateien(DOCS, '.yaml').filter((d) => /^pruefung-.+\.yaml$/.test(basename(d)));
+
+function pruefeLink(wo, link) {
+  if (!buildDa || !link) return;
+  const [pfad, anker] = link.split('#');
+  const html = join(BUILD, ...pfad.split('/').filter(Boolean)) + '.html';
+  if (!existsSync(html)) return fehler.push(`${wo}: Seite ${html} für Link ${link} nicht gefunden`);
+  const regex = new RegExp(`id=("?)${anker?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\1[\\s>]`);
+  if (anker && !regex.test(readFileSync(html, 'utf8'))) fehler.push(`${wo}: Anker #${anker} existiert nicht in ${html}`);
+}
+
+for (const datei of pools) {
+  const pool = parse(readFileSync(datei, 'utf8'));
+  const lernziele = new Map();
+  for (const lz of pool.lernziele ?? []) {
+    const wo = `${datei} [${lz.id}]`;
+    if (lernziele.has(lz.id)) fehler.push(`${wo}: Lernziel doppelt`);
+    lernziele.set(lz.id, lz);
+    if (!(lz.k in PUNKTE_JE_K)) fehler.push(`${wo}: K-Stufe ${lz.k} ungültig (2–4)`);
+    if (!Number.isInteger(lz.anzahl) || lz.anzahl < 1) fehler.push(`${wo}: "anzahl" fehlt oder ungültig`);
+    if (!lz.titel) fehler.push(`${wo}: "titel" fehlt`);
+    pruefeLink(wo, lz.artikel);
+    if (!pool.kapitel?.some((k) => String(lz.id).includes(`-${k.nr}.`))) fehler.push(`${wo}: kein passendes Kapitel`);
+  }
+  const jeLz = new Map();
+  for (const f of pool.fragen ?? []) {
+    const wo = `${datei} [${f.id ?? '?'}]`;
+    for (const feld of ['id', 'lz', 'typ', 'frage', 'optionen', 'richtig', 'erklaerung']) {
+      if (f[feld] === undefined) fehler.push(`${wo}: Feld "${feld}" fehlt`);
+    }
+    if (ids.has(f.id)) fehler.push(`${wo}: ID doppelt (auch in ${ids.get(f.id)})`);
+    ids.set(f.id, datei);
+    if (!lernziele.has(f.lz)) fehler.push(`${wo}: unbekanntes Lernziel ${f.lz}`);
+    jeLz.set(f.lz, (jeLz.get(f.lz) ?? 0) + 1);
+    if (!['single', 'multiple'].includes(f.typ)) fehler.push(`${wo}: Typ "${f.typ}" – erlaubt sind single und multiple`);
+    const optionen = f.optionen ?? [];
+    if (optionen.length < 3) fehler.push(`${wo}: weniger als 3 Optionen`);
+    if (!eindeutig(optionen)) fehler.push(`${wo}: Optionen doppelt`);
+    fehler.push(...pruefeIndizes(f.richtig, optionen.length, f.typ === 'multiple').map((m) => `${wo}: ${m}`));
+    if (f.typ === 'multiple' && f.richtig?.length < 2) fehler.push(`${wo}: multiple braucht mindestens 2 richtige Antworten`);
+    if (f.typ === 'multiple' && f.richtig?.length === 2 && !/ZWEI/.test(f.frage)) fehler.push(`${wo}: Frage sagt nicht „ZWEI“`);
+    if (/\b[a-e]\)/.test(f.erklaerung ?? '')) fehler.push(`${wo}: Erklärung verweist auf Buchstaben – die Optionen werden gemischt`);
+    if (f.artikel) pruefeLink(wo, f.artikel);
+  }
+  let fragenJePruefung = 0;
+  let punkte = 0;
+  for (const lz of lernziele.values()) {
+    const vorhanden = jeLz.get(lz.id) ?? 0;
+    if (vorhanden < lz.anzahl * 2) fehler.push(`${datei} [${lz.id}]: nur ${vorhanden} Fragen im Pool, mindestens ${lz.anzahl * 2} nötig`);
+    fragenJePruefung += lz.anzahl;
+    punkte += lz.anzahl * (PUNKTE_JE_K[lz.k] ?? 0);
+  }
+  if (pool.bestehen > punkte) fehler.push(`${datei}: Bestehensgrenze ${pool.bestehen} über der Höchstpunktzahl ${punkte}`);
+  anzahl += pool.fragen?.length ?? 0;
+  console.log(`Prüfungspool ${pool.name}: ${pool.fragen?.length ?? 0} Fragen, je Prüfung ${fragenJePruefung} Fragen / ${punkte} Punkte, bestanden ab ${pool.bestehen}.`);
+}
+
 console.log(`${dateien.length} Fragen-Dateien, ${anzahl} Fragen geprüft${buildDa ? '' : ' (ohne Anker-Prüfung: erst "npm run build" ausführen)'}.`);
 console.log('Nach Typ: ' + Object.entries(typen).map(([t, n]) => `${t} ${n}`).join(', '));
 if (fehler.length) {

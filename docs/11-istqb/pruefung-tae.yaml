@@ -1,0 +1,1369 @@
+# Fragenpool der Prüfungssimulation CTAL-TAE v2.0
+#
+# Eigene Fragen, keine offiziellen ISTQB-Fragen. Verteilung, K-Stufen und Punkte entsprechen den
+# "Exam Structures & Rules"-Tabellen des ISTQB: 40 Fragen, 66 Punkte, bestanden ab 43, 90 Minuten.
+#
+# lernziele: id, k (2–4), anzahl (Fragen dieses Lernziels pro Prüfung), titel, artikel (Link zur Lektion)
+# fragen:    id, lz (Lernziel), typ single | multiple (bei multiple genau so viele Treffer wählen, wie richtig sind),
+#            frage, optionen, richtig (Indizes ab 0), erklaerung, optional artikel (überschreibt den des Lernziels)
+# Punkte je Frage: K2 = 1, K3 = 2, K4 = 3. Geprüft mit "npm run pruefen".
+
+name: "CTAL-TAE v2.0"
+dauer: 90
+bestehen: 43
+
+kapitel:
+  - {nr: 1, titel: "Einführung und Ziele"}
+  - {nr: 2, titel: "Vorbereitung der Testautomation"}
+  - {nr: 3, titel: "Testautomationsarchitektur"}
+  - {nr: 4, titel: "Implementierung der Testautomation"}
+  - {nr: 5, titel: "Einführungs- und Bereitstellungsstrategien"}
+  - {nr: 6, titel: "Berichte und Metriken"}
+  - {nr: 7, titel: "Verifikation der Testautomationslösung"}
+  - {nr: 8, titel: "Kontinuierliche Verbesserung"}
+
+lernziele:
+  - {id: TAE-1.1.1, k: 2, anzahl: 1, titel: "Vor- und Nachteile der Testautomation erklären", artikel: "/lernen/istqb/tae-ziele-vorbereitung#vor-nachteile"}
+  - {id: TAE-1.2.1, k: 2, anzahl: 1, titel: "Testautomation in Vorgehensmodellen erklären", artikel: "/lernen/istqb/tae-ziele-vorbereitung#vorgehensmodelle"}
+  - {id: TAE-1.2.2, k: 2, anzahl: 1, titel: "Geeignete Werkzeuge für ein SUT auswählen", artikel: "/lernen/istqb/tae-ziele-vorbereitung#werkzeugauswahl"}
+  - {id: TAE-2.1.1, k: 2, anzahl: 1, titel: "Konfigurationsbedarf einer Infrastruktur für Testautomation beschreiben", artikel: "/lernen/istqb/tae-ziele-vorbereitung#testbarkeit"}
+  - {id: TAE-2.1.2, k: 2, anzahl: 2, titel: "Testautomation in verschiedenen Umgebungen erklären", artikel: "/lernen/istqb/tae-ziele-vorbereitung#umgebungen"}
+  - {id: TAE-2.2.1, k: 4, anzahl: 1, titel: "Ein SUT analysieren, um die passende TAS zu bestimmen", artikel: "/lernen/istqb/tae-ziele-vorbereitung#sut-analysieren"}
+  - {id: TAE-2.2.2, k: 4, anzahl: 1, titel: "Ergebnisse einer Werkzeugbewertung darstellen", artikel: "/lernen/istqb/tae-ziele-vorbereitung#vergleichstabelle"}
+  - {id: TAE-3.1.1, k: 2, anzahl: 1, titel: "Die Fähigkeiten einer Testautomationsarchitektur erklären", artikel: "/lernen/istqb/tae-architektur#gtaa"}
+  - {id: TAE-3.1.2, k: 2, anzahl: 1, titel: "Den Entwurf einer TAS erklären", artikel: "/lernen/istqb/tae-architektur#tas-entwerfen"}
+  - {id: TAE-3.1.3, k: 3, anzahl: 1, titel: "Schichten eines TAF anwenden", artikel: "/lernen/istqb/tae-architektur#schichten"}
+  - {id: TAE-3.1.4, k: 3, anzahl: 2, titel: "Ansätze zum Automatisieren von Testfällen anwenden", artikel: "/lernen/istqb/tae-architektur#ansaetze"}
+  - {id: TAE-3.1.5, k: 3, anzahl: 1, titel: "Entwurfsprinzipien und -muster anwenden", artikel: "/lernen/istqb/tae-architektur#muster"}
+  - {id: TAE-4.1.1, k: 3, anzahl: 1, titel: "Richtlinien für Pilot und Bereitstellung anwenden", artikel: "/lernen/istqb/tae-einfuehrung-pipelines#pilot"}
+  - {id: TAE-4.2.1, k: 4, anzahl: 1, titel: "Bereitstellungsrisiken analysieren und Gegenmaßnahmen planen", artikel: "/lernen/istqb/tae-einfuehrung-pipelines#risiken"}
+  - {id: TAE-4.3.1, k: 2, anzahl: 2, titel: "Faktoren der Wartbarkeit einer TAS erklären", artikel: "/lernen/istqb/tae-einfuehrung-pipelines#wartbarkeit"}
+  - {id: TAE-5.1.1, k: 3, anzahl: 2, titel: "Testautomation auf verschiedenen Teststufen in Pipelines anwenden", artikel: "/lernen/istqb/tae-einfuehrung-pipelines#pipelines"}
+  - {id: TAE-5.1.2, k: 2, anzahl: 2, titel: "Konfigurationsmanagement für Testware erklären", artikel: "/lernen/istqb/tae-einfuehrung-pipelines#konfiguration"}
+  - {id: TAE-5.1.3, k: 2, anzahl: 2, titel: "Abhängigkeiten der Testautomation bei APIs erklären", artikel: "/lernen/istqb/tae-einfuehrung-pipelines#contract-tests"}
+  - {id: TAE-6.1.1, k: 3, anzahl: 2, titel: "Methoden zur Datensammlung aus TAS und SUT anwenden", artikel: "/lernen/istqb/tae-berichte-verifikation#datenquellen"}
+  - {id: TAE-6.1.2, k: 4, anzahl: 1, titel: "Daten aus TAS und SUT analysieren", artikel: "/lernen/istqb/tae-berichte-verifikation#analyse"}
+  - {id: TAE-6.1.3, k: 2, anzahl: 1, titel: "Aufbau und Veröffentlichung eines Testfortschrittsberichts erklären", artikel: "/lernen/istqb/tae-berichte-verifikation#bericht"}
+  - {id: TAE-7.1.1, k: 3, anzahl: 2, titel: "Die Verifikation der Testautomationsumgebung planen", artikel: "/lernen/istqb/tae-berichte-verifikation#umgebung-verifizieren"}
+  - {id: TAE-7.1.2, k: 2, anzahl: 2, titel: "Korrektes Verhalten von Testskripten und -suiten erklären", artikel: "/lernen/istqb/tae-berichte-verifikation#suite-verifizieren"}
+  - {id: TAE-7.1.3, k: 2, anzahl: 1, titel: "Erkennen, wo Testautomation unerwartete Ergebnisse liefert", artikel: "/lernen/istqb/tae-berichte-verifikation#unerwartet"}
+  - {id: TAE-7.1.4, k: 2, anzahl: 1, titel: "Nutzen statischer Analyse für Testcode erklären", artikel: "/lernen/istqb/tae-berichte-verifikation#statische-analyse"}
+  - {id: TAE-8.1.1, k: 3, anzahl: 2, titel: "Verbesserungen an Testfällen durch Datenanalyse finden", artikel: "/lernen/istqb/tae-verbesserung#datenanalyse"}
+  - {id: TAE-8.1.2, k: 4, anzahl: 2, titel: "Eine laufende TAS analysieren und Verbesserungen empfehlen", artikel: "/lernen/istqb/tae-verbesserung#verbesserung"}
+  - {id: TAE-8.1.3, k: 3, anzahl: 1, titel: "Testware an Änderungen des SUT anpassen", artikel: "/lernen/istqb/tae-verbesserung#umstrukturieren"}
+  - {id: TAE-8.1.4, k: 2, anzahl: 1, titel: "Weitere Einsatzmöglichkeiten von Automationswerkzeugen zusammenfassen", artikel: "/lernen/istqb/tae-verbesserung#weitere-einsaetze"}
+
+fragen:
+  # ---------------- Kapitel 1 ----------------
+  - id: tae-p-001
+    lz: TAE-1.1.1
+    typ: single
+    frage: "Welche Aussage beschreibt einen Vorteil der Testautomation?"
+    optionen:
+      - "Sie kann jeden manuellen Test ersetzen."
+      - "Sie ermöglicht Tests, die manuell nicht durchführbar sind, etwa parallele Ausführung oder Echtzeitreaktionen."
+      - "Sie macht klare Ziele überflüssig, weil sie automatisch Nutzen bringt."
+      - "Sie verursacht nach der Einrichtung keine weiteren Kosten."
+    richtig: [1]
+    erklaerung: "Parallele, entfernte oder Echtzeittests sind ein klassischer Vorteil. Nicht alles lässt sich automatisieren, klare Ziele sind Voraussetzung, und Wartung kostet laufend."
+
+  - id: tae-p-002
+    lz: TAE-1.1.1
+    typ: single
+    frage: "Welche Aussage beschreibt eine Grenze der Testautomation?"
+    optionen:
+      - "Automatisierte Tests laufen langsamer als manuelle."
+      - "Automatisierte Tests können nur Ergebnisse prüfen, für die es ein automatisierbares Testorakel gibt."
+      - "Automatisierte Tests sind anfälliger für menschliche Fehler."
+      - "Automatisierte Tests liefern später Rückmeldung zur Qualität."
+    richtig: [1]
+    erklaerung: "Ein automatisierter Test braucht maschinenlesbare Ergebnisse und ein automatisierbares Orakel. Die anderen Aussagen kehren Vorteile ins Gegenteil."
+
+  - id: tae-p-003
+    lz: TAE-1.1.1
+    typ: multiple
+    frage: "Welche ZWEI Aussagen sind Nachteile der Testautomation?"
+    optionen:
+      - "Die Tests sind starr und passen sich schlecht an Änderungen des SUT an."
+      - "Die Ausführung ist über Testzyklen hinweg einheitlicher."
+      - "Durch die Testautomation können zusätzliche Fehler entstehen."
+      - "Pro Build können mehr Tests ausgeführt werden."
+      - "Testressourcen werden effizienter genutzt."
+    richtig: [0, 2]
+    erklaerung: "Starrheit und Fehler in der Testware selbst sind Nachteile. Einheitliche Ausführung, mehr Tests pro Build und effizienter Ressourceneinsatz sind Vorteile."
+
+  - id: tae-p-004
+    lz: TAE-1.2.1
+    typ: single
+    frage: "Wann laufen automatisierte Tests in einem Wasserfallprojekt typischerweise?"
+    optionen:
+      - "Bei jedem Commit, ab dem ersten Tag"
+      - "Vor allem in der Verifikationsphase, weil die Komponenten vorher nicht testbereit sind"
+      - "Nur in der Anforderungsphase"
+      - "Ausschließlich nach der Auslieferung in Produktion"
+    richtig: [1]
+    erklaerung: "Im Wasserfall wird parallel zur oder nach der Implementierung automatisiert; ausgeführt wird meist in der Verifikationsphase."
+
+  - id: tae-p-005
+    lz: TAE-1.2.1
+    typ: single
+    frage: "Was empfiehlt der Lehrplan für Testautomation im V-Modell?"
+    optionen:
+      - "Nur die Abnahmetests zu automatisieren"
+      - "Für jede Teststufe ein eigenes Testautomationsframework bereitzustellen"
+      - "Auf Testautomation zu verzichten, weil das V-Modell sequenziell ist"
+      - "Alle Teststufen in einem einzigen Testskript abzudecken"
+    richtig: [1]
+    erklaerung: "Im V-Modell entsprechen den Entwicklungsstufen Teststufen von Komponente bis Abnahme. Ein TAF je Teststufe ist möglich und empfohlen."
+
+  - id: tae-p-006
+    lz: TAE-1.2.1
+    typ: single
+    frage: "Ein agiles Team möchte erreichen, dass neue Features im selben Sprint automatisiert getestet werden. Was ist dafür laut Lehrplan entscheidend?"
+    optionen:
+      - "Eine eigene Testabteilung, die nach dem Sprint automatisiert"
+      - "Silos auflösen, damit Entwicklung, Test und Fachseite zusammenarbeiten"
+      - "Ein Capture/Playback-Werkzeug für alle Teststufen"
+      - "Automation erst im Release-Sprint"
+    richtig: [1]
+    erklaerung: "In-Sprint-Automation gelingt, wenn alle Rollen zusammenarbeiten und so alle Teststufen passend abgedeckt werden."
+
+  - id: tae-p-007
+    lz: TAE-1.2.2
+    typ: single
+    frage: "Was ist laut Lehrplan der erste Schritt, um geeignete Werkzeuge für ein Projekt zu finden?"
+    optionen:
+      - "Das bekannteste Werkzeug am Markt wählen"
+      - "Das SUT analysieren und daraus die Projektanforderungen als Grundlage ableiten"
+      - "Eine Lizenz für ein kommerzielles Werkzeug kaufen"
+      - "Die ersten hundert Testfälle aufzeichnen"
+    richtig: [1]
+    erklaerung: "Erst das SUT analysieren, dann die Anforderungen als Basis der Auswahl nutzen."
+
+  - id: tae-p-008
+    lz: TAE-1.2.2
+    typ: single
+    frage: "Ein SUT ist in C# geschrieben, die Tester können programmieren. Welchen Vorteil hat ein Testwerkzeug in C#?"
+    optionen:
+      - "Es ist grundsätzlich kostenlos."
+      - "Entwickler können beim Debuggen von Fehlern in der Testautomation helfen, und das Wissen wird im Team geteilt."
+      - "Es braucht keine Wartung."
+      - "Es ersetzt die Komponententests der Entwicklung."
+    richtig: [1]
+    erklaerung: "Gleiche Sprache wie das SUT erleichtert die Zusammenarbeit beim Debuggen und ermöglicht Kenntnisaustausch zwischen den Teams."
+
+  - id: tae-p-009
+    lz: TAE-1.2.2
+    typ: single
+    frage: "Die Tester eines Teams haben kaum Programmiererfahrung. Was kann laut Lehrplan eine sinnvolle Wahl sein?"
+    optionen:
+      - "Ein selbst entwickeltes Framework mit eigener Skriptsprache"
+      - "Ein Low-Code- oder No-Code-Werkzeug"
+      - "Ein Werkzeug in einer Sprache, die niemand im Team kennt"
+      - "Ausschließlich Komponententests"
+    richtig: [1]
+    erklaerung: "Zusammensetzung und Erfahrung des Teams sind Auswahlkriterien. Ohne Programmierkenntnisse kann Low-Code oder No-Code passen."
+
+  # ---------------- Kapitel 2 ----------------
+  - id: tae-p-010
+    lz: TAE-2.1.1
+    typ: single
+    frage: "Das SUT bietet einen Endpunkt, der den internen Status einer Bestellung zurückgibt. Welchen Aspekt der Testbarkeit unterstützt das vor allem?"
+    optionen:
+      - "Steuerbarkeit"
+      - "Beobachtbarkeit"
+      - "Architekturtransparenz"
+      - "Portabilität"
+    richtig: [1]
+    erklaerung: "Beobachtbarkeit: Schnittstellen, über die Tests Einblick in den Zustand des SUT bekommen und Ist mit Soll vergleichen."
+
+  - id: tae-p-011
+    lz: TAE-2.1.1
+    typ: single
+    frage: "Wer sollte Testbarkeit laut Lehrplan typischerweise entwerfen, und wann?"
+    optionen:
+      - "Der TAE allein, nach der Fertigstellung des SUT"
+      - "Die Softwarearchitektur, parallel zu den übrigen Features, oft mit Beteiligung des TAE"
+      - "Der Kunde in der Abnahme"
+      - "Das Betriebsteam nach dem Go-live"
+    richtig: [1]
+    erklaerung: "Testbarkeit ist eine nicht-funktionale Anforderung und wird zusammen mit den Features entworfen – meist von der Architektur, mit Hinweisen des TAE."
+
+  - id: tae-p-012
+    lz: TAE-2.1.1
+    typ: single
+    frage: "Worin unterscheiden sich Deployment-Variablen von Systemumgebungsvariablen?"
+    optionen:
+      - "Deployment-Variablen werden bereits vor dem Start des Deployments gesetzt."
+      - "Deployment-Variablen sind nur für Mobilgeräte gedacht."
+      - "Deployment-Variablen verändern den Quellcode."
+      - "Es gibt keinen Unterschied."
+    richtig: [0]
+    erklaerung: "Beide passen das SUT für Tests an; Deployment-Variablen werden aber schon vor dem Deployment festgelegt."
+
+  - id: tae-p-013
+    lz: TAE-2.1.2
+    typ: single
+    frage: "In welcher Umgebung laufen Komponententests und statische Analyse, ohne dass die Software in eine andere Umgebung ausgeliefert wird?"
+    optionen:
+      - "Build-Umgebung"
+      - "Integrationsumgebung"
+      - "Vorproduktion"
+      - "Produktion"
+    richtig: [0]
+    erklaerung: "Die Build-Umgebung – lokal oder als CI/CD-Agent – baut die Software und prüft sie mit niedrigstufigen Tests ohne Deployment."
+
+  - id: tae-p-014
+    lz: TAE-2.1.2
+    typ: single
+    frage: "Welche Aussage über die Integrationsumgebung trifft zu?"
+    optionen:
+      - "Dort finden vor allem White-Box-Tests in der IDE statt."
+      - "Dort wird ein vollständig integrierter Release-Kandidat mit Black-Box-Tests geprüft, und es sollte erstmals Monitoring geben."
+      - "Sie dient ausschließlich Performance-Tests."
+      - "Dort werden Canary Releases durchgeführt."
+    richtig: [1]
+    erklaerung: "In der Integrationsumgebung laufen UI- oder API-Suiten als Black-Box-Tests; Monitoring hilft bei der Fehleranalyse."
+
+  - id: tae-p-015
+    lz: TAE-2.1.2
+    typ: single
+    frage: "Warum liegt der Schwerpunkt nicht-funktionaler Tests wie Performance-Tests typischerweise in der Vorproduktion?"
+    optionen:
+      - "Weil sie dort am billigsten sind"
+      - "Weil sie der Produktion so ähnlich wie möglich ist"
+      - "Weil es dort keine Fachanwender gibt"
+      - "Weil dort keine Überwachung stattfindet"
+    richtig: [1]
+    erklaerung: "Die Vorproduktion bildet die Produktion möglichst genau nach; dort aussagekräftige nicht-funktionale Tests sind möglich. Sie wird überwacht."
+
+  - id: tae-p-016
+    lz: TAE-2.1.2
+    typ: multiple
+    frage: "Welche ZWEI Vorgehensweisen ermöglichen laut Lehrplan das Testen in der Produktion?"
+    optionen:
+      - "Canary Release"
+      - "Statische Analyse in der IDE"
+      - "Blue/Green-Deployment"
+      - "Komponententests im Build"
+      - "Capture/Playback"
+    richtig: [0, 2]
+    erklaerung: "Canary Release, Blue/Green-Deployment und A/B-Tests zusammen mit Monitoring ermöglichen Tests in Produktion."
+
+  - id: tae-p-017
+    lz: TAE-2.2.1
+    typ: single
+    frage: |
+      Ein Onlineshop soll eine TAS bekommen. Bekannt ist:
+      – Weboberfläche und mobile App nutzen dieselbe REST-API.
+      – Die Zahlung läuft über einen externen Anbieter, der keine Testumgebung bereitstellt.
+      – Testdaten werden bisher von Hand aus Produktionsdaten kopiert, teils mit echten Kundendaten.
+      – Die TAS soll mindestens fünf Jahre für drei Produktlinien genutzt werden.
+      Welcher Punkt muss bei den Anforderungen an die TAS vor allem zusätzlich geklärt werden?
+    optionen:
+      - "Wie der Zahlungsanbieter für Tests nachgebildet wird und wie Testdaten in ausreichender Qualität ohne echte Kundendaten bereitgestellt werden"
+      - "Welche Farbe die Berichte haben"
+      - "Ob man die mobile App ignorieren kann, weil sie dieselbe API nutzt"
+      - "Wie man die Produktionsdaten schneller kopiert"
+    richtig: [0]
+    erklaerung: "Unerreichbare Drittsysteme müssen emuliert werden, und Verfügbarkeit und Qualität der Testdaten gehören zu den Anforderungen. Die mobile App ist trotz gemeinsamer API ein eigenes SUT."
+
+  - id: tae-p-018
+    lz: TAE-2.2.1
+    typ: single
+    frage: |
+      Ein TAE analysiert ein SUT, um die Testautomation zu planen. Er spricht nur mit dem Entwicklungsteam. Die manuellen Tester und die Business-Analysten werden nicht einbezogen.
+      Welches Risiko entsteht dadurch vor allem?
+    optionen:
+      - "Die TAS wird zu schnell fertig."
+      - "Risiken und deren Gegenmaßnahmen werden unvollständig erkannt, sodass die TAS später weniger Nutzen bringt."
+      - "Die Entwickler müssen mehr Komponententests schreiben."
+      - "Die Lizenzkosten steigen."
+    richtig: [1]
+    erklaerung: "Der Lehrplan empfiehlt, das SUT gemeinsam mit manuellen Testern, Fachseite und Business-Analysten zu untersuchen, um möglichst viele Risiken zu erkennen."
+
+  - id: tae-p-019
+    lz: TAE-2.2.1
+    typ: single
+    frage: |
+      Ein Unternehmen hat eine Desktopanwendung, eine Webanwendung und mehrere Webservices. Bisher gibt es nur manuelle Tests auf Systemebene. Geplant ist, Testentwurf und Testausführung zu automatisieren und dabei Komponenten-, API- und Systemtests abzudecken. Das Team besteht aus zwei Entwicklern mit Testerfahrung und vier Fachtestern ohne Programmierkenntnisse.
+      Welche Schlussfolgerung für die Anforderungen an die TAS ist am besten begründet?
+    optionen:
+      - "Eine einzige Capture/Playback-Lösung für alle Systeme reicht aus."
+      - "Die TAS muss mehrere SUT-Arten, Teststufen und Rollen mit unterschiedlichen Fähigkeiten unterstützen; ein einzelnes Werkzeug wird das wahrscheinlich nicht leisten."
+      - "Da nur Systemtests existieren, sollte man sich auf Systemtests beschränken."
+      - "Die Fachtester sollten aus dem Vorhaben herausgehalten werden."
+    richtig: [1]
+    erklaerung: "Unterstützte Teststufen, Testarten, Rollen und Fähigkeiten sowie kompatible SUT-Arten gehören zu den Anforderungen. Bei dieser Vielfalt ist mehr als ein Werkzeug wahrscheinlich."
+
+  - id: tae-p-020
+    lz: TAE-2.2.2
+    typ: single
+    frage: |
+      Eine Werkzeugbewertung ergibt folgende Tabelle (Priorität in Klammern):
+      Anforderung              | Werkzeug A | Werkzeug B | Werkzeug C
+      Sprache wie SUT (hoch)   | ja         | nein       | ja
+      CI/CD-Anbindung (hoch)   | ja         | ja         | nein
+      Eigene Berichte (mittel) | nein       | ja         | ja
+      Lizenzkosten (niedrig)   | keine      | hoch       | keine
+      Welcher Vorschlag lässt sich am besten begründen?
+    optionen:
+      - "Werkzeug A, weil es alle hoch priorisierten Anforderungen erfüllt; die Berichte werden ergänzt"
+      - "Werkzeug B, weil es die meisten Ja-Einträge hat"
+      - "Werkzeug C, weil es keine Lizenzkosten hat und eigene Berichte bietet"
+      - "Kein Werkzeug, weil keines alle Anforderungen erfüllt"
+    richtig: [0]
+    erklaerung: "Priorität geht vor Anzahl. Nur A erfüllt beide hohen Anforderungen. Dass kein Werkzeug alles erfüllt, ist normal und kein Grund, auf Automation zu verzichten."
+
+  - id: tae-p-021
+    lz: TAE-2.2.2
+    typ: single
+    frage: |
+      Nach der Analyse des SUT hat ein TAE drei Werkzeuge bewertet. Keines erfüllt alle Anforderungen. Die Projektleitung möchte eine schnelle Entscheidung, die Fachseite möchte die Unterschiede verstehen.
+      Wie geht der TAE laut Lehrplan am besten vor?
+    optionen:
+      - "Er wählt selbst ein Werkzeug und informiert danach nur das Entwicklungsteam."
+      - "Er stellt die Ergebnisse in einer Vergleichstabelle (Werkzeuge in Spalten, Anforderungen mit Priorität in Zeilen) dar und präsentiert einen Vorschlag den Stakeholdern zur Freigabe."
+      - "Er bewertet so lange weitere Werkzeuge, bis eines alle Anforderungen erfüllt."
+      - "Er lässt die Stakeholder ohne Unterlagen abstimmen."
+    richtig: [1]
+    erklaerung: "Die Vergleichstabelle macht Unterschiede je Anforderung sichtbar. Daraus entsteht ein Vorschlag, der den Stakeholdern zur Freigabe vorgestellt wird. Ein perfektes Werkzeug gibt es oft nicht."
+
+  - id: tae-p-022
+    lz: TAE-2.2.2
+    typ: multiple
+    frage: |
+      Ein TAE vergleicht zwei Werkzeuge für ein SUT, das künftig auf mehreren Testumgebungen und von weiteren Teams genutzt werden soll. Werkzeug X bietet integrierte, aber nicht versionierbare Testdaten. Werkzeug Y speichert Testdaten als Dateien im Repository und unterstützt Konfigurationen je Umgebung.
+      Welche ZWEI Bewertungskriterien sprechen in diesem Kontext vor allem für Werkzeug Y?
+    optionen:
+      - "Testdatenmanagement mit Anbindung an die Versionsverwaltung"
+      - "Konfigurierbarkeit für verschiedene Testumgebungen"
+      - "Möglichst viele Funktionen in der Oberfläche"
+      - "Die Bekanntheit des Herstellers"
+      - "Die Größe der Installationsdatei"
+    richtig: [0, 1]
+    erklaerung: "Testdatenmanagement mit Versionsverwaltung und Konfigurierbarkeit für mehrere Umgebungen sind Kriterien des Lehrplans, die hier direkt zu den Anforderungen passen."
+
+  # ---------------- Kapitel 3 ----------------
+  - id: tae-p-023
+    lz: TAE-3.1.1
+    typ: single
+    frage: "Welche gTAA-Schnittstelle beschreibt die Zuordnung von Testfalldefinitionen zu automatisierten Testfällen?"
+    optionen:
+      - "SUT-Schnittstelle"
+      - "Projektmanagement-Schnittstelle"
+      - "Testmanagement-Schnittstelle"
+      - "Konfigurationsmanagement-Schnittstelle"
+    richtig: [2]
+    erklaerung: "Die Testmanagement-Schnittstelle verbindet Testfalldefinitionen mit automatisierten Testfällen; Konfigurationsmanagement betrifft Pipelines, Umgebungen und Testware."
+
+  - id: tae-p-024
+    lz: TAE-3.1.1
+    typ: single
+    frage: "Welche Fähigkeit der gTAA trennt die Definition der Tests vom SUT und von den Testwerkzeugen?"
+    optionen:
+      - "Testgenerierung"
+      - "Testdefinition"
+      - "Testausführung"
+      - "Testadaption"
+    richtig: [1]
+    erklaerung: "Die Testdefinition beschreibt Testfälle und Suiten – hoch- und niedrigstufig über Testdaten, Testfälle und Bibliotheken – unabhängig von SUT und Werkzeug."
+
+  - id: tae-p-025
+    lz: TAE-3.1.1
+    typ: single
+    frage: "Welche Aussage über die Testausführung in der gTAA ist richtig?"
+    optionen:
+      - "Sie erzeugt Testfälle aus einem Modell."
+      - "Sie umfasst ein Werkzeug zur automatischen Ausführung sowie Komponenten für Testprotokoll und Testbericht."
+      - "Sie verbindet die Tests über Protokolle mit dem SUT."
+      - "Sie ist optional."
+    richtig: [1]
+    erklaerung: "Zur Testausführung gehören Ausführung, Protokollierung und Berichte. Modelle sind Testgenerierung, Protokolladapter Testadaption; optional ist nur die Generierung."
+
+  - id: tae-p-026
+    lz: TAE-3.1.2
+    typ: multiple
+    frage: "Welche ZWEI Punkte gehören laut Lehrplan zur Testautomationsarchitektur (TAA) einer TAS?"
+    optionen:
+      - "Anforderungen an Verbindungen und Schnittstellen, etwa Firewalls, Datenbanken, Mocks und Message Queues"
+      - "Der Sprintplan des Entwicklungsteams"
+      - "Die Anbindung an Test- und Fehlermanagementwerkzeuge"
+      - "Die Abnahmekriterien der Fachseite"
+      - "Das Budget für Marketing"
+    richtig: [0, 2]
+    erklaerung: "Die TAA legt Werkzeuge, eigene Komponenten, Verbindungen, die Anbindung an Test- und Fehlermanagement und die Versionsverwaltung fest."
+
+  - id: tae-p-027
+    lz: TAE-3.1.2
+    typ: single
+    frage: "Wodurch wird eine Testautomationslösung (TAS) laut Lehrplan definiert?"
+    optionen:
+      - "Ausschließlich durch das gewählte Werkzeug"
+      - "Durch das Verständnis der funktionalen, nicht-funktionalen und technischen Anforderungen an das SUT und der vorhandenen oder benötigten Werkzeuge"
+      - "Durch die Anzahl der Testfälle"
+      - "Durch das Budget der Abteilung"
+    richtig: [1]
+    erklaerung: "Die TAS ergibt sich aus den Anforderungen an das SUT und den Werkzeugen; sie kann kommerzielle oder Open-Source-Werkzeuge und SUT-spezifische Adapter enthalten."
+
+  - id: tae-p-028
+    lz: TAE-3.1.2
+    typ: single
+    frage: "Ein SUT kommuniziert über ein eigenes Protokoll, das kein verfügbares Werkzeug unterstützt. Was sieht der Lehrplan für diesen Fall vor?"
+    optionen:
+      - "Auf Automation zu verzichten"
+      - "Die TAS um einen SUT-spezifischen Adapter zu ergänzen"
+      - "Das Protokoll des SUT zu entfernen"
+      - "Nur manuell zu testen und die Ergebnisse abzutippen"
+    richtig: [1]
+    erklaerung: "Eine TAS wird mit kommerziellen oder Open-Source-Werkzeugen umgesetzt und kann zusätzliche SUT-spezifische Adapter brauchen."
+
+  - id: tae-p-029
+    lz: TAE-3.1.3
+    typ: single
+    frage: |
+      Ein TAE schreibt eine Methode „AlsKundeAnmelden“, die die Anmeldeseite des Shops bedient. Außerdem eine Methode „WiederholeBeiTimeout“, die beliebige HTTP-Aufrufe bei Zeitüberschreitung wiederholt.
+      In welche Schichten gehören die beiden Methoden?
+    optionen:
+      - "Beide in die Testskripte"
+      - "AlsKundeAnmelden in die Geschäftslogik, WiederholeBeiTimeout in die Kernbibliotheken"
+      - "AlsKundeAnmelden in die Kernbibliotheken, WiederholeBeiTimeout in die Geschäftslogik"
+      - "Beide in die Kernbibliotheken"
+    richtig: [1]
+    erklaerung: "SUT-abhängiges gehört in die Geschäftslogik, SUT-unabhängiges und Wiederverwendbares in die Kernbibliotheken."
+
+  - id: tae-p-030
+    lz: TAE-3.1.3
+    typ: single
+    frage: |
+      Bei einem Code-Review fällt auf, dass mehrere Testskripte direkt Methoden der Browser-Bibliothek aufrufen, um Felder zu füllen, statt die vorhandenen Methoden der Geschäftslogik zu nutzen.
+      Was sollte der TAE empfehlen?
+    optionen:
+      - "Nichts ändern, weil die Tests grün sind"
+      - "Die Aufrufe in die Geschäftslogik verlagern, sodass Testskripte nur die Geschäftslogik nutzen"
+      - "Eine neue Schicht für jedes Formularfeld einführen"
+      - "Die Geschäftslogik entfernen"
+    richtig: [1]
+    erklaerung: "Testskripte rufen die Geschäftslogik, nie direkt die Kernbibliotheken. Zusätzliche Schichten für jede Kleinigkeit machen den Entwurf unnötig kompliziert."
+
+  - id: tae-p-031
+    lz: TAE-3.1.3
+    typ: single
+    frage: |
+      Ein zweites Projekt mit demselben Technologie-Stack soll schnell eine eigene Testautomation bekommen. Im ersten Projekt existieren Testskripte, Geschäftslogik und Kernbibliotheken.
+      Welche Schicht lässt sich am besten wiederverwenden?
+    optionen:
+      - "Die Testskripte"
+      - "Die Geschäftslogik"
+      - "Die Kernbibliotheken"
+      - "Keine, jedes Projekt beginnt neu"
+    richtig: [2]
+    erklaerung: "Die Kernbibliotheken sind SUT-unabhängig und können in jedem Projekt mit demselben Stack genutzt werden. Mehrere TAFs bauen so auf derselben Basis auf."
+
+  - id: tae-p-032
+    lz: TAE-3.1.4
+    typ: single
+    frage: |
+      Für eine Messe-Demo soll in zwei Tagen gezeigt werden, wie ein Bestellablauf automatisch abläuft. Die Anwendung wird danach nicht mehr geändert, langfristige Wartung ist nicht geplant.
+      Welcher Ansatz passt am besten?
+    optionen:
+      - "Schlüsselwortgetriebenes Testen"
+      - "Capture/Playback"
+      - "Behavior-Driven Development"
+      - "Ein strukturiertes Framework mit Kernbibliotheken"
+    richtig: [1]
+    erklaerung: "Capture/Playback ist anfangs sehr einfach und für kleinen Umfang und selten geänderte SUTs geeignet. Die Nachteile bei Wartung spielen hier keine Rolle."
+
+  - id: tae-p-033
+    lz: TAE-3.1.4
+    typ: single
+    frage: |
+      Eine Versicherung berechnet Beiträge für über 300 Kombinationen aus Alter, Tarif und Region. Der Ablauf ist immer gleich, nur die Eingaben und erwarteten Beiträge ändern sich. Testanalysten sollen neue Fälle ohne Programmierung ergänzen.
+      Welcher Ansatz passt am besten?
+    optionen:
+      - "Lineares Skripting"
+      - "Capture/Playback"
+      - "Datengetriebenes Testen"
+      - "Testgetriebene Entwicklung"
+    richtig: [2]
+    erklaerung: "Datengetrieben läuft dasselbe Skript mit vielen Datenzeilen. Testanalysten ergänzen Fälle in den Datendateien, ohne Code zu schreiben."
+
+  - id: tae-p-034
+    lz: TAE-3.1.4
+    typ: single
+    frage: |
+      Fachbereich, Entwicklung und Test wollen Akzeptanzkriterien gemeinsam formulieren und direkt als automatisierte Tests nutzen. Die Szenarien sollen auf mehreren Stufen der Testpyramide verwendet werden.
+      Welcher Ansatz passt am besten, und was muss das Team zusätzlich beachten?
+    optionen:
+      - "BDD; Negativ- und Grenzfälle muss das Team zusätzlich definieren"
+      - "Capture/Playback; die Aufzeichnungen müssen versioniert werden"
+      - "Lineares Skripting; die Skripte müssen kommentiert werden"
+      - "BDD; weitere Tests sind dann nicht mehr nötig"
+    richtig: [0]
+    erklaerung: "BDD verbessert die Kommunikation und macht Szenarien zu Tests. Negativ- und Grenzfälle entstehen aber nicht von selbst."
+
+  - id: tae-p-035
+    lz: TAE-3.1.4
+    typ: single
+    frage: |
+      Ein kleines internes Werkzeug mit fünf Masken soll automatisiert getestet werden. Ein Kollege schlägt schlüsselwortgetriebenes Testen mit eigener Schlüsselwortbibliothek vor.
+      Welcher Einwand ist laut Lehrplan am stärksten?
+    optionen:
+      - "Schlüsselwortgetriebene Tests können nicht manuell genutzt werden."
+      - "Für kleine Systeme ist der Aufwand für Aufbau und Pflege der Schlüsselwörter sehr hoch."
+      - "Fachanalysten können keine schlüsselwortgetriebenen Tests schreiben."
+      - "Schlüsselwortgetriebenes Testen braucht keine Testdaten."
+    richtig: [1]
+    erklaerung: "KDT erzeugt bei kleinen Systemen großen Aufwand. Die anderen Aussagen sind falsch – KDT ist auch manuell nutzbar und bindet Fachanalysten gerade ein."
+
+  - id: tae-p-036
+    lz: TAE-3.1.4
+    typ: single
+    frage: |
+      Ein Team hat 200 Tests mit einem Capture/Playback-Werkzeug aufgezeichnet. Nach jeder neuen Version müssen viele neu aufgenommen werden, weil sich die Oberfläche ändert. Das Team kann programmieren.
+      Welcher Ansatz verringert den Wartungsaufwand am wirksamsten?
+    optionen:
+      - "Strukturiertes Skripting mit wiederverwendbaren Bibliotheken"
+      - "Die Aufzeichnungen häufiger wiederholen"
+      - "Lineares Skripting ohne Bibliotheken"
+      - "Mehr Tests aufzeichnen"
+    richtig: [0]
+    erklaerung: "Strukturiertes Skripting trennt Geschäftslogik von Skripten und ist gut wartbar und skalierbar. Lineares Skripting bleibt schwer wartbar."
+
+  - id: tae-p-037
+    lz: TAE-3.1.5
+    typ: single
+    frage: |
+      Bei einer Weboberfläche ändern sich die IDs der Eingabefelder häufig. Bisher steht jeder Locator in jedem Test, der das Feld nutzt.
+      Welches Muster reduziert den Änderungsaufwand am direktesten?
+    optionen:
+      - "Singleton"
+      - "Page Object Model"
+      - "Datengetriebenes Testen"
+      - "Observer"
+    richtig: [1]
+    erklaerung: "Im Page Object steht der Locator an genau einer Stelle. Ändert sich die Seite, passt man nur das Page Object an."
+
+  - id: tae-p-038
+    lz: TAE-3.1.5
+    typ: single
+    frage: |
+      In einer Suite öffnen manche Tests versehentlich einen zweiten Browser, und die Tests stören sich gegenseitig, weil zwei Treiber gleichzeitig mit dem SUT sprechen.
+      Welches Muster verhindert das?
+    optionen:
+      - "Facade"
+      - "Singleton"
+      - "Flow Model"
+      - "Page Object Model"
+    richtig: [1]
+    erklaerung: "Der Singleton stellt sicher, dass es nur eine Instanz des Treibers gibt, der mit dem SUT kommuniziert."
+
+  - id: tae-p-039
+    lz: TAE-3.1.5
+    typ: single
+    frage: |
+      Ein Team nutzt Page Objects. Viele Tests wiederholen dieselbe Folge: anmelden, Produkt suchen, in den Warenkorb legen. Diese Schritte stehen in jedem Test einzeln.
+      Wie lässt sich das am besten verbessern?
+    optionen:
+      - "Die Page Objects wieder entfernen"
+      - "Ein Flow Model als zusätzliche Fassade über den Page Objects einführen, das die Abläufe bündelt"
+      - "Die Schritte in jedem Test kopieren und kommentieren"
+      - "Einen Singleton für jedes Page Object anlegen"
+    richtig: [1]
+    erklaerung: "Das Flow Model legt eine weitere Fassade über die Page Objects. Die Abläufe werden so in vielen Skripten wiederverwendbar."
+
+  # ---------------- Kapitel 4 ----------------
+  - id: tae-p-040
+    lz: TAE-4.1.1
+    typ: single
+    frage: |
+      Ein Pilotprojekt für Testautomation soll in sechs Wochen zeigen, ob ein Ansatz trägt. Das Team möchte die Integration in die CI/CD erst nach dem Pilot angehen.
+      Was sollte der TAE empfehlen?
+    optionen:
+      - "Die CI/CD-Integration schon im Pilot versuchen, um Probleme in SUT, TAS oder Werkzeugintegration früh zu erkennen"
+      - "Die CI/CD-Integration ganz weglassen"
+      - "Den Pilot auf zwölf Monate verlängern"
+      - "Vor dem Pilot alle Testfälle des Projekts automatisieren"
+    richtig: [0]
+    erklaerung: "Der Lehrplan empfiehlt, schon im Pilot in die CI/CD zu integrieren. Das deckt Integrationsprobleme früh auf."
+
+  - id: tae-p-041
+    lz: TAE-4.1.1
+    typ: single
+    frage: |
+      Für einen Pilot stehen zwei Ansätze zur Wahl: BDD mit einem Gherkin-Werkzeug oder strukturiertes Skripting in C#. Die Anforderungen sprechen für beide.
+      Wie geht der TAE laut Lehrplan am besten vor?
+    optionen:
+      - "Per Münzwurf entscheiden"
+      - "Für beide Ansätze kleine Prototypen erstellen, Vor- und Nachteile vergleichen und dann entscheiden"
+      - "Beide Ansätze dauerhaft parallel betreiben"
+      - "Die Entscheidung den Entwicklern ohne Bewertung überlassen"
+    richtig: [1]
+    erklaerung: "Auf Basis der Anforderungen können mehrere Prototypen die Vor- und Nachteile zeigen; danach entscheidet das Team."
+
+  - id: tae-p-042
+    lz: TAE-4.1.1
+    typ: single
+    frage: |
+      Ein Pilot ist abgeschlossen. Die Tests laufen, aber das Team hat Lizenzbedingungen und vorhandenes Know-how bisher nicht betrachtet.
+      Was ist der nächste sinnvolle Schritt?
+    optionen:
+      - "Die Lösung sofort auf alle Projekte ausrollen"
+      - "Auch die nicht-technischen Aspekte bewerten und die Ergebnisse gemeinsam mit dem Testmanagement auswerten, bevor entschieden wird"
+      - "Den Pilot ohne Auswertung beenden"
+      - "Ein neues Werkzeug auswählen"
+    richtig: [1]
+    erklaerung: "Teamwissen, Teamstruktur, Lizenzen und Unternehmensregeln gehören zur Pilotbewertung. TAEs und Testmanager bewerten Erfolg oder Misserfolg gemeinsam."
+
+  - id: tae-p-043
+    lz: TAE-4.2.1
+    typ: single
+    frage: |
+      Ein Team automatisiert Tests auf zehn echten Android-Geräten. Nachts schlagen regelmäßig zwei bis vier Geräte fehl. Die Logs zeigen: Ein Gerät hatte morgens 0 % Akku, eines hatte kein WLAN, auf zweien wurde nachts das Betriebssystem aktualisiert.
+      Welche Gegenmaßnahmen passen am besten?
+    optionen:
+      - "Die fehlgeschlagenen Tests aus der Suite löschen"
+      - "Dauerhafte Stromversorgung, stabile Netzwerkanbindung und ein Konfigurationsplan, der automatische Updates steuert"
+      - "Die Tests nur noch auf einem Gerät ausführen"
+      - "Längere feste Wartezeiten in die Tests einbauen"
+    richtig: [1]
+    erklaerung: "Akku, Netz und automatische Updates sind typische Bereitstellungsrisiken. Der Lehrplan nennt als Gegenmaßnahmen Stromversorgung, Netzwerk und Gerätekonfigurationspläne."
+
+  - id: tae-p-044
+    lz: TAE-4.2.1
+    typ: single
+    frage: |
+      Eine TAS soll in einer neuen Testumgebung laufen. Im Pilot fällt auf: Die Test-Agents erreichen die Datenbank des SUT nicht, und bei parallelen Läufen steigt die CPU-Last der Agents auf 100 %, worauf Tests mit Zeitüberschreitung abbrechen.
+      Welche Analyse trifft am besten zu?
+    optionen:
+      - "Es handelt sich um Fehler im SUT, die als Fehlerberichte gemeldet werden müssen."
+      - "Es sind Bereitstellungsrisiken (Firewall-Freischaltung und Ressourcennutzung), die vor dem breiten Einsatz behoben werden müssen."
+      - "Die Testfälle sind falsch entworfen und müssen neu geschrieben werden."
+      - "Die Probleme verschwinden von selbst, wenn mehr Tests automatisiert sind."
+    richtig: [1]
+    erklaerung: "Fehlende Firewall-Freischaltungen und knappe Ressourcen sind keine Testautomationsfehler, aber Voraussetzung für verlässliche Qualitätsschranken."
+
+  - id: tae-p-045
+    lz: TAE-4.2.1
+    typ: single
+    frage: |
+      Mehrere Teams nutzen dieselbe Testware. Jedes Team kopiert sie in sein Repository und passt sie an. Nach einigen Monaten weiß niemand mehr, welcher Stand für welches Release gilt, und Fehlerkorrekturen kommen nicht bei allen an.
+      Welches technische Bereitstellungsrisiko liegt vor, und wie begegnet man ihm?
+    optionen:
+      - "Logging; mehr Log-Level einführen"
+      - "Paketierung; die Testware versioniert in einem gemeinsamen Repository bereitstellen"
+      - "Teststrukturierung; mehr Testsuiten bilden"
+      - "Aktualisierung; automatische Updates abschalten"
+    richtig: [1]
+    erklaerung: "Testware braucht Versionsverwaltung wie das SUT und muss über ein Repository geteilt werden – das ist das Paketierungsrisiko."
+
+  - id: tae-p-046
+    lz: TAE-4.3.1
+    typ: single
+    frage: "Welche Maßnahme unterstützt die Wartbarkeit einer TAS laut Lehrplan?"
+    optionen:
+      - "Viele Eingabeparameter je Methode, damit Methoden universell sind"
+      - "Testdaten direkt in die Skripte schreiben"
+      - "Einheitliche Namenskonventionen und eine logische Projektstruktur"
+      - "Möglichst lange Methoden, damit man alles an einer Stelle sieht"
+    richtig: [2]
+    erklaerung: "Clean Code: sprechende Namen, einheitliche Struktur, wenige Parameter, kurze Methoden, kein Hardcoding."
+
+  - id: tae-p-047
+    lz: TAE-4.3.1
+    typ: single
+    frage: "Warum ist Hardcoding von Testdaten laut Lehrplan nicht zu empfehlen?"
+    optionen:
+      - "Weil es die Entwicklung verlangsamt"
+      - "Weil sich Daten häufig ändern und die Wartung dann viele Stellen betrifft"
+      - "Weil Compiler hart codierte Werte ablehnen"
+      - "Weil Konstanten verboten sind"
+    richtig: [1]
+    erklaerung: "Hardcoding spart zunächst Zeit, kostet aber Wartung. Besser: datengetriebenes Testen und Konstanten für selten geänderte Werte."
+
+  - id: tae-p-048
+    lz: TAE-4.3.1
+    typ: multiple
+    frage: "Welche ZWEI Maßnahmen empfiehlt der Lehrplan zusätzlich zu Clean Code für wartbaren Testcode?"
+    optionen:
+      - "Statische Analysewerkzeuge und Code-Formatierer"
+      - "Eine vereinbarte Branching-Strategie in der Versionsverwaltung"
+      - "Auf Versionsverwaltung verzichten"
+      - "Logging grundsätzlich abschalten"
+      - "Jede Methode in eine eigene Schicht legen"
+    richtig: [0, 1]
+    erklaerung: "Statische Analyse und Formatierer verbessern Qualität und Lesbarkeit; Feature-, Release- und Bugfix-Branches machen den Inhalt nachvollziehbar."
+
+  - id: tae-p-049
+    lz: TAE-4.3.1
+    typ: single
+    frage: "Welche Variablennamen unterstützen die Wartbarkeit am besten?"
+    optionen:
+      - "b1, b2, b3"
+      - "loginButton, resetPasswordButton"
+      - "x, temp, daten"
+      - "button_neu_final2"
+    richtig: [1]
+    erklaerung: "Sprechende Namen zeigen sofort, welche Komponente gemeint ist."
+
+  # ---------------- Kapitel 5 ----------------
+  - id: tae-p-050
+    lz: TAE-5.1.1
+    typ: single
+    frage: |
+      Eine Pipeline hat eine Build-Phase und eine Deployment-Phase. Ein Team möchte, dass ein fehlgeschlagener Systemtest das Deployment fehlschlagen lässt und automatisch zurückrollt.
+      Wie sollten die Systemtests eingebunden werden?
+    optionen:
+      - "Als eigene Pipeline, die nach dem erfolgreichen Deployment startet"
+      - "Als Teil der Deployment-Phase nach dem Deployment der Komponenten"
+      - "In der Build-Phase vor dem Kompilieren"
+      - "Nur manuell nach Bedarf"
+    richtig: [1]
+    erklaerung: "Nur als Teil der Deployment-Phase wirken die Tests als Qualitätsschranke mit Rollback. Nachteil: Wiederholen erfordert ein neues Deployment."
+
+  - id: tae-p-051
+    lz: TAE-5.1.1
+    typ: single
+    frage: |
+      Ein Team führt bei jedem Deployment wechselnde Testsuiten aus und möchte Tests wiederholen können, ohne neu auszuliefern. Ein automatischer Rollback ist nicht gefordert.
+      Welche Einbindung passt, und was ist zusätzlich sinnvoll?
+    optionen:
+      - "Eine eigene Pipeline nach erfolgreichem Deployment, ergänzt um einfache Deployment-Checks, ob das SUT bereitsteht"
+      - "Die Tests in die Build-Phase legen"
+      - "Die Tests als Teil der Deployment-Phase ausführen"
+      - "Die Tests nur einmal im Monat ausführen"
+    richtig: [0]
+    erklaerung: "Eine eigene Pipeline erlaubt unterschiedliche Suiten und Wiederholung ohne Deployment. Einfache Deployment-Checks stellen sicher, dass das SUT ausgeliefert ist."
+
+  - id: tae-p-052
+    lz: TAE-5.1.1
+    typ: single
+    frage: |
+      Die vollständige Regression eines Teams dauert vier Stunden. Die Entwickler wünschen bei jedem Commit schnelle Rückmeldung, das Team will aber jeden Morgen den Gesamtstand kennen.
+      Wie sollten die Tests auf Pipelines verteilt werden?
+    optionen:
+      - "Die gesamte Regression bei jedem Commit"
+      - "Komponententests als Qualitätsschranke im Build bei jedem Commit, die lange Regression als nächtlicher Lauf"
+      - "Gar keine Tests im Build"
+      - "Die Regression nur vor dem jährlichen Release"
+    richtig: [1]
+    erklaerung: "Komponententests sind die Qualitätsschranke der CI; lange Suiten laufen periodisch, z. B. nachts."
+
+  - id: tae-p-053
+    lz: TAE-5.1.1
+    typ: single
+    frage: |
+      Beim Build eines Testprojekts soll geprüft werden, ob alle in den Testskripten verwendeten Dateien unter den angegebenen Pfaden existieren.
+      Um welche Art von Tests handelt es sich, und wo laufen sie?
+    optionen:
+      - "Systemintegrationstests in der Continuous-Delivery-Pipeline"
+      - "Konfigurationstests des TAF beim Build des Testprojekts"
+      - "Abnahmetests in Produktion"
+      - "Performance-Tests in der Vorproduktion"
+    richtig: [1]
+    erklaerung: "Konfigurationstests für TAF und TAS laufen beim Build des Testprojekts und gelten als eine Art Komponententest."
+
+  - id: tae-p-054
+    lz: TAE-5.1.2
+    typ: single
+    frage: "Wo wird die Konfiguration der Testumgebungen (URLs, Zugänge) laut Lehrplan bei mehreren Projekten oder mehreren TAFs abgelegt?"
+    optionen:
+      - "In jedem einzelnen Testskript"
+      - "In den gemeinsamen Kernbibliotheken oder einem gemeinsamen Repository"
+      - "Nur in der Dokumentation"
+      - "Im Quellcode des SUT"
+    richtig: [1]
+    erklaerung: "Normalerweise liegt sie bei der Testware; bei mehreren Projekten oder TAFs in den Kernbibliotheken oder einem geteilten Repository."
+
+  - id: tae-p-055
+    lz: TAE-5.1.2
+    typ: multiple
+    frage: "Welche ZWEI Möglichkeiten nennt der Lehrplan, damit zu jedem Release die passenden Testsuiten laufen?"
+    optionen:
+      - "Feature-Toggles je Release oder Umgebung, die die Testware auswertet"
+      - "Die Testware mit derselben Versionsnummer wie das SUT über Tags oder Branches veröffentlichen"
+      - "Immer alle Tests auf allen Versionen ausführen und Fehlschläge ignorieren"
+      - "Die Testsuiten vor jedem Release manuell neu schreiben"
+      - "Nur die neuesten Tests ausführen"
+    richtig: [0, 1]
+    erklaerung: "Feature-Toggles oder gemeinsame Versionierung sorgen für die passende Zuordnung von SUT-Version und Tests."
+
+  - id: tae-p-056
+    lz: TAE-5.1.2
+    typ: single
+    frage: "Was umfasst Konfigurationsmanagement in der Testautomation laut Lehrplan?"
+    optionen:
+      - "Nur die Versionsverwaltung des SUT"
+      - "Umgebungskonfiguration, Testdaten sowie Testsuiten und Testfälle"
+      - "Nur die Lizenzverwaltung der Werkzeuge"
+      - "Nur die Hardware der Testrechner"
+    richtig: [1]
+    erklaerung: "Testautomation läuft auf mehreren Umgebungen und Versionen; deshalb werden Umgebungskonfiguration, Testdaten und Suiten verwaltet."
+
+  - id: tae-p-057
+    lz: TAE-5.1.2
+    typ: single
+    frage: "Wo werden Testdaten bei größeren Vorhaben laut Lehrplan häufig verwaltet?"
+    optionen:
+      - "In einem Testdatenmanagementsystem"
+      - "In den Kommentaren der Testskripte"
+      - "Im Arbeitsspeicher des Test-Agents"
+      - "Gar nicht, sie werden bei jedem Lauf erfunden"
+    richtig: [0]
+    erklaerung: "Bei kleinen TAFs liegen Testdaten bei der Testware, sonst bietet sich ein Testdatenmanagementsystem an."
+
+  - id: tae-p-058
+    lz: TAE-5.1.3
+    typ: single
+    frage: "Welche Information dient laut Lehrplan als Grundlage für automatisierte API-Tests?"
+    optionen:
+      - "Die API-Dokumentation mit Parametern, Headern und Anfrage- und Antworttypen"
+      - "Die Farbgestaltung der Weboberfläche"
+      - "Die Anzahl der Entwickler"
+      - "Der Name des Servers in Produktion"
+    richtig: [0]
+    erklaerung: "Neben den Beziehungen der APIs zueinander ist die API-Dokumentation die Basis für die Strategie."
+
+  - id: tae-p-059
+    lz: TAE-5.1.3
+    typ: single
+    frage: "Was beschreibt den consumer-driven Ansatz beim Contract-Testing?"
+    optionen:
+      - "Der Anbieter beschreibt, wie seine Dienste arbeiten."
+      - "Der Konsument legt fest, wie der Anbieter auf seine Anfragen antworten soll."
+      - "Ein externer Prüfer schreibt den Vertrag."
+      - "Es gibt keinen Vertrag, nur Schemas."
+    richtig: [1]
+    erklaerung: "Consumer-driven: Erwartungen des Konsumenten bilden den Vertrag. Provider-driven: Der Anbieter erstellt ihn."
+
+  - id: tae-p-060
+    lz: TAE-5.1.3
+    typ: single
+    frage: "Welcher Vorteil von Contract-Tests wird im Lehrplan hervorgehoben?"
+    optionen:
+      - "Sie ersetzen alle Systemtests."
+      - "Fehler aus zugrunde liegenden Diensten werden früher gefunden, und ihre Quelle lässt sich leichter bestimmen."
+      - "Sie brauchen keine Abstimmung zwischen den Teams."
+      - "Sie prüfen nur die Performance."
+    richtig: [1]
+    erklaerung: "Contract-Tests finden Inkompatibilitäten früh im Lebenszyklus und zeigen, welche Seite den Vertrag bricht."
+
+  - id: tae-p-061
+    lz: TAE-5.1.3
+    typ: single
+    frage: "Wie verhält sich Contract-Testing zur Schemavalidierung?"
+    optionen:
+      - "Es ist dasselbe."
+      - "Contract-Testing geht darüber hinaus: Beide Seiten einigen sich auf erlaubte Interaktionen, und der Vertrag kann sich weiterentwickeln."
+      - "Contract-Testing prüft weniger als Schemavalidierung."
+      - "Contract-Testing funktioniert nur ohne Schema."
+    richtig: [1]
+    erklaerung: "Ein Vertrag hält tatsächliche Interaktionen fest, gegen die Konsument und Anbieter geprüft werden – mehr als nur Datentypen."
+
+  # ---------------- Kapitel 6 ----------------
+  - id: tae-p-062
+    lz: TAE-6.1.1
+    typ: single
+    frage: |
+      Ein Team möchte für alle 800 automatisierten Tests Start- und Endzeit protokollieren. Die Tests nutzen eine gemeinsame Basisklasse.
+      Wie lässt sich das am effizientesten umsetzen?
+    optionen:
+      - "In jeden Test zwei Log-Zeilen einfügen"
+      - "Die gemeinsame Testware (Basisklasse) einmal erweitern, sodass alle Tests davon profitieren"
+      - "Die Zeiten manuell mit der Stoppuhr messen"
+      - "Nur die Gesamtlaufzeit der Pipeline betrachten"
+    richtig: [1]
+    erklaerung: "Erweiterungen der zugrunde liegenden Testware wirken für alle darauf aufbauenden Skripte."
+
+  - id: tae-p-063
+    lz: TAE-6.1.1
+    typ: single
+    frage: |
+      Ein Zustandsübergangstest wählt bei jedem Lauf zufällig einen von zwanzig Pfaden. Gelegentlich schlägt er fehl, lässt sich aber nicht nachstellen.
+      Was sollte die TAS zusätzlich protokollieren?
+    optionen:
+      - "Den Namen des Rechners"
+      - "Die gewählten Zufallswerte bzw. den gewählten Pfad"
+      - "Nichts, sporadische Fehler sind normal"
+      - "Nur die Anzahl der Läufe"
+    richtig: [1]
+    erklaerung: "Bei zufälligen Elementen müssen die Zufallszahlen oder Entscheidungen protokolliert werden, damit sich der Lauf wiederholen lässt."
+
+  - id: tae-p-064
+    lz: TAE-6.1.1
+    typ: single
+    frage: |
+      Ein Vergleich der Antwort mit dem erwarteten Ergebnis schlägt bei jedem Lauf fehl, weil die Antwort einen aktuellen Zeitstempel enthält.
+      Wie sollte der Vergleich gestaltet werden?
+    optionen:
+      - "Den Test entfernen"
+      - "Den Vergleich so gestalten, dass erwartete Unterschiede wie Datum und Uhrzeit ignoriert und nur unerwartete hervorgehoben werden"
+      - "Die Systemuhr des SUT anhalten"
+      - "Den Test als bestanden markieren, wenn er fehlschlägt"
+    richtig: [1]
+    erklaerung: "Werkzeuge können Vergleiche definieren, die erwartete Unterschiede ignorieren und unerwartete hervorheben."
+
+  - id: tae-p-065
+    lz: TAE-6.1.1
+    typ: single
+    frage: |
+      Auf einem Embedded-SUT schreibt die Software ihr Log in einen Ringpuffer, der nach einigen Minuten überschrieben wird. Bei einem Fehlschlag sind die relevanten Einträge oft schon verloren.
+      Was sollte die TAS bei einem Fehlschlag tun?
+    optionen:
+      - "Das Log-Level des SUT auf Fatal reduzieren"
+      - "Die Logs, die überschrieben werden könnten, sowie Crash-Dumps und Stacktraces sofort sichern"
+      - "Den Test später wiederholen und hoffen, dass der Fehler erneut auftritt"
+      - "Nur einen Screenshot speichern"
+    richtig: [1]
+    erklaerung: "Bei Fehlschlägen muss die TAS alle Analyseinformationen sichern – auch Logs, die sonst überschrieben würden."
+
+  - id: tae-p-066
+    lz: TAE-6.1.2
+    typ: single
+    frage: |
+      Ein automatisierter Test meldet „fehlgeschlagen“. Im Testlog stehen der erwartete Wert „Bestellung abgeschlossen“ und der tatsächliche Wert „Bestellung abgeschlossen“. Screenshot und API-Log zeigen ebenfalls den erwarteten Zustand. In früheren Läufen ist der Fehler nicht aufgetreten.
+      Was ist die wahrscheinlichste Schlussfolgerung?
+    optionen:
+      - "Das SUT hat einen Fehler; ein Fehlerbericht ist anzulegen."
+      - "Wahrscheinlich liegt ein Fehler in der TAS vor oder ein unsichtbarer Unterschied, etwa ein Leerzeichen oder ein anderes Zeichen."
+      - "Die Testumgebung war nicht verfügbar."
+      - "Der Test ist korrekt und das Ergebnis kann ignoriert werden."
+    richtig: [1]
+    erklaerung: "Stimmen Ist und Soll sichtbar überein und das SUT ist im erwarteten Zustand, liegt der Fehler meist in der TAS oder in einem unsichtbaren Unterschied."
+
+  - id: tae-p-067
+    lz: TAE-6.1.2
+    typ: single
+    frage: |
+      Im Nachtlauf schlagen 150 von 160 API-Tests fehl, mit unterschiedlichen Meldungen wie Zeitüberschreitung, 503 und Verbindungsabbruch. Am Vortag waren alle Tests grün; es wurde keine neue SUT-Version ausgeliefert.
+      Welcher Analyseschritt ist als Nächstes am sinnvollsten?
+    optionen:
+      - "Für jeden fehlgeschlagenen Test einen Fehlerbericht anlegen"
+      - "In den SUT- und Umgebungslogs prüfen, ob die Testumgebung zum Zeitpunkt des Laufs ganz oder teilweise ausgefallen war"
+      - "Alle Tests neu schreiben"
+      - "Die Tests dauerhaft deaktivieren"
+    richtig: [1]
+    erklaerung: "Viele gleichzeitige Fehlschläge mit unterschiedlichen Meldungen ohne SUT-Änderung deuten auf eine nicht verfügbare Umgebung. Die SUT-Logs zeigen Ausfälle zur Laufzeit."
+
+  - id: tae-p-068
+    lz: TAE-6.1.2
+    typ: single
+    frage: |
+      Ein UI-Test schlägt fehl, weil eine Bestellung nicht angezeigt wird. Die Anfrage durchläuft fünf Microservices. Die TAS protokolliert zu jeder Anfrage eine Correlation-ID, und alle Dienste schreiben diese ID in ihre Logs.
+      Wie geht der TAE bei der Analyse am besten vor?
+    optionen:
+      - "Die Logs aller fünf Dienste der letzten 24 Stunden vollständig lesen"
+      - "Mit der Correlation-ID aus dem Testlog den Weg der Anfrage durch die Dienste verfolgen und die Stelle finden, an der sie scheitert"
+      - "Den Test mit einer längeren festen Wartezeit wiederholen"
+      - "Einen Fehlerbericht ohne weitere Analyse an alle fünf Teams senden"
+    richtig: [1]
+    erklaerung: "Correlation- bzw. Trace-IDs verbinden alle Aufrufe einer Interaktion, sodass man das Verhalten nachverfolgen kann."
+
+  - id: tae-p-069
+    lz: TAE-6.1.3
+    typ: single
+    frage: "Was muss ein Testfortschrittsbericht laut Lehrplan enthalten?"
+    optionen:
+      - "Nur die Anzahl bestandener Tests"
+      - "Testergebnisse, Informationen über das SUT und die Testumgebung – in einer für die Stakeholder passenden Form"
+      - "Den vollständigen Quellcode der Tests"
+      - "Nur die Logs aller Testschritte"
+    richtig: [1]
+    erklaerung: "Logs liefern Details, aber keinen Überblick. Der Bericht bündelt Ergebnisse, SUT- und Umgebungsinformationen je Zielgruppe."
+
+  - id: tae-p-070
+    lz: TAE-6.1.3
+    typ: single
+    frage: "Welche Information interessiert Management-Stakeholder in einem Testbericht typischerweise am meisten?"
+    optionen:
+      - "Stacktraces der fehlgeschlagenen Tests"
+      - "Trends wie die Veränderung der Bestehensquote, neue Tests seit dem letzten Lauf und die Zuverlässigkeit von TAS und SUT"
+      - "Die verwendeten Locators"
+      - "Die Log-Level-Konfiguration"
+    richtig: [1]
+    erklaerung: "Management achtet auf Trends; technische Stakeholder auf Details; operative auf Produktnutzung."
+
+  - id: tae-p-071
+    lz: TAE-6.1.3
+    typ: single
+    frage: "Wie sollte ein Testbericht laut Lehrplan veröffentlicht werden, damit er tatsächlich gelesen wird?"
+    optionen:
+      - "Lokal auf dem Rechner des TAE abgelegt"
+      - "An alle relevanten Stakeholder, z. B. auf einer Website, per Mailingliste, im Testmanagement oder per Chatbot"
+      - "Nur auf Nachfrage mündlich"
+      - "Ausgedruckt am schwarzen Brett"
+    richtig: [1]
+    erklaerung: "Wer Berichte per Mail oder Chat abonniert, liest und analysiert sie eher. Eine Historie zeigt Bereiche mit häufigen Regressionen."
+
+  # ---------------- Kapitel 7 ----------------
+  - id: tae-p-072
+    lz: TAE-7.1.1
+    typ: single
+    frage: |
+      Eine TAS wird auf zwölf Test-Agents eingesetzt. Bisher installieren Teammitglieder die Werkzeuge von Hand; auf einigen Agents laufen ältere Versionen der Bibliotheken, und Ergebnisse unterscheiden sich je Agent.
+      Welche Maßnahme sollte der TAE einplanen?
+    optionen:
+      - "Die Agents mit abweichenden Ergebnissen ignorieren"
+      - "Die TAS automatisiert oder aus einem Repository installieren, sodass alle Agents dieselbe Version und Konfiguration haben"
+      - "Jedem Teammitglied seine Lieblingsversion erlauben"
+      - "Auf mehrere Agents verzichten"
+    richtig: [1]
+    erklaerung: "Automatisierte Installation oder Kopie aus einem Repository garantiert gleiche Version und Konfiguration; Upgrades laufen ebenfalls darüber."
+
+  - id: tae-p-073
+    lz: TAE-7.1.1
+    typ: single
+    frage: |
+      Eine TAS wurde in einer neuen Testumgebung installiert. Bevor der erste Testlauf startet, soll sichergestellt werden, dass die Installation korrekt ist.
+      Welche Prüfungen passen am besten?
+    optionen:
+      - "Sofort die gesamte Regression starten und Fehlschläge als SUT-Fehler melden"
+      - "An den Servern anmelden, die Werkzeuge starten, prüfen, ob sie das SUT erreichen, Konfiguration ansehen und Berechtigungen für Logs und Berichte prüfen"
+      - "Nur prüfen, ob die Lizenzdatei vorhanden ist"
+      - "Den Testfortschrittsbericht des letzten Release kopieren"
+    richtig: [1]
+    erklaerung: "Vor dem Einsatz werden Verbindungen zu internen und externen Systemen und Schnittstellen geprüft. So stellt man sicher, dass die TAS korrekt installiert ist."
+
+  - id: tae-p-074
+    lz: TAE-7.1.1
+    typ: single
+    frage: |
+      Eine Bibliothek der TAS prüft, ob GUI-Objekte korrekt erkannt werden. Sie wurde bisher nur mit Schaltflächen getestet. Nun soll sie für Tabellen, Baumansichten und Dropdowns eingesetzt werden.
+      Was sollte der TAE planen?
+    optionen:
+      - "Die Bibliothek ungetestet einsetzen, da sie für Schaltflächen funktioniert"
+      - "Die TAF-Komponente für die neuen Objektklassen gezielt testen, auch nicht-funktional, etwa auf Speicherlecks"
+      - "Für jeden Test eine eigene Objekterkennung schreiben"
+      - "Nur manuell testen"
+    richtig: [1]
+    erklaerung: "TAF-Komponenten werden wie jede Software getestet – Objekterkennung für eine breite Palette von Objektklassen, dazu nicht-funktional auf Ressourcenverbrauch."
+
+  - id: tae-p-075
+    lz: TAE-7.1.1
+    typ: single
+    frage: |
+      Eine TAS wird für jeden Pipeline-Lauf in einem frischen Container aufgebaut und danach entfernt. Manchmal verhält sie sich nach dem Neuaufbau anders als vorher.
+      Welche Maßnahme stellt den wiederholbaren Auf- und Abbau am besten sicher?
+    optionen:
+      - "Die Container nie neu aufbauen"
+      - "Die Komponenten der TAS unter Konfigurationsmanagement stellen und dokumentieren, damit jede Konfiguration zuverlässig gleich erzeugt wird"
+      - "Mehr Tests hinzufügen"
+      - "Die Fehler bei Neuaufbau ignorieren"
+    richtig: [1]
+    erklaerung: "Konfigurationsmanagement der TAS-Komponenten sorgt dafür, dass Aufbau und Neuaufbau keinen Unterschied machen; die Dokumentation zeigt, was bei Umgebungsänderungen betroffen ist."
+
+  - id: tae-p-076
+    lz: TAE-7.1.2
+    typ: single
+    frage: "Was gehört zur Prüfung der Zusammensetzung einer automatisierten Testsuite?"
+    optionen:
+      - "Prüfen, ob alle Testfälle erwartete Ergebnisse haben, die Testdaten vorhanden sind und die richtigen Versionen von TAF und SUT genutzt werden"
+      - "Prüfen, wie schnell der Test-Agent startet"
+      - "Prüfen, ob alle Tests denselben Autor haben"
+      - "Prüfen, ob die Suite alphabetisch sortiert ist"
+    richtig: [0]
+    erklaerung: "Die Zusammensetzung wird auf Vollständigkeit und auf die korrekten Versionen von TAF und SUT geprüft."
+
+  - id: tae-p-077
+    lz: TAE-7.1.2
+    typ: single
+    frage: "Wie sollte man laut Lehrplan mit Tests umgehen, die bei Wiederholung unterschiedliche Ergebnisse liefern, etwa wegen Race Conditions?"
+    optionen:
+      - "Sie in der aktiven Suite lassen und bei jedem Fehlschlag neu analysieren"
+      - "Sie aus der aktiven Suite nehmen und gesondert auf ihre Ursache untersuchen"
+      - "Sie dauerhaft als bestanden markieren"
+      - "Sie zehnmal hintereinander wiederholen"
+    richtig: [1]
+    erklaerung: "Unzuverlässige Tests kosten bei jedem Lauf Analysezeit. Deshalb aus der aktiven Suite nehmen und die Ursache gesondert finden."
+
+  - id: tae-p-078
+    lz: TAE-7.1.2
+    typ: single
+    frage: "Was ist mit der Intrusivität eines automatisierten Testwerkzeugs gemeint?"
+    optionen:
+      - "Das Werkzeug ist teuer."
+      - "Die eng mit dem SUT gekoppelte TAS kann Verhalten und Performance des SUT verändern, sodass Fehler auftreten, die in Produktion nicht existieren."
+      - "Das Werkzeug benötigt Administratorrechte."
+      - "Das Werkzeug ist nicht Open Source."
+    richtig: [1]
+    erklaerung: "Läuft die TAS in der SUT-Umgebung, kann das SUT anders reagieren. Das kann Scheinfehler erzeugen und das Vertrauen in die TAS senken."
+
+  - id: tae-p-079
+    lz: TAE-7.1.2
+    typ: single
+    frage: "Wie geht man laut Lehrplan vor, wenn eine neue Funktion des TAF zum ersten Mal in Testfällen eingesetzt wird?"
+    optionen:
+      - "Man setzt sie sofort in allen Tests ein."
+      - "Man verifiziert und beobachtet sie beim ersten Einsatz genau, um sicherzustellen, dass sie korrekt arbeitet."
+      - "Man testet sie erst nach dem nächsten Release."
+      - "Man vertraut der Dokumentation."
+    richtig: [1]
+    erklaerung: "Neue TAF-Funktionen werden beim ersten Einsatz gezielt verifiziert und überwacht."
+
+  - id: tae-p-080
+    lz: TAE-7.1.3
+    typ: single
+    frage: "Ein Test besteht unerwartet, obwohl die geprüfte Funktion nachweislich fehlerhaft ist. Was sollte man zuerst prüfen?"
+    optionen:
+      - "Ob alle nötigen Assertions vorhanden sind"
+      - "Ob der Testrechner genug Speicher hat"
+      - "Ob der Bericht farbig ist"
+      - "Ob das Log-Level auf Trace steht"
+    richtig: [0]
+    erklaerung: "Fehlende Assertions führen zu nicht aussagekräftigen Ergebnissen – ein Test kann dann bestehen, ohne etwas zu prüfen."
+
+  - id: tae-p-081
+    lz: TAE-7.1.3
+    typ: multiple
+    frage: "Ein Test schlägt sporadisch fehl. Welche ZWEI Schritte helfen laut Lehrplan bei der Ursachenanalyse?"
+    optionen:
+      - "Einige Tests isoliert ausführen"
+      - "Die Systemressourcen beobachten"
+      - "Den Test löschen"
+      - "Die Testdaten zufällig ändern"
+      - "Den Fehler ohne Analyse dem Entwicklungsteam melden"
+    richtig: [0, 1]
+    erklaerung: "Isolierte Ausführung, Ressourcenüberwachung, Log-Analyse von Testfall, SUT und TAF sowie Debugging helfen, die Ursache zu finden."
+
+  - id: tae-p-082
+    lz: TAE-7.1.3
+    typ: single
+    frage: "Wo kann laut Lehrplan die Ursache eines unerwarteten Testergebnisses liegen?"
+    optionen:
+      - "Nur im SUT"
+      - "Nur im Testfall"
+      - "Im Testfall, im SUT, im TAF, in der Hardware oder im Netzwerk"
+      - "Nur im Netzwerk"
+    richtig: [2]
+    erklaerung: "Die Ursache kann an vielen Stellen liegen; gerade sporadische Fehler sind schwer zu analysieren."
+
+  - id: tae-p-083
+    lz: TAE-7.1.4
+    typ: single
+    frage: "Warum sollte auch der Code der Testautomation statisch analysiert werden?"
+    optionen:
+      - "Weil Testcode mit dem Produkt ausgeliefert wird"
+      - "Weil Testcode Schwachstellen wie Klartext-Passwörter enthalten kann, die auch ohne Auslieferung ein Risiko sind"
+      - "Weil statische Analyse die Tests schneller macht"
+      - "Weil es gesetzlich vorgeschrieben ist"
+    richtig: [1]
+    erklaerung: "Testcode wird oft nicht ausgeliefert, aber ein gefundenes Passwort in einem Skript bleibt eine Schwachstelle."
+
+  - id: tae-p-084
+    lz: TAE-7.1.4
+    typ: single
+    frage: "Wie werden Befunde statischer Analysewerkzeuge üblicherweise eingestuft?"
+    optionen:
+      - "Nach Autor und Datum"
+      - "Als kritisch, hoch, mittel oder niedrig, damit Teams priorisieren können"
+      - "Nach Dateigröße"
+      - "Gar nicht, alle Befunde sind gleich wichtig"
+    richtig: [1]
+    erklaerung: "Die Schweregrade helfen beim Priorisieren; manche Werkzeuge schlagen zusätzlich eine Korrektur vor."
+
+  - id: tae-p-085
+    lz: TAE-7.1.4
+    typ: single
+    frage: "Welche Rolle spielt statische Analyse laut Lehrplan in DevSecOps?"
+    optionen:
+      - "Sie läuft nur einmal vor dem Release."
+      - "Sie ist eine proaktive Technik, die früh in der Pipeline läuft und den Teams sofort Rückmeldung gibt."
+      - "Sie ersetzt alle dynamischen Tests."
+      - "Sie wird nur in Produktion eingesetzt."
+    richtig: [1]
+    erklaerung: "Automatische Scans früh im Lebenszyklus über Pipelines geben schnelle Rückmeldung – ein zentraler Baustein von DevSecOps."
+
+  # ---------------- Kapitel 8 ----------------
+  - id: tae-p-086
+    lz: TAE-8.1.1
+    typ: single
+    frage: |
+      Ein Testhistogramm über 30 Nachtläufe zeigt: Test A ist immer grün, Test B immer rot, Test C wechselt unregelmäßig zwischen grün und rot.
+      Welcher Test ist am ehesten ein Kandidat für ein Refactoring wegen Fragilität?
+    optionen:
+      - "Test A"
+      - "Test B"
+      - "Test C"
+      - "Keiner, das Histogramm sagt darüber nichts aus"
+    richtig: [2]
+    erklaerung: "Wechselnde Ergebnisse deuten auf einen fragilen Test. Ein immer roter Test deutet eher auf einen echten Fehler oder einen veralteten Test."
+
+  - id: tae-p-087
+    lz: TAE-8.1.1
+    typ: single
+    frage: |
+      Ein Team prüft die Antworten eines Kundendienstes mit vielen Einzel-Assertions auf Pflichtfelder und Datentypen. Bei Änderungen der API müssen zahlreiche Assertions angepasst werden.
+      Welche Verbesserung passt am besten?
+    optionen:
+      - "Die Assertions entfernen"
+      - "Eine Schemavalidierung einführen, die Pflichtfelder und Typen gegen ein Schema prüft"
+      - "Die API nur noch manuell testen"
+      - "Mehr Einzel-Assertions ergänzen"
+    richtig: [1]
+    erklaerung: "Schemavalidierung macht den Code kürzer, prüft Pflichtfelder und Typen zuverlässig und meldet beim Bruch, welches Element nicht passt."
+
+  - id: tae-p-088
+    lz: TAE-8.1.1
+    typ: single
+    frage: |
+      In einer UI-Suite brechen nach jedem Frontend-Release viele Tests, weil sich Locators geändert haben. Die Fehlersuche dauert jeweils Tage.
+      Welche Möglichkeit aus dem Lehrplan kann die Wartung beschleunigen?
+    optionen:
+      - "KI-gestützte Werkzeuge, die geänderte Locators erkennen, die Tests selbst reparieren und die Änderung im Bericht ausweisen"
+      - "Feste Wartezeiten verlängern"
+      - "Die UI-Tests in Komponententests umbenennen"
+      - "Releases seltener durchführen"
+    richtig: [0]
+    erklaerung: "Self-Healing auf Basis von maschinellem Lernen und Bilderkennung erkennt neue Selektoren und beschleunigt Versionsverwaltung und Wartung."
+
+  - id: tae-p-089
+    lz: TAE-8.1.1
+    typ: single
+    frage: |
+      Ein CI-Werkzeug zeigt für jeden Test die Ergebnisse vieler Läufe zusammen mit Fehlermeldungen und Screenshots. Ein TAE möchte daraus Verbesserungen ableiten.
+      Wie nutzt er diese Daten am besten?
+    optionen:
+      - "Er ignoriert sie, solange die Mehrheit der Tests grün ist."
+      - "Er sucht über das Testhistogramm Tests mit Mustern aus wiederkehrenden Fehlschlägen und überarbeitet oder ersetzt sie gezielt."
+      - "Er löscht alle Tests, die jemals fehlgeschlagen sind."
+      - "Er erhöht die Anzahl der Wiederholungen jedes Tests."
+    richtig: [1]
+    erklaerung: "Das Testhistogramm zeigt Trends und fragile Tests, die man mit zusätzlichen Verbesserungen oder einer neuen Umsetzung stabilisiert."
+
+  - id: tae-p-090
+    lz: TAE-8.1.2
+    typ: single
+    frage: |
+      Eine bestehende TAS hat folgende Eigenschaften:
+      – In 60 Tests stehen dieselben acht Schritte zum Anlegen eines Kunden, jeweils leicht unterschiedlich.
+      – Tests warten mit Thread.Sleep(5000) auf Seitenwechsel.
+      – Bricht ein Test ab, laufen die folgenden Tests der Suite nicht weiter.
+      Welche Empfehlung ist am besten begründet?
+    optionen:
+      - "Die Schritte in eine parametrisierte Bibliotheksfunktion auslagern, feste Wartezeiten durch Polling mit Timeout ersetzen und einen Wiederanlauf nach Fehlern einführen"
+      - "Die festen Wartezeiten auf zehn Sekunden erhöhen"
+      - "Weitere 60 Tests mit denselben Schritten ergänzen"
+      - "Die Suite auf Capture/Playback umstellen"
+    richtig: [0]
+    erklaerung: "Doppelte Schrittfolgen gehören in parametrisierte Bibliotheksfunktionen, feste Wartezeiten sind eine häufige Fehlerquelle, und die TAS sollte nach Fehlern mit dem nächsten Test fortfahren."
+
+  - id: tae-p-091
+    lz: TAE-8.1.2
+    typ: single
+    frage: |
+      Die nächtliche Regression dauert inzwischen 14 Stunden und ist morgens nicht fertig. Eine Analyse zeigt: Etwa 20 % der Tests prüfen dasselbe wie andere Tests. Es stehen vier gleichwertige Testumgebungen zur Verfügung, von denen nachts nur eine genutzt wird.
+      Welche Empfehlung ist am besten?
+    optionen:
+      - "Doppelte Tests entfernen und die Regression auf die vier Umgebungen parallel verteilen"
+      - "Die Regression nur noch am Wochenende ausführen"
+      - "Alle Tests mit längeren Timeouts versehen"
+      - "Die Testumgebung mit mehr festen Wartezeiten stabilisieren"
+    richtig: [0]
+    erklaerung: "Duplikate entfernen verkürzt die Laufzeit; parallele Ausführung auf mehreren Umgebungen beschleunigt zusätzlich."
+
+  - id: tae-p-092
+    lz: TAE-8.1.2
+    typ: single
+    frage: |
+      Zwölf Teams nutzen dieselben Kernbibliotheken. Eine neue Hauptversion einer darin verwendeten Browser-Bibliothek ist erschienen und ändert mehrere Schnittstellen. Einige Teams wollen sofort umsteigen, andere stecken kurz vor einem Release.
+      Welches Vorgehen ist am besten begründet?
+    optionen:
+      - "Die neue Version sofort zentral in den Kernbibliotheken eintragen"
+      - "Erst einen Pilot und eine Auswirkungsanalyse durchführen, dann einen Übernahmeplan erstellen: Teams aktualisieren zunächst einzeln in ihrer Geschäftslogikschicht, am Ende wird zentral aktualisiert"
+      - "Die neue Version grundsätzlich nie übernehmen"
+      - "Jedes Team erstellt eine eigene Kopie der Kernbibliotheken"
+    richtig: [1]
+    erklaerung: "Große Updates der Kernbibliotheken können Tests vieler Teams brechen. Pilot, Auswirkungsanalyse und Übernahmeplan verhindern das."
+
+  - id: tae-p-093
+    lz: TAE-8.1.2
+    typ: single
+    frage: |
+      Vor jedem UI-Test wird über die Oberfläche ein Testbenutzer registriert und danach über die Oberfläche gelöscht. Das kostet pro Test 40 Sekunden, und die Schritte sind in jedem Test kopiert. Das SUT bietet eine Benutzer-API.
+      Welche Verbesserung ist am besten?
+    optionen:
+      - "Die Registrierung in Setup und Teardown verlagern und über die API ausführen"
+      - "Die Registrierungsschritte in jedem Test weiter verfeinern"
+      - "Alle Tests mit demselben Benutzer ohne Aufräumen laufen lassen"
+      - "Die UI-Tests abschaffen"
+    richtig: [0]
+    erklaerung: "Wiederholtes gehört in Setup und Teardown; Vorbedingungen für UI-Tests lassen sich per Webservice-Aufruf schneller herstellen."
+
+  - id: tae-p-094
+    lz: TAE-8.1.3
+    typ: single
+    frage: |
+      Das Betriebssystem der Test-Agents soll auf eine neue Hauptversion aktualisiert werden. Die TAS umfasst 2.000 Tests.
+      Wie sollte die Änderung laut Lehrplan eingeführt werden?
+    optionen:
+      - "Auf allen Agents gleichzeitig aktualisieren und auf das Beste hoffen"
+      - "Schrittweise einführen, mit einem begrenzten Lauf ausgewählter Tests die Auswirkung messen, dann vollständig umsetzen und abschließend eine vollständige Regression ausführen"
+      - "Die Aktualisierung ohne Testlauf durchführen, da Betriebssysteme abwärtskompatibel sind"
+      - "Die TAS vor der Aktualisierung löschen"
+    richtig: [1]
+    erklaerung: "Änderungen schrittweise mit MVP-Denken einführen, mit einem begrenzten Lauf messen und mit einer vollständigen Regression abschließen."
+
+  - id: tae-p-095
+    lz: TAE-8.1.3
+    typ: single
+    frage: |
+      Eine TAS enthält getrennte Funktionen zum Auslesen von Dropdowns, Listenfeldern und Kombinationsfeldern – mit fast identischem Code. Jede Änderung muss dreimal gemacht werden.
+      Welche Maßnahme passt am besten?
+    optionen:
+      - "Eine vierte Funktion für neue Steuerelemente ergänzen"
+      - "Die Funktionen zu einer allgemeinen, parametrisierten Funktion zusammenfassen"
+      - "Die Funktionen in die Testskripte kopieren"
+      - "Auf das Auslesen der Steuerelemente verzichten"
+    richtig: [1]
+    erklaerung: "Funktionen, die auf denselben Steuerelementtyp wirken, lassen sich zusammenfassen – gleiche Ergebnisse, weniger Wartung."
+
+  - id: tae-p-096
+    lz: TAE-8.1.3
+    typ: single
+    frage: |
+      Ein SUT bekommt eine neue Schnittstelle für Massenimporte. Ein Kollege schlägt vor, die zugehörigen Tests mit einer eigenen, schnell gebauten Hilfsklasse neben die bestehende Architektur zu setzen.
+      Was sollte der TAE empfehlen?
+    optionen:
+      - "Die Hilfsklasse übernehmen, weil es schnell geht"
+      - "Die Erweiterung in der TAA analysieren und passend einbauen, statt sie anzuflanschen, und dabei die bestehenden Namenskonventionen einhalten"
+      - "Die neue Schnittstelle nicht testen"
+      - "Eine komplett neue TAS nur für den Import bauen"
+    richtig: [1]
+    erklaerung: "Erweiterungen sollen nicht angeflanscht, sondern in der Architektur analysiert und eingebaut werden; neue Teile folgen den bestehenden Standards."
+
+  - id: tae-p-097
+    lz: TAE-8.1.4
+    typ: single
+    frage: "Was versteht man unter Datenalterung (Data Aging) als Einsatz von Testautomationswerkzeugen?"
+    optionen:
+      - "Alte Testdaten automatisch löschen"
+      - "Testdaten so verändern, dass z. B. Datumsfelder in der Datenbank aktuell bleiben"
+      - "Testdaten absichtlich veralten lassen"
+      - "Die Laufzeit der Tests messen"
+    richtig: [1]
+    erklaerung: "Automation kann Testdaten pflegen, etwa Datumsfelder regelmäßig nachziehen."
+
+  - id: tae-p-098
+    lz: TAE-8.1.4
+    typ: multiple
+    frage: "Welche ZWEI Einsätze von Testautomationswerkzeugen außerhalb der eigentlichen Testausführung nennt der Lehrplan?"
+    optionen:
+      - "Screenshots und Videos für Release-Dokumentation oder Marketing erzeugen"
+      - "Testumgebungen einrichten, z. B. Benutzer mit verschiedenen Profilen per Webservice anlegen"
+      - "Gehaltsabrechnungen erstellen"
+      - "Quellcode des SUT schreiben"
+      - "Anforderungen priorisieren"
+    richtig: [0, 1]
+    erklaerung: "Genannt werden Umgebung einrichten und steuern, Datenalterung sowie Screenshots und Videos."
+
+  - id: tae-p-099
+    lz: TAE-8.1.4
+    typ: single
+    frage: "Wie kann Testautomation beim Aufräumen von Testumgebungen helfen?"
+    optionen:
+      - "Gar nicht, Aufräumen ist immer manuell"
+      - "Testlogs und andere Testware werden automatisch aus der Umgebung entfernt, was die Pflege effizienter macht"
+      - "Indem die Umgebung bei jedem Lauf gelöscht und nie neu aufgebaut wird"
+      - "Indem Testdaten in Produktion verschoben werden"
+    richtig: [1]
+    erklaerung: "Skripte können die Infrastruktur einrichten und anschließend aufräumen, etwa Logs und Testware entfernen."

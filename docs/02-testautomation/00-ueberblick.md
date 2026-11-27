@@ -52,3 +52,7 @@ Empfohlene Reihenfolge:
 Die C#-, Java- und Desktop-Module kannst du auch in beliebiger Reihenfolge oder nur eines davon bearbeiten.
 
 Querverbindungen: Selenium Grid, Playwright im Container und Testcontainers im Bereich 🐳 [Docker](../05-docker/05-docker-testautomation.mdx).
+
+Zertifizierung: Die Theorie hinter Architektur, Einführung, Berichten und Verbesserung von Testautomation – passend zur
+Prüfung ISTQB Test Automation Engineering – steht im Bereich 🎓 [ISTQB-Zertifizierung](../11-istqb/00-ueberblick.md),
+mit Prüfungssimulation.
